@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "AfriPebbles"
+version = "1.0.0"
+id = "artifacts/afripebbles"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20954
+
+[services.development]
+run = "pnpm --filter @workspace/afripebbles run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/afripebbles", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/afripebbles/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20954"
+BASE_PATH = "/"

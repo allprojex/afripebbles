@@ -1,0 +1,16 @@
+{
+  "name": "AfriPebbles",
+  "short_name": "AfriPebbles",
+  "description": "A faith-rooted lifestyle brand for women — content, digital products, seasonal pre-orders, and curated recommendations.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#f5ede1",
+  "background_color": "#f5ede1",
+  "display": "standalone",
+  "start_url": "/"
+}

@@ -1,0 +1,303 @@
+# AfriPebbles Website – Foundation & Project Vision
+
+## Project Overview
+
+You are building the official website and digital home of **AfriPebbles**, a faith-rooted lifestyle brand created to inspire women to grow intentionally in every area of life through faith, beauty, wellness, purposeful living, and practical resources.
+
+This project is **not** a traditional e-commerce website, blog, podcast website, or portfolio. It is a unified digital ecosystem that brings together every aspect of the AfriPebbles brand into one seamless experience.
+
+The website must serve as the central platform where visitors can discover the brand, consume inspirational content, listen to podcast episodes, purchase digital products, pre-order seasonal physical products, explore curated product recommendations, connect with the brand for collaborations, and become part of the AfriPebbles community.
+
+Every page should communicate the heart of the brand while naturally guiding visitors toward meaningful engagement.
+
+---
+
+# About the Brand
+
+AfriPebbles is founded on the belief that no dream is too small when placed in God's hands.
+
+Just as a small pebble creates ripples that spread far beyond where it lands, every intentional step taken in faith has the power to create lasting transformation.
+
+AfriPebbles exists to help women glow up holistically by nurturing every important area of life:
+
+* Faith
+* Beauty
+* Health
+* Financial stability
+* Purpose
+* Intentional living
+
+Rather than promoting perfection, the brand encourages consistent progress, reminding women that lasting transformation happens one faithful step at a time.
+
+The website should consistently reflect this message through its design, content structure, imagery, and user experience.
+
+---
+
+# Vision
+
+Create an elegant, trustworthy and inspirational digital home where women around the world feel welcomed, encouraged, equipped and empowered to pursue God's purpose while growing intentionally in every aspect of life.
+
+---
+
+# Mission
+
+To inspire, equip and support women through faith-centered content, digital resources, carefully curated products, meaningful conversations and authentic community.
+
+---
+
+# Primary Objectives
+
+The website should:
+
+* Establish AfriPebbles as a trusted lifestyle brand.
+* Inspire visitors through meaningful storytelling.
+* Build a loyal community around the brand.
+* Grow podcast listeners.
+* Increase newsletter subscriptions.
+* Sell digital products.
+* Manage seasonal pre-orders for physical products.
+* Generate enquiries for UGC collaborations.
+* Promote carefully curated affiliate recommendations.
+* Encourage repeat visits and long-term engagement.
+
+---
+
+# Target Audience
+
+### Primary Audience
+
+Women between 18 and 35 years who desire intentional growth in areas such as:
+
+* Faith
+* Beauty
+* Wellness
+* Personal development
+* Home inspiration
+* Productivity
+* Financial growth
+* Purpose
+
+### Secondary Audience
+
+Businesses, organisations and brands seeking authentic User Generated Content (UGC) creators for partnerships and campaigns.
+
+---
+
+# Geographic Reach
+
+Although the founder is based in Germany, AfriPebbles serves customers globally.
+
+The website must feel international rather than location-specific.
+
+Initial markets include:
+
+* Germany
+* Ghana
+* Europe
+* North America
+* International customers worldwide
+
+The architecture should support future global expansion without requiring major redesign.
+
+---
+
+# Brand Personality
+
+The website should communicate:
+
+* Warmth
+* Authenticity
+* Hope
+* Grace
+* Excellence
+* Simplicity
+* Elegance
+* Femininity
+* Peace
+* Purpose
+* Joy
+* Trust
+
+Visitors should immediately feel calm, inspired and welcomed.
+
+---
+
+# Visual Identity
+
+The overall visual direction should be:
+
+* Elegant
+* Modern
+* Soft
+* Warm
+* Clean
+* Editorial
+* Lifestyle-focused
+* Feminine
+* Premium without appearing exclusive
+
+Avoid overly corporate layouts, loud colours, cluttered interfaces or anything that feels cold or transactional.
+
+The website should resemble a premium lifestyle publication rather than a conventional online shop.
+
+---
+
+# Colour Direction
+
+Current brand colours include:
+
+* Neutral cream
+* Soft beige
+* Warm brown
+* Baby pink
+* White
+
+These colours should be used consistently throughout the interface to create a calm, welcoming and timeless aesthetic.
+
+Avoid harsh blacks, neon colours or overly saturated palettes.
+
+---
+
+# Typography
+
+Use elegant typography that balances sophistication with readability.
+
+Recommendations:
+
+* Elegant serif font for headings.
+* Modern sans-serif font for body text.
+* Large, confident headlines.
+* Comfortable reading widths.
+* Generous white space.
+* Clear visual hierarchy.
+
+Typography should reinforce the premium yet approachable personality of the brand.
+
+---
+
+# Website Philosophy
+
+The website should never feel like only one of the following:
+
+* An online shop.
+* A podcast website.
+* A blog.
+* A portfolio.
+
+Instead, it should present all of these experiences naturally within one cohesive ecosystem where every section strengthens the others.
+
+Visitors should never feel that they are moving between different websites.
+
+---
+
+# User Experience Principles
+
+Every interaction should feel intentional.
+
+The design should encourage visitors to slow down, explore and connect with the brand rather than simply browse products.
+
+Navigation should be intuitive.
+
+Content should be easy to discover.
+
+Calls-to-action should feel inviting rather than aggressive.
+
+Animations should be subtle, elegant and purposeful.
+
+Every page should be fully responsive across desktop, tablet and mobile devices.
+
+Accessibility should follow WCAG 2.2 AA standards to ensure the experience is inclusive for all users.
+
+---
+
+# Visitor Journey
+
+Every visitor should naturally move through the following journey:
+
+Discover the brand
+
+↓
+
+Understand the mission
+
+↓
+
+Connect emotionally with the story
+
+↓
+
+Explore podcast episodes and inspirational content
+
+↓
+
+Browse products and curated recommendations
+
+↓
+
+Subscribe to the newsletter
+
+↓
+
+Follow AfriPebbles on social media
+
+↓
+
+Purchase products, place a pre-order or enquire about collaborations
+
+↓
+
+Return regularly for new content and future offerings
+
+Each page should support this journey through thoughtful layout, storytelling and clear navigation.
+
+---
+
+# Technical Foundation
+
+Build the project entirely within Lovable using modern best practices.
+
+Use Supabase as the backend platform.
+
+The solution should be modular, scalable and maintainable.
+
+Prepare the architecture for future expansion, including:
+
+* Additional product collections.
+* Membership features.
+* Online courses.
+* Community functionality.
+* Additional podcasts.
+* Multiple languages.
+* Additional currencies.
+* Mobile applications.
+* New business initiatives under the AfriPebbles brand.
+
+The system should scale gracefully without requiring significant architectural changes.
+
+---
+
+# Performance Expectations
+
+The finished website should prioritise performance and user experience.
+
+Requirements include:
+
+* Fast page loading.
+* Optimised images.
+* Lazy loading where appropriate.
+* Excellent Core Web Vitals.
+* SEO-friendly architecture.
+* Clean semantic HTML.
+* Responsive layouts.
+* Secure forms.
+* Secure checkout.
+* HTTPS throughout.
+* Modern accessibility standards.
+
+---
+
+# Overall Success
+
+The completed website should become more than an online presence.
+
+It should be the digital headquarters of the AfriPebbles brand—a place where visitors feel inspired to grow, confident in the brand, connected to its mission, and encouraged to return again and again as the community, products and content continue to expand.

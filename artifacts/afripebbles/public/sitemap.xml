@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Static routes only — product/episode/article detail pages are omitted
+  until real content exists (no invented URLs). Regenerate this file if
+  the planned domain (see src/content/site.ts) changes.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://afripebbles.com/</loc></url>
+  <url><loc>https://afripebbles.com/about</loc></url>
+  <url><loc>https://afripebbles.com/podcast</loc></url>
+  <url><loc>https://afripebbles.com/shop</loc></url>
+  <url><loc>https://afripebbles.com/journal</loc></url>
+  <url><loc>https://afripebbles.com/recommendations</loc></url>
+  <url><loc>https://afripebbles.com/collaborate</loc></url>
+  <url><loc>https://afripebbles.com/community</loc></url>
+  <url><loc>https://afripebbles.com/contact</loc></url>
+  <url><loc>https://afripebbles.com/faq</loc></url>
+  <url><loc>https://afripebbles.com/shipping</loc></url>
+  <url><loc>https://afripebbles.com/returns</loc></url>
+  <url><loc>https://afripebbles.com/preorder-policy</loc></url>
+  <url><loc>https://afripebbles.com/digital-product-terms</loc></url>
+  <url><loc>https://afripebbles.com/affiliate-disclosure</loc></url>
+  <url><loc>https://afripebbles.com/privacy</loc></url>
+  <url><loc>https://afripebbles.com/cookies</loc></url>
+  <url><loc>https://afripebbles.com/terms</loc></url>
+</urlset>

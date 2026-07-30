@@ -3,20 +3,35 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AfriPebbles API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: products
+    description: Shop products (digital & physical pre-orders)
+  - name: podcast
+    description: Podcast episodes
+  - name: blog
+    description: Blog posts and inspirational content
+  - name: curated
+    description: Curated affiliate recommendations
+  - name: newsletter
+    description: Newsletter subscriptions
+  - name: collaborations
+    description: UGC collaboration enquiries
+  - name: contact
+    description: General contact enquiries
+  - name: homepage
+    description: Homepage summary data
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +39,272 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [digital, physical]
+          description: Filter by product type
+        - name: availability
+          in: query
+          schema:
+            type: string
+            enum: [available, preorder, coming_soon, out_of_stock]
+          description: Filter by availability
+        - name: featured
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+          description: Filter featured products only
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get a single product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /podcast-episodes:
+    get:
+      operationId: listPodcastEpisodes
+      tags: [podcast]
+      summary: List podcast episodes
+      parameters:
+        - name: featured
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+          description: Filter featured episodes only
+        - name: limit
+          in: query
+          schema:
+            type: number
+          description: Limit number of results
+      responses:
+        "200":
+          description: List of podcast episodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PodcastEpisode"
+
+  /podcast-episodes/{id}:
+    get:
+      operationId: getPodcastEpisode
+      tags: [podcast]
+      summary: Get a single podcast episode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Episode details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodcastEpisode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /blog-posts:
+    get:
+      operationId: listBlogPosts
+      tags: [blog]
+      summary: List blog posts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: featured
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+          description: Filter featured posts only
+        - name: limit
+          in: query
+          schema:
+            type: number
+          description: Limit number of results
+      responses:
+        "200":
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+
+  /blog-posts/{slug}:
+    get:
+      operationId: getBlogPost
+      tags: [blog]
+      summary: Get a single blog post by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Blog post details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /curated-picks:
+    get:
+      operationId: listCuratedPicks
+      tags: [curated]
+      summary: List curated affiliate recommendations
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        "200":
+          description: List of curated picks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CuratedPick"
+
+  /newsletter-subscriptions:
+    post:
+      operationId: subscribeNewsletter
+      tags: [newsletter]
+      summary: Subscribe to the newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterSubscriptionInput"
+      responses:
+        "201":
+          description: Subscribed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscription"
+        "409":
+          description: Already subscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /collaboration-enquiries:
+    post:
+      operationId: submitCollaborationEnquiry
+      tags: [collaborations]
+      summary: Submit a UGC collaboration enquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollaborationEnquiryInput"
+      responses:
+        "201":
+          description: Enquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollaborationEnquiry"
+
+  /contact-enquiries:
+    post:
+      operationId: submitContactEnquiry
+      tags: [contact]
+      summary: Submit a general contact enquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactEnquiryInput"
+      responses:
+        "201":
+          description: Enquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactEnquiry"
+
+  /homepage-summary:
+    get:
+      operationId: getHomepageSummary
+      tags: [homepage]
+      summary: Get homepage summary with featured content
+      responses:
+        "200":
+          description: Homepage summary data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomepageSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +315,407 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    ProductVariant:
+      type: object
+      properties:
+        label:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+      required:
+        - label
+        - options
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: number
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        type:
+          type: string
+          enum: [digital, physical]
+        category:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        previewImageUrl:
+          type: ["string", "null"]
+        availability:
+          type: string
+          enum: [available, preorder, coming_soon, out_of_stock]
+        isFeatured:
+          type: boolean
+        downloadUrl:
+          type: ["string", "null"]
+        preorderOpensAt:
+          type: ["string", "null"]
+        preorderClosesAt:
+          type: ["string", "null"]
+        estimatedFulfilment:
+          type: ["string", "null"]
+        regions:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariant"
+        externalPurchaseUrl:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+        - description
+        - shortDescription
+        - price
+        - currency
+        - type
+        - category
+        - imageUrl
+        - previewImageUrl
+        - availability
+        - isFeatured
+        - downloadUrl
+        - preorderOpensAt
+        - preorderClosesAt
+        - estimatedFulfilment
+        - regions
+        - variants
+        - externalPurchaseUrl
+        - tags
+        - createdAt
+
+    PodcastEpisode:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        episodeNumber:
+          type: number
+        season:
+          type: ["number", "null"]
+        audioUrl:
+          type: ["string", "null"]
+        externalUrl:
+          type: ["string", "null"]
+        guestName:
+          type: ["string", "null"]
+        showNotesUrl:
+          type: ["string", "null"]
+        transcriptUrl:
+          type: ["string", "null"]
+        coverImageUrl:
+          type: ["string", "null"]
+        durationSeconds:
+          type: ["number", "null"]
+        isFeatured:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - title
+        - description
+        - episodeNumber
+        - season
+        - audioUrl
+        - externalUrl
+        - guestName
+        - showNotesUrl
+        - transcriptUrl
+        - coverImageUrl
+        - durationSeconds
+        - isFeatured
+        - publishedAt
+        - tags
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        coverImageUrl:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        readTimeMinutes:
+          type: number
+        publishedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - title
+        - slug
+        - excerpt
+        - content
+        - category
+        - coverImageUrl
+        - isFeatured
+        - readTimeMinutes
+        - publishedAt
+        - tags
+
+    CuratedPick:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        affiliateUrl:
+          type: string
+        brand:
+          type: string
+        isAffiliate:
+          type: boolean
+        isPersonallyTested:
+          type: boolean
+        isFeatured:
+          type: boolean
+      required:
+        - id
+        - title
+        - description
+        - category
+        - imageUrl
+        - affiliateUrl
+        - brand
+        - isAffiliate
+        - isPersonallyTested
+        - isFeatured
+
+    NewsletterSubscriptionInput:
+      type: object
+      properties:
+        email:
+          type: string
+          
+        firstName:
+          type: string
+      required:
+        - email
+
+    NewsletterSubscription:
+      type: object
+      properties:
+        id:
+          type: number
+        email:
+          type: string
+        firstName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - firstName
+        - createdAt
+
+    CollaborationEnquiryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+        company:
+          type: string
+        campaignType:
+          type: string
+        budgetRange:
+          type: string
+        timeline:
+          type: string
+        links:
+          type: string
+        message:
+          type: string
+      required:
+        - name
+        - email
+        - message
+
+    CollaborationEnquiry:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: ["string", "null"]
+        campaignType:
+          type: ["string", "null"]
+        budgetRange:
+          type: ["string", "null"]
+        timeline:
+          type: ["string", "null"]
+        links:
+          type: ["string", "null"]
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - company
+        - campaignType
+        - budgetRange
+        - timeline
+        - links
+        - message
+        - createdAt
+
+    ContactEnquiryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+        inquiryType:
+          type: string
+          enum: [general, collaboration, order-support, product]
+        subject:
+          type: string
+        message:
+          type: string
+        consentGiven:
+          type: boolean
+      required:
+        - name
+        - email
+        - inquiryType
+        - message
+        - consentGiven
+
+    ContactEnquiry:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        email:
+          type: string
+        inquiryType:
+          type: string
+        subject:
+          type: ["string", "null"]
+        message:
+          type: string
+        consentGiven:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - inquiryType
+        - subject
+        - message
+        - consentGiven
+        - createdAt
+
+    HomepageSummary:
+      type: object
+      properties:
+        featuredProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        latestEpisode:
+          oneOf:
+            - $ref: "#/components/schemas/PodcastEpisode"
+            - type: "null"
+        featuredBlogPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogPost"
+        featuredCuratedPicks:
+          type: array
+          items:
+            $ref: "#/components/schemas/CuratedPick"
+        totalEpisodes:
+          type: number
+        totalBlogPosts:
+          type: number
+      required:
+        - featuredProducts
+        - latestEpisode
+        - featuredBlogPosts
+        - featuredCuratedPicks
+        - totalEpisodes
+        - totalBlogPosts
