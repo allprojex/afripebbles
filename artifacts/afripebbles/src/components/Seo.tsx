@@ -1,5 +1,7 @@
 import { useEffect } from "react";
+import { useGetSiteSettings } from "@workspace/api-client-react";
 import { siteConfig } from "@/content/site";
+import { resolveSiteSettings } from "@/lib/settings";
 
 export interface SeoProps {
   title: string;
@@ -38,12 +40,15 @@ function setLink(rel: string, href: string) {
  * dependency weight for no real benefit over a small effect hook.
  */
 export function Seo({ title, description, path, image, jsonLd }: SeoProps) {
+  const { data: siteSettings } = useGetSiteSettings();
+  const resolved = resolveSiteSettings(siteSettings);
+
   useEffect(() => {
     const fullTitle = siteConfig.seo.titleTemplate(title);
-    const desc = description ?? siteConfig.seo.defaultDescription;
+    const desc = description ?? resolved.seoDefaultDescription;
     const canonicalPath = path ?? window.location.pathname;
-    const canonicalUrl = `${siteConfig.seo.plannedDomain}${canonicalPath}`;
-    const ogImage = image ?? `${siteConfig.seo.plannedDomain}/og-default.jpg`;
+    const canonicalUrl = `${resolved.canonicalUrl}${canonicalPath}`;
+    const ogImage = image ?? resolved.socialShareImageUrl ?? `${resolved.canonicalUrl}/og-default.jpg`;
 
     document.title = fullTitle;
     setMeta("name", "description", desc);
@@ -73,7 +78,7 @@ export function Seo({ title, description, path, image, jsonLd }: SeoProps) {
     return () => {
       document.getElementById(scriptId)?.remove();
     };
-  }, [title, description, path, image, jsonLd]);
+  }, [title, description, path, image, jsonLd, resolved.seoDefaultDescription, resolved.canonicalUrl, resolved.socialShareImageUrl]);
 
   return null;
 }

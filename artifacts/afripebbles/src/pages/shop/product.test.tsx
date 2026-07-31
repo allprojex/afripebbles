@@ -31,8 +31,9 @@ const mockUseGetProduct = vi.fn();
 
 vi.mock("@workspace/api-client-react", () => ({
   useGetProduct: (...args: unknown[]) => mockUseGetProduct(...args),
-  // Footer (rendered by every page via Layout) needs this too.
+  // Footer and Seo (rendered by every page via Layout) need these too.
   useSubscribeNewsletter: () => ({ mutate: vi.fn(), isPending: false }),
+  useGetSiteSettings: () => ({ data: null }),
 }));
 
 function renderProductPage() {

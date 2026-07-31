@@ -5,7 +5,9 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ContentStatus } from './contentStatus';
 import type { ProductAvailability } from './productAvailability';
+import type { ProductStockStatus } from './productStockStatus';
 import type { ProductType } from './productType';
 import type { ProductVariant } from './productVariant';
 
@@ -23,16 +25,18 @@ export interface Product {
   category: string | null;
   /** @nullable */
   imageUrl: string | null;
+  images: string[];
   /** @nullable */
   previewImageUrl: string | null;
   availability: ProductAvailability;
+  stockStatus: ProductStockStatus;
   isFeatured: boolean;
   /** @nullable */
   downloadUrl: string | null;
   /** @nullable */
-  preorderOpensAt: string | null;
+  preorderOpensAt: Date | null;
   /** @nullable */
-  preorderClosesAt: string | null;
+  preorderClosesAt: Date | null;
   /** @nullable */
   estimatedFulfilment: string | null;
   regions: string[];
@@ -40,5 +44,13 @@ export interface Product {
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: Date | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   createdAt: Date;
+  updatedAt: Date;
 }

@@ -5,9 +5,11 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ContentStatus } from './contentStatus';
 
 export interface CuratedPick {
   id: number;
+  slug: string;
   title: string;
   description: string;
   category: string;
@@ -16,6 +18,18 @@ export interface CuratedPick {
   affiliateUrl: string;
   brand: string;
   isAffiliate: boolean;
+  /** @nullable */
+  affiliateDisclosureText: string | null;
   isPersonallyTested: boolean;
   isFeatured: boolean;
+  displayOrder: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: Date | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

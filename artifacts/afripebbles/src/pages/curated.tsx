@@ -1,17 +1,20 @@
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Seo } from "@/components/Seo";
-import { useListCuratedPicks } from "@workspace/api-client-react";
+import { useListCuratedPicks, useGetSiteSettings } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { Star, ArrowUpRight, Info } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { siteConfig } from "@/content/site";
+import { resolveSiteSettings } from "@/lib/settings";
 
 export default function CuratedPicks() {
   const [filter, setFilter] = useState<string>("All");
 
   const queryParams = filter === "All" ? {} : { category: filter };
   const { data: picks, isLoading } = useListCuratedPicks(queryParams);
+  const { data: siteSettings } = useGetSiteSettings();
+  const resolved = resolveSiteSettings(siteSettings);
 
   const categories = ["All", ...siteConfig.recommendationCategories];
 
@@ -50,7 +53,7 @@ export default function CuratedPicks() {
       <div className="container mx-auto px-4 pt-8">
         <div className="max-w-3xl mx-auto flex items-start gap-3 bg-muted/40 border border-border rounded-xl p-4 text-sm text-foreground/70">
           <Info size={18} className="shrink-0 mt-0.5 text-primary" />
-          <p>{siteConfig.affiliateDisclosure}</p>
+          <p>{resolved.affiliateDisclosure}</p>
         </div>
       </div>
 
@@ -118,7 +121,7 @@ export default function CuratedPicks() {
                   <h2 className="text-xl font-serif mb-3 leading-snug">{pick.title}</h2>
                   <p className="text-foreground/70 text-sm mb-4 flex-1">{pick.description}</p>
                   {pick.isAffiliate && (
-                    <p className="text-[11px] text-foreground/40 mb-3">Contains an affiliate link</p>
+                    <p className="text-[11px] text-foreground/40 mb-3">{pick.affiliateDisclosureText || resolved.affiliateDisclosure}</p>
                   )}
 
                   <a

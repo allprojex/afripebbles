@@ -8,8 +8,9 @@ const mockMutate = vi.fn();
 
 vi.mock("@workspace/api-client-react", () => ({
   useSubmitContactEnquiry: () => ({ mutate: mockMutate, isPending: false }),
-  // Footer (rendered by every page via Layout) needs this too.
+  // Footer and Seo (rendered by every page via Layout) need these too.
   useSubscribeNewsletter: () => ({ mutate: vi.fn(), isPending: false }),
+  useGetSiteSettings: () => ({ data: null }),
 }));
 
 function renderContact() {

@@ -8,6 +8,8 @@ const mockMutate = vi.fn();
 
 vi.mock("@workspace/api-client-react", () => ({
   useSubscribeNewsletter: () => ({ mutate: mockMutate, isPending: false }),
+  // Seo (rendered by every page) needs this too.
+  useGetSiteSettings: () => ({ data: null }),
 }));
 
 function renderCommunity() {

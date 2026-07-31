@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { Seo } from "./Seo";
 import { siteConfig } from "@/content/site";
+
+vi.mock("@workspace/api-client-react", () => ({
+  useGetSiteSettings: () => ({ data: null }),
+}));
 
 describe("Seo", () => {
   it("sets a unique document title using the site's title template", () => {

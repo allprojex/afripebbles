@@ -6,8 +6,10 @@ import { siteConfig } from "@/content/site";
 
 vi.mock("@workspace/api-client-react", () => ({
   useGetHomepageSummary: () => ({ data: undefined, isLoading: false }),
-  // Footer (rendered by every page via Layout) needs this too.
+  useGetHomepageContent: () => ({ data: null, isLoading: false }),
+  // Footer and Seo (rendered by every page via Layout) need these too.
   useSubscribeNewsletter: () => ({ mutate: vi.fn(), isPending: false }),
+  useGetSiteSettings: () => ({ data: null }),
 }));
 
 describe("Home route", () => {

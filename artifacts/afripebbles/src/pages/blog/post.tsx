@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Clock, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { MarkdownContent } from "@/components/MarkdownContent";
 // @ts-ignore
 import placeholderBlog from "@assets/generated_images/placeholder_blog.jpg";
 
@@ -83,7 +84,9 @@ export default function BlogPost() {
               {post.title}
             </h1>
             
-            <div className="flex items-center justify-center gap-6 text-sm text-foreground/60 font-medium">
+            <div className="flex items-center justify-center gap-6 text-sm text-foreground/60 font-medium flex-wrap">
+              <span>By {post.authorDisplayName || "AfriPebbles"}</span>
+              <span className="w-1 h-1 rounded-full bg-border"></span>
               <span className="flex items-center gap-2"><Calendar size={16} /> {format(new Date(post.publishedAt), 'MMMM d, yyyy')}</span>
               <span className="w-1 h-1 rounded-full bg-border"></span>
               <span className="flex items-center gap-2"><Clock size={16} /> {post.readTimeMinutes} min read</span>
@@ -109,15 +112,14 @@ export default function BlogPost() {
 
         {/* Content */}
         <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className="prose prose-stone prose-lg md:prose-xl max-w-none font-sans text-foreground/80"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-            // In a real app, you might want to use a markdown parser if the content is markdown,
-            // or sanitize HTML if it's raw HTML. The API schema says "string". We will assume simple text/html.
-          />
+          >
+            <MarkdownContent content={post.content} />
+          </motion.div>
           
           <Separator className="my-16" />
           

@@ -18,6 +18,7 @@ import Collaborate from '@/pages/collaborate';
 import Community from '@/pages/community';
 import Contact from '@/pages/contact';
 import Faq from '@/pages/faq';
+import AdminApp from '@/admin/AdminApp';
 
 // Legal / policy pages
 import PrivacyPolicyPage from '@/pages/legal/privacy';
@@ -60,6 +61,9 @@ function Router() {
       <Route path="/preorder-policy" component={PreorderPolicyPage} />
       <Route path="/affiliate-disclosure" component={AffiliateDisclosurePage} />
       <Route path="/digital-product-terms" component={DigitalProductTermsPage} />
+
+      <Route path="/admin" component={AdminApp} />
+      <Route path="/admin/:rest*" component={AdminApp} />
 
       <Route component={NotFound} />
     </Switch>

@@ -6,8 +6,9 @@ import { siteConfig } from "@/content/site";
 
 vi.mock("@workspace/api-client-react", () => ({
   useListPodcastEpisodes: () => ({ data: [], isLoading: false }),
-  // Footer (rendered by every page via Layout) needs this too.
+  // Footer and Seo (rendered by every page via Layout) need these too.
   useSubscribeNewsletter: () => ({ mutate: vi.fn(), isPending: false }),
+  useGetSiteSettings: () => ({ data: null }),
 }));
 
 describe("PodcastListing (pre-launch)", () => {

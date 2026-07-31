@@ -5,6 +5,7 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EnquiryStatus } from './enquiryStatus';
 
 export interface CollaborationEnquiry {
   id: number;
@@ -21,5 +22,8 @@ export interface CollaborationEnquiry {
   /** @nullable */
   links: string | null;
   message: string;
+  status: EnquiryStatus;
+  /** @nullable */
+  internalNotes: string | null;
   createdAt: Date;
 }

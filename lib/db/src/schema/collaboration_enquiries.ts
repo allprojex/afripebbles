@@ -12,9 +12,16 @@ export const collaborationEnquiriesTable = pgTable("collaboration_enquiries", {
   timeline: text("timeline"),
   links: text("links"),
   message: text("message").notNull(),
+  status: text("status").notNull().default("new"), // see ENQUIRY_STATUS
+  internalNotes: text("internal_notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertCollaborationEnquirySchema = createInsertSchema(collaborationEnquiriesTable).omit({ id: true, createdAt: true });
+export const insertCollaborationEnquirySchema = createInsertSchema(collaborationEnquiriesTable).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  internalNotes: true,
+});
 export type InsertCollaborationEnquiry = z.infer<typeof insertCollaborationEnquirySchema>;
 export type CollaborationEnquiry = typeof collaborationEnquiriesTable.$inferSelect;

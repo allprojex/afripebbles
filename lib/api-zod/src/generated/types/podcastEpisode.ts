@@ -5,9 +5,11 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ContentStatus } from './contentStatus';
 
 export interface PodcastEpisode {
   id: number;
+  slug: string;
   title: string;
   description: string;
   episodeNumber: number;
@@ -18,16 +20,30 @@ export interface PodcastEpisode {
   /** @nullable */
   externalUrl: string | null;
   /** @nullable */
+  youtubeVideoId: string | null;
+  /** @nullable */
   guestName: string | null;
   /** @nullable */
   showNotesUrl: string | null;
   /** @nullable */
+  showNotes: string | null;
+  /** @nullable */
   transcriptUrl: string | null;
+  /** @nullable */
+  transcript: string | null;
   /** @nullable */
   coverImageUrl: string | null;
   /** @nullable */
   durationSeconds: number | null;
   isFeatured: boolean;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: Date | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   publishedAt: Date;
+  updatedAt: Date;
   tags: string[];
 }

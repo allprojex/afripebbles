@@ -5,6 +5,8 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BlogPostContentType } from './blogPostContentType';
+import type { ContentStatus } from './contentStatus';
 
 export interface BlogPost {
   id: number;
@@ -12,11 +14,24 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
+  contentType: BlogPostContentType;
   category: string;
   /** @nullable */
   coverImageUrl: string | null;
+  /** @nullable */
+  youtubeUrl: string | null;
+  /** @nullable */
+  authorDisplayName: string | null;
   isFeatured: boolean;
   readTimeMinutes: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: Date | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   publishedAt: Date;
+  updatedAt: Date;
   tags: string[];
 }

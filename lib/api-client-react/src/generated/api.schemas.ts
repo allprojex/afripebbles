@@ -13,6 +13,69 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type ContentStatus = typeof ContentStatus[keyof typeof ContentStatus];
+
+
+export const ContentStatus = {
+  draft: 'draft',
+  scheduled: 'scheduled',
+  published: 'published',
+  archived: 'archived',
+} as const;
+
+export type EnquiryStatus = typeof EnquiryStatus[keyof typeof EnquiryStatus];
+
+
+export const EnquiryStatus = {
+  new: 'new',
+  read: 'read',
+  resolved: 'resolved',
+  archived: 'archived',
+} as const;
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export interface CountBreakdown {
+  total: number;
+  published: number;
+  draft: number;
+}
+
+export type RecentlyUpdatedItemContentType = typeof RecentlyUpdatedItemContentType[keyof typeof RecentlyUpdatedItemContentType];
+
+
+export const RecentlyUpdatedItemContentType = {
+  product: 'product',
+  podcast_episode: 'podcast_episode',
+  blog_post: 'blog_post',
+  curated_pick: 'curated_pick',
+} as const;
+
+export interface RecentlyUpdatedItem {
+  contentType: RecentlyUpdatedItemContentType;
+  id: number;
+  title: string;
+  status: string;
+  updatedAt: string;
+}
+
+export interface DashboardSummary {
+  products: CountBreakdown;
+  preorderProducts: number;
+  podcastEpisodes: CountBreakdown;
+  recommendations: CountBreakdown;
+  articles: CountBreakdown;
+  newsletterSubscribers: number;
+  contactEnquiries: number;
+  collaborationEnquiries: number;
+  productEnquiries: number;
+  recentlyUpdated: RecentlyUpdatedItem[];
+}
+
 export interface ProductVariant {
   label: string;
   options: string[];
@@ -36,6 +99,15 @@ export const ProductAvailability = {
   out_of_stock: 'out_of_stock',
 } as const;
 
+export type ProductStockStatus = typeof ProductStockStatus[keyof typeof ProductStockStatus];
+
+
+export const ProductStockStatus = {
+  in_stock: 'in_stock',
+  limited: 'limited',
+  out_of_stock: 'out_of_stock',
+} as const;
+
 export interface Product {
   id: number;
   slug: string;
@@ -50,9 +122,11 @@ export interface Product {
   category: string | null;
   /** @nullable */
   imageUrl: string | null;
+  images: string[];
   /** @nullable */
   previewImageUrl: string | null;
   availability: ProductAvailability;
+  stockStatus: ProductStockStatus;
   isFeatured: boolean;
   /** @nullable */
   downloadUrl: string | null;
@@ -67,11 +141,88 @@ export interface Product {
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   createdAt: string;
+  updatedAt: string;
+}
+
+export type ProductInputType = typeof ProductInputType[keyof typeof ProductInputType];
+
+
+export const ProductInputType = {
+  digital: 'digital',
+  physical: 'physical',
+} as const;
+
+export type ProductInputAvailability = typeof ProductInputAvailability[keyof typeof ProductInputAvailability];
+
+
+export const ProductInputAvailability = {
+  available: 'available',
+  preorder: 'preorder',
+  coming_soon: 'coming_soon',
+  out_of_stock: 'out_of_stock',
+} as const;
+
+export type ProductInputStockStatus = typeof ProductInputStockStatus[keyof typeof ProductInputStockStatus];
+
+
+export const ProductInputStockStatus = {
+  in_stock: 'in_stock',
+  limited: 'limited',
+  out_of_stock: 'out_of_stock',
+} as const;
+
+export interface ProductInput {
+  slug: string;
+  title: string;
+  description: string;
+  /** @nullable */
+  shortDescription?: string | null;
+  price: number;
+  currency?: string;
+  type: ProductInputType;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  images?: string[];
+  /** @nullable */
+  previewImageUrl?: string | null;
+  availability?: ProductInputAvailability;
+  stockStatus?: ProductInputStockStatus;
+  isFeatured?: boolean;
+  /** @nullable */
+  downloadUrl?: string | null;
+  /** @nullable */
+  preorderOpensAt?: string | null;
+  /** @nullable */
+  preorderClosesAt?: string | null;
+  /** @nullable */
+  estimatedFulfilment?: string | null;
+  regions?: string[];
+  variants?: ProductVariant[];
+  /** @nullable */
+  externalPurchaseUrl?: string | null;
+  tags?: string[];
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+  /** @nullable */
+  seoTitle?: string | null;
+  /** @nullable */
+  seoDescription?: string | null;
 }
 
 export interface PodcastEpisode {
   id: number;
+  slug: string;
   title: string;
   description: string;
   episodeNumber: number;
@@ -82,19 +233,86 @@ export interface PodcastEpisode {
   /** @nullable */
   externalUrl: string | null;
   /** @nullable */
+  youtubeVideoId: string | null;
+  /** @nullable */
   guestName: string | null;
   /** @nullable */
   showNotesUrl: string | null;
   /** @nullable */
+  showNotes: string | null;
+  /** @nullable */
   transcriptUrl: string | null;
+  /** @nullable */
+  transcript: string | null;
   /** @nullable */
   coverImageUrl: string | null;
   /** @nullable */
   durationSeconds: number | null;
   isFeatured: boolean;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   publishedAt: string;
+  updatedAt: string;
   tags: string[];
 }
+
+export interface PodcastEpisodeInput {
+  slug: string;
+  title: string;
+  description: string;
+  episodeNumber: number;
+  /** @nullable */
+  season?: number | null;
+  /** @nullable */
+  audioUrl?: string | null;
+  /** @nullable */
+  externalUrl?: string | null;
+  /** @nullable */
+  youtubeVideoId?: string | null;
+  /** @nullable */
+  guestName?: string | null;
+  /** @nullable */
+  showNotesUrl?: string | null;
+  /** @nullable */
+  showNotes?: string | null;
+  /** @nullable */
+  transcriptUrl?: string | null;
+  /** @nullable */
+  transcript?: string | null;
+  /** @nullable */
+  coverImageUrl?: string | null;
+  /** @nullable */
+  durationSeconds?: number | null;
+  isFeatured?: boolean;
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+  /** @nullable */
+  seoTitle?: string | null;
+  /** @nullable */
+  seoDescription?: string | null;
+  publishedAt?: string;
+  tags?: string[];
+}
+
+export type BlogPostContentType = typeof BlogPostContentType[keyof typeof BlogPostContentType];
+
+
+export const BlogPostContentType = {
+  article: 'article',
+  guide: 'guide',
+  video: 'video',
+  vlog: 'vlog',
+  reflection: 'reflection',
+  wellness: 'wellness',
+  beauty: 'beauty',
+  financial: 'financial',
+} as const;
 
 export interface BlogPost {
   id: number;
@@ -102,17 +320,71 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
+  contentType: BlogPostContentType;
   category: string;
   /** @nullable */
   coverImageUrl: string | null;
+  /** @nullable */
+  youtubeUrl: string | null;
+  /** @nullable */
+  authorDisplayName: string | null;
   isFeatured: boolean;
   readTimeMinutes: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
   publishedAt: string;
+  updatedAt: string;
   tags: string[];
+}
+
+export type BlogPostInputContentType = typeof BlogPostInputContentType[keyof typeof BlogPostInputContentType];
+
+
+export const BlogPostInputContentType = {
+  article: 'article',
+  guide: 'guide',
+  video: 'video',
+  vlog: 'vlog',
+  reflection: 'reflection',
+  wellness: 'wellness',
+  beauty: 'beauty',
+  financial: 'financial',
+} as const;
+
+export interface BlogPostInput {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  contentType?: BlogPostInputContentType;
+  category: string;
+  /** @nullable */
+  coverImageUrl?: string | null;
+  /** @nullable */
+  youtubeUrl?: string | null;
+  /** @nullable */
+  authorDisplayName?: string | null;
+  isFeatured?: boolean;
+  readTimeMinutes?: number;
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+  /** @nullable */
+  seoTitle?: string | null;
+  /** @nullable */
+  seoDescription?: string | null;
+  publishedAt?: string;
+  tags?: string[];
 }
 
 export interface CuratedPick {
   id: number;
+  slug: string;
   title: string;
   description: string;
   category: string;
@@ -121,8 +393,44 @@ export interface CuratedPick {
   affiliateUrl: string;
   brand: string;
   isAffiliate: boolean;
+  /** @nullable */
+  affiliateDisclosureText: string | null;
   isPersonallyTested: boolean;
   isFeatured: boolean;
+  displayOrder: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CuratedPickInput {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  affiliateUrl: string;
+  brand: string;
+  isAffiliate?: boolean;
+  /** @nullable */
+  affiliateDisclosureText?: string | null;
+  isPersonallyTested?: boolean;
+  isFeatured?: boolean;
+  displayOrder?: number;
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+  /** @nullable */
+  seoTitle?: string | null;
+  /** @nullable */
+  seoDescription?: string | null;
 }
 
 export interface NewsletterSubscriptionInput {
@@ -164,6 +472,9 @@ export interface CollaborationEnquiry {
   /** @nullable */
   links: string | null;
   message: string;
+  status: EnquiryStatus;
+  /** @nullable */
+  internalNotes: string | null;
   createdAt: string;
 }
 
@@ -195,7 +506,186 @@ export interface ContactEnquiry {
   subject: string | null;
   message: string;
   consentGiven: boolean;
+  status: EnquiryStatus;
+  /** @nullable */
+  internalNotes: string | null;
   createdAt: string;
+}
+
+export interface EnquiryUpdateInput {
+  status?: EnquiryStatus;
+  /** @nullable */
+  internalNotes?: string | null;
+}
+
+export interface HomepageContent {
+  id: number;
+  /** @nullable */
+  heroHeading: string | null;
+  /** @nullable */
+  heroSubheading: string | null;
+  /** @nullable */
+  heroImageUrl: string | null;
+  /** @nullable */
+  primaryCtaLabel: string | null;
+  /** @nullable */
+  primaryCtaHref: string | null;
+  /** @nullable */
+  secondaryCtaLabel: string | null;
+  /** @nullable */
+  secondaryCtaHref: string | null;
+  showPodcastSection: boolean;
+  showShopSection: boolean;
+  showJournalSection: boolean;
+  showRecommendationsSection: boolean;
+  showCollaborateSection: boolean;
+  showNewsletterSection: boolean;
+  /** @nullable */
+  newsletterHeading: string | null;
+  /** @nullable */
+  newsletterBody: string | null;
+  /** @nullable */
+  collaborateHeading: string | null;
+  /** @nullable */
+  collaborateBody: string | null;
+  updatedAt: string;
+}
+
+export interface HomepageContentInput {
+  /** @nullable */
+  heroHeading?: string | null;
+  /** @nullable */
+  heroSubheading?: string | null;
+  /** @nullable */
+  heroImageUrl?: string | null;
+  /** @nullable */
+  primaryCtaLabel?: string | null;
+  /** @nullable */
+  primaryCtaHref?: string | null;
+  /** @nullable */
+  secondaryCtaLabel?: string | null;
+  /** @nullable */
+  secondaryCtaHref?: string | null;
+  showPodcastSection?: boolean;
+  showShopSection?: boolean;
+  showJournalSection?: boolean;
+  showRecommendationsSection?: boolean;
+  showCollaborateSection?: boolean;
+  showNewsletterSection?: boolean;
+  /** @nullable */
+  newsletterHeading?: string | null;
+  /** @nullable */
+  newsletterBody?: string | null;
+  /** @nullable */
+  collaborateHeading?: string | null;
+  /** @nullable */
+  collaborateBody?: string | null;
+}
+
+export interface SiteSettings {
+  id: number;
+  /** @nullable */
+  brandName: string | null;
+  /** @nullable */
+  tagline: string | null;
+  /** @nullable */
+  contactEmail: string | null;
+  /** @nullable */
+  supportEmail: string | null;
+  /** @nullable */
+  collaborationEmail: string | null;
+  /** @nullable */
+  whatsappNumber: string | null;
+  /** @nullable */
+  instagramUrl: string | null;
+  /** @nullable */
+  facebookUrl: string | null;
+  /** @nullable */
+  youtubeUrl: string | null;
+  /** @nullable */
+  tiktokUrl: string | null;
+  /** @nullable */
+  seoDefaultTitle: string | null;
+  /** @nullable */
+  seoDefaultDescription: string | null;
+  /** @nullable */
+  canonicalUrl: string | null;
+  /** @nullable */
+  socialShareImageUrl: string | null;
+  /** @nullable */
+  businessCountry: string | null;
+  supportedRegions: string[];
+  /** @nullable */
+  defaultCurrency: string | null;
+  /** @nullable */
+  newsletterWording: string | null;
+  /** @nullable */
+  footerText: string | null;
+  /** @nullable */
+  podcastLaunchStatus: string | null;
+  /** @nullable */
+  shopStatus: string | null;
+  /** @nullable */
+  preorderNotice: string | null;
+  /** @nullable */
+  shippingNotice: string | null;
+  /** @nullable */
+  affiliateDisclosure: string | null;
+  /** @nullable */
+  privacyContactInfo: string | null;
+  updatedAt: string;
+}
+
+export interface SiteSettingsInput {
+  /** @nullable */
+  brandName?: string | null;
+  /** @nullable */
+  tagline?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  supportEmail?: string | null;
+  /** @nullable */
+  collaborationEmail?: string | null;
+  /** @nullable */
+  whatsappNumber?: string | null;
+  /** @nullable */
+  instagramUrl?: string | null;
+  /** @nullable */
+  facebookUrl?: string | null;
+  /** @nullable */
+  youtubeUrl?: string | null;
+  /** @nullable */
+  tiktokUrl?: string | null;
+  /** @nullable */
+  seoDefaultTitle?: string | null;
+  /** @nullable */
+  seoDefaultDescription?: string | null;
+  /** @nullable */
+  canonicalUrl?: string | null;
+  /** @nullable */
+  socialShareImageUrl?: string | null;
+  /** @nullable */
+  businessCountry?: string | null;
+  supportedRegions?: string[];
+  /** @nullable */
+  defaultCurrency?: string | null;
+  /** @nullable */
+  newsletterWording?: string | null;
+  /** @nullable */
+  footerText?: string | null;
+  /** @nullable */
+  podcastLaunchStatus?: string | null;
+  /** @nullable */
+  shopStatus?: string | null;
+  /** @nullable */
+  preorderNotice?: string | null;
+  /** @nullable */
+  shippingNotice?: string | null;
+  /** @nullable */
+  affiliateDisclosure?: string | null;
+  /** @nullable */
+  privacyContactInfo?: string | null;
 }
 
 export interface HomepageSummary {
@@ -295,5 +785,50 @@ export type ListCuratedPicksParams = {
  * Filter by category
  */
 category?: string;
+};
+
+export type AdminListProductsParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListPodcastEpisodesParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListBlogPostsParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListCuratedPicksParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListContactEnquiriesParams = {
+status?: EnquiryStatus;
+inquiryType?: AdminListContactEnquiriesInquiryType;
+search?: string;
+};
+
+export type AdminListContactEnquiriesInquiryType = typeof AdminListContactEnquiriesInquiryType[keyof typeof AdminListContactEnquiriesInquiryType];
+
+
+export const AdminListContactEnquiriesInquiryType = {
+  general: 'general',
+  collaboration: 'collaboration',
+  'order-support': 'order-support',
+  product: 'product',
+} as const;
+
+export type AdminListCollaborationEnquiriesParams = {
+status?: EnquiryStatus;
+search?: string;
+};
+
+export type AdminListNewsletterSubscriptionsParams = {
+search?: string;
 };
 

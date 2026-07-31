@@ -8,6 +8,9 @@ import newsletterRouter from "./newsletter";
 import collaborationsRouter from "./collaborations";
 import contactRouter from "./contact";
 import homepageRouter from "./homepage";
+import siteSettingsRouter from "./site-settings";
+import homepageContentRouter from "./homepage-content";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -20,5 +23,8 @@ router.use(newsletterRouter);
 router.use(collaborationsRouter);
 router.use(contactRouter);
 router.use(homepageRouter);
+router.use(siteSettingsRouter);
+router.use(homepageContentRouter);
+router.use("/admin", adminRouter);
 
 export default router;

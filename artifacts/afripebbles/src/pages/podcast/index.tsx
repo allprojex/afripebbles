@@ -50,7 +50,7 @@ export default function PodcastListing() {
         </div>
       </div>
 
-      {!siteConfig.podcast.hasLaunched && (
+      {!isLoading && (!episodes || episodes.length === 0) && (
         <div className="container mx-auto px-4 py-16 max-w-3xl text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="space-y-6">
             <h2 className="text-2xl md:text-3xl font-serif">The podcast hasn't launched yet</h2>

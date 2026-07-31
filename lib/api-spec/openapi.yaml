@@ -26,6 +26,10 @@ tags:
     description: General contact enquiries
   - name: homepage
     description: Homepage summary data
+  - name: settings
+    description: Public site settings and homepage content
+  - name: admin
+    description: Admin-only content management (requires an admin bearer token)
 paths:
   /healthz:
     get:
@@ -40,11 +44,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
+  # ---------------------------------------------------------------------------
+  # Public: products
+  # ---------------------------------------------------------------------------
   /products:
     get:
       operationId: listProducts
       tags: [products]
-      summary: List all products
+      summary: List published products
       parameters:
         - name: type
           in: query
@@ -66,7 +73,7 @@ paths:
           description: Filter featured products only
       responses:
         "200":
-          description: List of products
+          description: List of published products
           content:
             application/json:
               schema:
@@ -78,7 +85,7 @@ paths:
     get:
       operationId: getProduct
       tags: [products]
-      summary: Get a single product
+      summary: Get a single published product
       parameters:
         - name: id
           in: path
@@ -99,11 +106,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ---------------------------------------------------------------------------
+  # Public: podcast
+  # ---------------------------------------------------------------------------
   /podcast-episodes:
     get:
       operationId: listPodcastEpisodes
       tags: [podcast]
-      summary: List podcast episodes
+      summary: List published podcast episodes
       parameters:
         - name: featured
           in: query
@@ -118,7 +128,7 @@ paths:
           description: Limit number of results
       responses:
         "200":
-          description: List of podcast episodes
+          description: List of published podcast episodes
           content:
             application/json:
               schema:
@@ -130,7 +140,7 @@ paths:
     get:
       operationId: getPodcastEpisode
       tags: [podcast]
-      summary: Get a single podcast episode
+      summary: Get a single published podcast episode
       parameters:
         - name: id
           in: path
@@ -151,11 +161,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ---------------------------------------------------------------------------
+  # Public: blog / journal
+  # ---------------------------------------------------------------------------
   /blog-posts:
     get:
       operationId: listBlogPosts
       tags: [blog]
-      summary: List blog posts
+      summary: List published blog posts
       parameters:
         - name: category
           in: query
@@ -175,7 +188,7 @@ paths:
           description: Limit number of results
       responses:
         "200":
-          description: List of blog posts
+          description: List of published blog posts
           content:
             application/json:
               schema:
@@ -187,7 +200,7 @@ paths:
     get:
       operationId: getBlogPost
       tags: [blog]
-      summary: Get a single blog post by slug
+      summary: Get a single published blog post by slug
       parameters:
         - name: slug
           in: path
@@ -208,11 +221,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ---------------------------------------------------------------------------
+  # Public: curated recommendations
+  # ---------------------------------------------------------------------------
   /curated-picks:
     get:
       operationId: listCuratedPicks
       tags: [curated]
-      summary: List curated affiliate recommendations
+      summary: List published curated affiliate recommendations
       parameters:
         - name: category
           in: query
@@ -221,7 +237,7 @@ paths:
           description: Filter by category
       responses:
         "200":
-          description: List of curated picks
+          description: List of published curated picks
           content:
             application/json:
               schema:
@@ -229,6 +245,9 @@ paths:
                 items:
                   $ref: "#/components/schemas/CuratedPick"
 
+  # ---------------------------------------------------------------------------
+  # Public: newsletter / collaboration / contact submissions
+  # ---------------------------------------------------------------------------
   /newsletter-subscriptions:
     post:
       operationId: subscribeNewsletter
@@ -305,6 +324,794 @@ paths:
               schema:
                 $ref: "#/components/schemas/HomepageSummary"
 
+  /site-settings:
+    get:
+      operationId: getSiteSettings
+      tags: [settings]
+      summary: Get public site settings (falls back to defaults when unset)
+      responses:
+        "200":
+          description: Site settings, or null if none saved yet
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/SiteSettings"
+                  - type: "null"
+
+  /homepage-content:
+    get:
+      operationId: getHomepageContent
+      tags: [settings]
+      summary: Get public homepage content overrides (falls back to defaults when unset)
+      responses:
+        "200":
+          description: Homepage content, or null if none saved yet
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/HomepageContent"
+                  - type: "null"
+
+  # ---------------------------------------------------------------------------
+  # Admin: identity / dashboard
+  # ---------------------------------------------------------------------------
+  /admin/me:
+    get:
+      operationId: getAdminMe
+      tags: [admin]
+      summary: Confirm the current bearer token belongs to an admin
+      responses:
+        "200":
+          description: The authenticated admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Authenticated but not an admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Real content and enquiry counts for the admin dashboard
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  # ---------------------------------------------------------------------------
+  # Admin: products
+  # ---------------------------------------------------------------------------
+  /admin/products:
+    get:
+      operationId: adminListProducts
+      tags: [admin]
+      summary: List all products regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: adminCreateProduct
+      tags: [admin]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/products/{id}:
+    get:
+      operationId: adminGetProduct
+      tags: [admin]
+      summary: Get a product by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateProduct
+      tags: [admin]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteProduct
+      tags: [admin]
+      summary: Delete a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: podcast
+  # ---------------------------------------------------------------------------
+  /admin/podcast-episodes:
+    get:
+      operationId: adminListPodcastEpisodes
+      tags: [admin]
+      summary: List all podcast episodes regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All podcast episodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PodcastEpisode"
+    post:
+      operationId: adminCreatePodcastEpisode
+      tags: [admin]
+      summary: Create a podcast episode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PodcastEpisodeInput"
+      responses:
+        "201":
+          description: Episode created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodcastEpisode"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/podcast-episodes/{id}:
+    get:
+      operationId: adminGetPodcastEpisode
+      tags: [admin]
+      summary: Get a podcast episode by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Episode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodcastEpisode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdatePodcastEpisode
+      tags: [admin]
+      summary: Update a podcast episode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PodcastEpisodeInput"
+      responses:
+        "200":
+          description: Episode updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PodcastEpisode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeletePodcastEpisode
+      tags: [admin]
+      summary: Delete a podcast episode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: blog / articles
+  # ---------------------------------------------------------------------------
+  /admin/blog-posts:
+    get:
+      operationId: adminListBlogPosts
+      tags: [admin]
+      summary: List all blog posts regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+    post:
+      operationId: adminCreateBlogPost
+      tags: [admin]
+      summary: Create a blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/blog-posts/{id}:
+    get:
+      operationId: adminGetBlogPost
+      tags: [admin]
+      summary: Get a blog post by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateBlogPost
+      tags: [admin]
+      summary: Update a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogPostInput"
+      responses:
+        "200":
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteBlogPost
+      tags: [admin]
+      summary: Delete a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: curated recommendations
+  # ---------------------------------------------------------------------------
+  /admin/curated-picks:
+    get:
+      operationId: adminListCuratedPicks
+      tags: [admin]
+      summary: List all curated picks regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All curated picks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CuratedPick"
+    post:
+      operationId: adminCreateCuratedPick
+      tags: [admin]
+      summary: Create a curated pick
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CuratedPickInput"
+      responses:
+        "201":
+          description: Pick created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CuratedPick"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/curated-picks/{id}:
+    get:
+      operationId: adminGetCuratedPick
+      tags: [admin]
+      summary: Get a curated pick by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Pick
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CuratedPick"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateCuratedPick
+      tags: [admin]
+      summary: Update a curated pick
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CuratedPickInput"
+      responses:
+        "200":
+          description: Pick updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CuratedPick"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Slug already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteCuratedPick
+      tags: [admin]
+      summary: Delete a curated pick
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: homepage content & site settings (singleton resources)
+  # ---------------------------------------------------------------------------
+  /admin/homepage-content:
+    get:
+      operationId: adminGetHomepageContent
+      tags: [admin]
+      summary: Get the homepage content overrides
+      responses:
+        "200":
+          description: Homepage content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomepageContent"
+    put:
+      operationId: adminUpdateHomepageContent
+      tags: [admin]
+      summary: Upsert the homepage content overrides
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HomepageContentInput"
+      responses:
+        "200":
+          description: Homepage content saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomepageContent"
+
+  /admin/site-settings:
+    get:
+      operationId: adminGetSiteSettings
+      tags: [admin]
+      summary: Get site settings
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    put:
+      operationId: adminUpdateSiteSettings
+      tags: [admin]
+      summary: Upsert site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsInput"
+      responses:
+        "200":
+          description: Site settings saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+
+  # ---------------------------------------------------------------------------
+  # Admin: enquiries & newsletter
+  # ---------------------------------------------------------------------------
+  /admin/contact-enquiries:
+    get:
+      operationId: adminListContactEnquiries
+      tags: [admin]
+      summary: List contact enquiries (product enquiries are inquiryType=product)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/EnquiryStatus"
+        - name: inquiryType
+          in: query
+          schema:
+            type: string
+            enum: [general, collaboration, order-support, product]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contact enquiries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactEnquiry"
+
+  /admin/contact-enquiries/{id}:
+    patch:
+      operationId: adminUpdateContactEnquiry
+      tags: [admin]
+      summary: Update a contact enquiry's status/notes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnquiryUpdateInput"
+      responses:
+        "200":
+          description: Enquiry updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactEnquiry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/collaboration-enquiries:
+    get:
+      operationId: adminListCollaborationEnquiries
+      tags: [admin]
+      summary: List collaboration enquiries
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/EnquiryStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Collaboration enquiries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CollaborationEnquiry"
+
+  /admin/collaboration-enquiries/{id}:
+    patch:
+      operationId: adminUpdateCollaborationEnquiry
+      tags: [admin]
+      summary: Update a collaboration enquiry's status/notes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnquiryUpdateInput"
+      responses:
+        "200":
+          description: Enquiry updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollaborationEnquiry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/newsletter-subscriptions:
+    get:
+      operationId: adminListNewsletterSubscriptions
+      tags: [admin]
+      summary: List newsletter subscribers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Newsletter subscribers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsletterSubscription"
+
 components:
   schemas:
     HealthStatus:
@@ -322,6 +1129,101 @@ components:
           type: string
       required:
         - error
+
+    ContentStatus:
+      type: string
+      enum: [draft, scheduled, published, archived]
+
+    EnquiryStatus:
+      type: string
+      enum: [new, read, resolved, archived]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+      required:
+        - id
+        - email
+        - role
+
+    CountBreakdown:
+      type: object
+      properties:
+        total:
+          type: number
+        published:
+          type: number
+        draft:
+          type: number
+      required:
+        - total
+        - published
+        - draft
+
+    RecentlyUpdatedItem:
+      type: object
+      properties:
+        contentType:
+          type: string
+          enum: [product, podcast_episode, blog_post, curated_pick]
+        id:
+          type: number
+        title:
+          type: string
+        status:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - contentType
+        - id
+        - title
+        - status
+        - updatedAt
+
+    DashboardSummary:
+      type: object
+      properties:
+        products:
+          $ref: "#/components/schemas/CountBreakdown"
+        preorderProducts:
+          type: number
+        podcastEpisodes:
+          $ref: "#/components/schemas/CountBreakdown"
+        recommendations:
+          $ref: "#/components/schemas/CountBreakdown"
+        articles:
+          $ref: "#/components/schemas/CountBreakdown"
+        newsletterSubscribers:
+          type: number
+        contactEnquiries:
+          type: number
+        collaborationEnquiries:
+          type: number
+        productEnquiries:
+          type: number
+        recentlyUpdated:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentlyUpdatedItem"
+      required:
+        - products
+        - preorderProducts
+        - podcastEpisodes
+        - recommendations
+        - articles
+        - newsletterSubscribers
+        - contactEnquiries
+        - collaborationEnquiries
+        - productEnquiries
+        - recentlyUpdated
 
     ProductVariant:
       type: object
@@ -360,19 +1262,28 @@ components:
           type: ["string", "null"]
         imageUrl:
           type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
         previewImageUrl:
           type: ["string", "null"]
         availability:
           type: string
           enum: [available, preorder, coming_soon, out_of_stock]
+        stockStatus:
+          type: string
+          enum: [in_stock, limited, out_of_stock]
         isFeatured:
           type: boolean
         downloadUrl:
           type: ["string", "null"]
         preorderOpensAt:
           type: ["string", "null"]
+          format: date-time
         preorderClosesAt:
           type: ["string", "null"]
+          format: date-time
         estimatedFulfilment:
           type: ["string", "null"]
         regions:
@@ -389,7 +1300,19 @@ components:
           type: array
           items:
             type: string
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
       required:
@@ -403,8 +1326,10 @@ components:
         - type
         - category
         - imageUrl
+        - images
         - previewImageUrl
         - availability
+        - stockStatus
         - isFeatured
         - downloadUrl
         - preorderOpensAt
@@ -414,13 +1339,96 @@ components:
         - variants
         - externalPurchaseUrl
         - tags
+        - status
+        - scheduledAt
+        - seoTitle
+        - seoDescription
         - createdAt
+        - updatedAt
+
+    ProductInput:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        type:
+          type: string
+          enum: [digital, physical]
+        category:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
+        previewImageUrl:
+          type: ["string", "null"]
+        availability:
+          type: string
+          enum: [available, preorder, coming_soon, out_of_stock]
+        stockStatus:
+          type: string
+          enum: [in_stock, limited, out_of_stock]
+        isFeatured:
+          type: boolean
+        downloadUrl:
+          type: ["string", "null"]
+        preorderOpensAt:
+          type: ["string", "null"]
+          format: date-time
+        preorderClosesAt:
+          type: ["string", "null"]
+          format: date-time
+        estimatedFulfilment:
+          type: ["string", "null"]
+        regions:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariant"
+        externalPurchaseUrl:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+      required:
+        - slug
+        - title
+        - description
+        - price
+        - type
 
     PodcastEpisode:
       type: object
       properties:
         id:
           type: number
+        slug:
+          type: string
         title:
           type: string
         description:
@@ -433,11 +1441,17 @@ components:
           type: ["string", "null"]
         externalUrl:
           type: ["string", "null"]
+        youtubeVideoId:
+          type: ["string", "null"]
         guestName:
           type: ["string", "null"]
         showNotesUrl:
           type: ["string", "null"]
+        showNotes:
+          type: ["string", "null"]
         transcriptUrl:
+          type: ["string", "null"]
+        transcript:
           type: ["string", "null"]
         coverImageUrl:
           type: ["string", "null"]
@@ -445,7 +1459,19 @@ components:
           type: ["number", "null"]
         isFeatured:
           type: boolean
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
         publishedAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
         tags:
@@ -454,20 +1480,86 @@ components:
             type: string
       required:
         - id
+        - slug
         - title
         - description
         - episodeNumber
         - season
         - audioUrl
         - externalUrl
+        - youtubeVideoId
         - guestName
         - showNotesUrl
+        - showNotes
         - transcriptUrl
+        - transcript
         - coverImageUrl
         - durationSeconds
         - isFeatured
+        - status
+        - scheduledAt
+        - seoTitle
+        - seoDescription
         - publishedAt
+        - updatedAt
         - tags
+
+    PodcastEpisodeInput:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        episodeNumber:
+          type: number
+        season:
+          type: ["number", "null"]
+        audioUrl:
+          type: ["string", "null"]
+        externalUrl:
+          type: ["string", "null"]
+        youtubeVideoId:
+          type: ["string", "null"]
+        guestName:
+          type: ["string", "null"]
+        showNotesUrl:
+          type: ["string", "null"]
+        showNotes:
+          type: ["string", "null"]
+        transcriptUrl:
+          type: ["string", "null"]
+        transcript:
+          type: ["string", "null"]
+        coverImageUrl:
+          type: ["string", "null"]
+        durationSeconds:
+          type: ["number", "null"]
+        isFeatured:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+        publishedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - slug
+        - title
+        - description
+        - episodeNumber
 
     BlogPost:
       type: object
@@ -482,15 +1574,34 @@ components:
           type: string
         content:
           type: string
+        contentType:
+          type: string
+          enum: [article, guide, video, vlog, reflection, wellness, beauty, financial]
         category:
           type: string
         coverImageUrl:
+          type: ["string", "null"]
+        youtubeUrl:
+          type: ["string", "null"]
+        authorDisplayName:
           type: ["string", "null"]
         isFeatured:
           type: boolean
         readTimeMinutes:
           type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
         publishedAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
         tags:
@@ -503,18 +1614,77 @@ components:
         - slug
         - excerpt
         - content
+        - contentType
         - category
         - coverImageUrl
+        - youtubeUrl
+        - authorDisplayName
         - isFeatured
         - readTimeMinutes
+        - status
+        - scheduledAt
+        - seoTitle
+        - seoDescription
         - publishedAt
+        - updatedAt
         - tags
+
+    BlogPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        contentType:
+          type: string
+          enum: [article, guide, video, vlog, reflection, wellness, beauty, financial]
+        category:
+          type: string
+        coverImageUrl:
+          type: ["string", "null"]
+        youtubeUrl:
+          type: ["string", "null"]
+        authorDisplayName:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        readTimeMinutes:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+        publishedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - slug
+        - excerpt
+        - content
+        - category
 
     CuratedPick:
       type: object
       properties:
         id:
           type: number
+        slug:
+          type: string
         title:
           type: string
         description:
@@ -529,12 +1699,32 @@ components:
           type: string
         isAffiliate:
           type: boolean
+        affiliateDisclosureText:
+          type: ["string", "null"]
         isPersonallyTested:
           type: boolean
         isFeatured:
           type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
       required:
         - id
+        - slug
         - title
         - description
         - category
@@ -542,15 +1732,67 @@ components:
         - affiliateUrl
         - brand
         - isAffiliate
+        - affiliateDisclosureText
         - isPersonallyTested
         - isFeatured
+        - displayOrder
+        - status
+        - scheduledAt
+        - seoTitle
+        - seoDescription
+        - createdAt
+        - updatedAt
+
+    CuratedPickInput:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        affiliateUrl:
+          type: string
+        brand:
+          type: string
+        isAffiliate:
+          type: boolean
+        affiliateDisclosureText:
+          type: ["string", "null"]
+        isPersonallyTested:
+          type: boolean
+        isFeatured:
+          type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+      required:
+        - slug
+        - title
+        - description
+        - category
+        - affiliateUrl
+        - brand
 
     NewsletterSubscriptionInput:
       type: object
       properties:
         email:
           type: string
-          
+
         firstName:
           type: string
       required:
@@ -620,6 +1862,10 @@ components:
           type: ["string", "null"]
         message:
           type: string
+        status:
+          $ref: "#/components/schemas/EnquiryStatus"
+        internalNotes:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -633,6 +1879,8 @@ components:
         - timeline
         - links
         - message
+        - status
+        - internalNotes
         - createdAt
 
     ContactEnquiryInput:
@@ -676,6 +1924,10 @@ components:
           type: string
         consentGiven:
           type: boolean
+        status:
+          $ref: "#/components/schemas/EnquiryStatus"
+        internalNotes:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -687,7 +1939,263 @@ components:
         - subject
         - message
         - consentGiven
+        - status
+        - internalNotes
         - createdAt
+
+    EnquiryUpdateInput:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/EnquiryStatus"
+        internalNotes:
+          type: ["string", "null"]
+
+    HomepageContent:
+      type: object
+      properties:
+        id:
+          type: number
+        heroHeading:
+          type: ["string", "null"]
+        heroSubheading:
+          type: ["string", "null"]
+        heroImageUrl:
+          type: ["string", "null"]
+        primaryCtaLabel:
+          type: ["string", "null"]
+        primaryCtaHref:
+          type: ["string", "null"]
+        secondaryCtaLabel:
+          type: ["string", "null"]
+        secondaryCtaHref:
+          type: ["string", "null"]
+        showPodcastSection:
+          type: boolean
+        showShopSection:
+          type: boolean
+        showJournalSection:
+          type: boolean
+        showRecommendationsSection:
+          type: boolean
+        showCollaborateSection:
+          type: boolean
+        showNewsletterSection:
+          type: boolean
+        newsletterHeading:
+          type: ["string", "null"]
+        newsletterBody:
+          type: ["string", "null"]
+        collaborateHeading:
+          type: ["string", "null"]
+        collaborateBody:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - heroHeading
+        - heroSubheading
+        - heroImageUrl
+        - primaryCtaLabel
+        - primaryCtaHref
+        - secondaryCtaLabel
+        - secondaryCtaHref
+        - showPodcastSection
+        - showShopSection
+        - showJournalSection
+        - showRecommendationsSection
+        - showCollaborateSection
+        - showNewsletterSection
+        - newsletterHeading
+        - newsletterBody
+        - collaborateHeading
+        - collaborateBody
+        - updatedAt
+
+    HomepageContentInput:
+      type: object
+      properties:
+        heroHeading:
+          type: ["string", "null"]
+        heroSubheading:
+          type: ["string", "null"]
+        heroImageUrl:
+          type: ["string", "null"]
+        primaryCtaLabel:
+          type: ["string", "null"]
+        primaryCtaHref:
+          type: ["string", "null"]
+        secondaryCtaLabel:
+          type: ["string", "null"]
+        secondaryCtaHref:
+          type: ["string", "null"]
+        showPodcastSection:
+          type: boolean
+        showShopSection:
+          type: boolean
+        showJournalSection:
+          type: boolean
+        showRecommendationsSection:
+          type: boolean
+        showCollaborateSection:
+          type: boolean
+        showNewsletterSection:
+          type: boolean
+        newsletterHeading:
+          type: ["string", "null"]
+        newsletterBody:
+          type: ["string", "null"]
+        collaborateHeading:
+          type: ["string", "null"]
+        collaborateBody:
+          type: ["string", "null"]
+
+    SiteSettings:
+      type: object
+      properties:
+        id:
+          type: number
+        brandName:
+          type: ["string", "null"]
+        tagline:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+        supportEmail:
+          type: ["string", "null"]
+        collaborationEmail:
+          type: ["string", "null"]
+        whatsappNumber:
+          type: ["string", "null"]
+        instagramUrl:
+          type: ["string", "null"]
+        facebookUrl:
+          type: ["string", "null"]
+        youtubeUrl:
+          type: ["string", "null"]
+        tiktokUrl:
+          type: ["string", "null"]
+        seoDefaultTitle:
+          type: ["string", "null"]
+        seoDefaultDescription:
+          type: ["string", "null"]
+        canonicalUrl:
+          type: ["string", "null"]
+        socialShareImageUrl:
+          type: ["string", "null"]
+        businessCountry:
+          type: ["string", "null"]
+        supportedRegions:
+          type: array
+          items:
+            type: string
+        defaultCurrency:
+          type: ["string", "null"]
+        newsletterWording:
+          type: ["string", "null"]
+        footerText:
+          type: ["string", "null"]
+        podcastLaunchStatus:
+          type: ["string", "null"]
+        shopStatus:
+          type: ["string", "null"]
+        preorderNotice:
+          type: ["string", "null"]
+        shippingNotice:
+          type: ["string", "null"]
+        affiliateDisclosure:
+          type: ["string", "null"]
+        privacyContactInfo:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - brandName
+        - tagline
+        - contactEmail
+        - supportEmail
+        - collaborationEmail
+        - whatsappNumber
+        - instagramUrl
+        - facebookUrl
+        - youtubeUrl
+        - tiktokUrl
+        - seoDefaultTitle
+        - seoDefaultDescription
+        - canonicalUrl
+        - socialShareImageUrl
+        - businessCountry
+        - supportedRegions
+        - defaultCurrency
+        - newsletterWording
+        - footerText
+        - podcastLaunchStatus
+        - shopStatus
+        - preorderNotice
+        - shippingNotice
+        - affiliateDisclosure
+        - privacyContactInfo
+        - updatedAt
+
+    SiteSettingsInput:
+      type: object
+      properties:
+        brandName:
+          type: ["string", "null"]
+        tagline:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+        supportEmail:
+          type: ["string", "null"]
+        collaborationEmail:
+          type: ["string", "null"]
+        whatsappNumber:
+          type: ["string", "null"]
+        instagramUrl:
+          type: ["string", "null"]
+        facebookUrl:
+          type: ["string", "null"]
+        youtubeUrl:
+          type: ["string", "null"]
+        tiktokUrl:
+          type: ["string", "null"]
+        seoDefaultTitle:
+          type: ["string", "null"]
+        seoDefaultDescription:
+          type: ["string", "null"]
+        canonicalUrl:
+          type: ["string", "null"]
+        socialShareImageUrl:
+          type: ["string", "null"]
+        businessCountry:
+          type: ["string", "null"]
+        supportedRegions:
+          type: array
+          items:
+            type: string
+        defaultCurrency:
+          type: ["string", "null"]
+        newsletterWording:
+          type: ["string", "null"]
+        footerText:
+          type: ["string", "null"]
+        podcastLaunchStatus:
+          type: ["string", "null"]
+        shopStatus:
+          type: ["string", "null"]
+        preorderNotice:
+          type: ["string", "null"]
+        shippingNotice:
+          type: ["string", "null"]
+        affiliateDisclosure:
+          type: ["string", "null"]
+        privacyContactInfo:
+          type: ["string", "null"]
 
     HomepageSummary:
       type: object

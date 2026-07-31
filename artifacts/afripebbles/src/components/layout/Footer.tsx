@@ -2,10 +2,11 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { useSubscribeNewsletter } from "@workspace/api-client-react";
+import { useSubscribeNewsletter, useGetSiteSettings } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { Instagram, Facebook, Youtube, ArrowRight } from "lucide-react";
-import { siteConfig, getConfiguredSocialLinks } from "@/content/site";
+import { siteConfig } from "@/content/site";
+import { resolveSiteSettings } from "@/lib/settings";
 
 const SOCIAL_ICONS: Record<string, typeof Instagram> = {
   Instagram: Instagram,
@@ -18,7 +19,9 @@ export default function Footer() {
   const { toast } = useToast();
   const { register, handleSubmit, reset, formState } = useForm<{ email: string }>();
   const subscribeMutation = useSubscribeNewsletter();
-  const socialLinks = getConfiguredSocialLinks();
+  const { data: siteSettings } = useGetSiteSettings();
+  const resolved = resolveSiteSettings(siteSettings);
+  const socialLinks = resolved.socialLinks;
 
   const onSubmit = (data: { email: string }) => {
     subscribeMutation.mutate(
@@ -49,7 +52,7 @@ export default function Footer() {
           <div className="md:col-span-5 space-y-6">
             <Link href="/" className="inline-block">
               <span className="font-serif text-3xl tracking-tight font-medium text-foreground">
-                {siteConfig.brand.name}
+                {resolved.brandName}
               </span>
             </Link>
             <p className="text-foreground/70 max-w-sm leading-relaxed text-sm md:text-base">
@@ -128,9 +131,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground/50">
+        {resolved.footerText && <p className="text-center text-sm text-foreground/50 pt-8 border-t border-border">{resolved.footerText}</p>}
+        <div className={`${resolved.footerText ? "pt-6" : "pt-8 border-t border-border"} flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground/50`}>
           <p>
-            © {new Date().getFullYear()} {siteConfig.brand.name}. All rights reserved.
+            © {new Date().getFullYear()} {resolved.brandName}. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link href="/privacy" className="hover:text-primary transition-colors">

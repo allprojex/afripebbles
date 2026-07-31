@@ -7,6 +7,7 @@ import {
   GetProductParams,
   GetProductResponse,
 } from "@workspace/api-zod";
+import { isPubliclyVisible } from "../lib/visibility";
 
 const router: IRouter = Router();
 
@@ -17,7 +18,7 @@ router.get("/products", async (req, res): Promise<void> => {
     return;
   }
 
-  const conditions = [];
+  const conditions = [isPubliclyVisible(productsTable.status, productsTable.scheduledAt)];
   if (query.data.type) {
     conditions.push(eq(productsTable.type, query.data.type));
   }
@@ -28,14 +29,11 @@ router.get("/products", async (req, res): Promise<void> => {
     conditions.push(eq(productsTable.isFeatured, true));
   }
 
-  const products =
-    conditions.length > 0
-      ? await db
-          .select()
-          .from(productsTable)
-          .where(and(...conditions))
-          .orderBy(productsTable.createdAt)
-      : await db.select().from(productsTable).orderBy(productsTable.createdAt);
+  const products = await db
+    .select()
+    .from(productsTable)
+    .where(and(...conditions))
+    .orderBy(productsTable.createdAt);
 
   res.json(ListProductsResponse.parse(products));
 });
@@ -51,7 +49,7 @@ router.get("/products/:id", async (req, res): Promise<void> => {
   const [product] = await db
     .select()
     .from(productsTable)
-    .where(eq(productsTable.id, params.data.id));
+    .where(and(eq(productsTable.id, params.data.id), isPubliclyVisible(productsTable.status, productsTable.scheduledAt)));
 
   if (!product) {
     res.status(404).json({ error: "Product not found" });

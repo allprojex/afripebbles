@@ -3,10 +3,11 @@ import { Seo, organizationJsonLd } from "@/components/Seo";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useGetHomepageSummary } from "@workspace/api-client-react";
+import { useGetHomepageSummary, useGetHomepageContent } from "@workspace/api-client-react";
 import { ArrowRight, PlayCircle, ShoppingBag, Heart, Headphones, Star, Camera, Mail } from "lucide-react";
 import { siteConfig } from "@/content/site";
 import { AVAILABILITY_LABEL } from "@/lib/product";
+import { resolveHomepageContent } from "@/lib/settings";
 // @ts-ignore
 import heroImage from "@assets/generated_images/hero.jpg";
 // @ts-ignore
@@ -14,6 +15,8 @@ import placeholderPodcast from "@assets/generated_images/placeholder_podcast.jpg
 
 export default function Home() {
   const { data: summary, isLoading } = useGetHomepageSummary();
+  const { data: homepageContentData } = useGetHomepageContent();
+  const content = resolveHomepageContent(homepageContentData);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -33,7 +36,7 @@ export default function Home() {
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
-            src={heroImage}
+            src={content.heroImageUrl || heroImage}
             alt="AfriPebbles Lifestyle"
             className="w-full h-full object-cover object-center"
           />
@@ -47,18 +50,25 @@ export default function Home() {
               Welcome to {siteConfig.brand.name}
             </motion.span>
             <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-serif text-foreground leading-tight">
-              No Dream Is Too Small <br/><span className="italic text-primary">In God's Hands</span>
+              {content.heroHeading || (
+                <>
+                  No Dream Is Too Small <br />
+                  <span className="italic text-primary">In God&apos;s Hands</span>
+                </>
+              )}
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto leading-relaxed">
-              {siteConfig.brand.oneLineDescription}
+              {content.heroSubheading || siteConfig.brand.oneLineDescription}
             </motion.p>
             <motion.div variants={fadeInUp} className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/shop">
-                <Button size="lg" className="rounded-full px-8 text-base">Explore the Shop</Button>
+              <Link href={content.primaryCtaHref || "/shop"}>
+                <Button size="lg" className="rounded-full px-8 text-base">
+                  {content.primaryCtaLabel || "Explore the Shop"}
+                </Button>
               </Link>
-              <Link href="/podcast">
+              <Link href={content.secondaryCtaHref || "/podcast"}>
                 <Button size="lg" variant="outline" className="rounded-full px-8 text-base bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-background">
-                  Discover {siteConfig.podcast.name}
+                  {content.secondaryCtaLabel || `Discover ${siteConfig.podcast.name}`}
                 </Button>
               </Link>
             </motion.div>
@@ -109,6 +119,7 @@ export default function Home() {
       </section>
 
       {/* Podcast */}
+      {content.showPodcastSection && (
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
@@ -155,8 +166,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Shop / Digital Products / Pre-order intro */}
+      {content.showShopSection && (
       <section className="py-24 bg-muted/30 border-y border-border">
         <div className="container mx-auto px-4 max-w-6xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-12">
@@ -232,9 +245,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Editorial */}
-      {!isLoading && summary?.featuredBlogPosts && summary.featuredBlogPosts.length > 0 && (
+      {content.showJournalSection && !isLoading && summary?.featuredBlogPosts && summary.featuredBlogPosts.length > 0 && (
         <section className="py-24 bg-background">
           <div className="container mx-auto px-4 max-w-6xl">
             <div className="flex justify-between items-end mb-12">
@@ -283,6 +297,7 @@ export default function Home() {
       )}
 
       {/* Curated Recommendations */}
+      {content.showRecommendationsSection && (
       <section className="py-24 bg-muted/30 border-y border-border">
         <div className="container mx-auto px-4 max-w-3xl text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="space-y-6">
@@ -298,16 +313,18 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Collaboration Invite */}
+      {content.showCollaborateSection && (
       <section className="py-24">
         <div className="container mx-auto px-4 max-w-3xl text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="space-y-6">
             <Camera className="w-8 h-8 text-primary mx-auto" />
-            <h2 className="text-3xl md:text-4xl font-serif">Partner with AfriPebbles</h2>
+            <h2 className="text-3xl md:text-4xl font-serif">{content.collaborateHeading || "Partner with AfriPebbles"}</h2>
             <p className="text-foreground/70 leading-relaxed text-lg">
-              AfriPebbles works with brands on UGC content, sponsored posts, and creative partnerships across
-              faith, wellness, beauty, and lifestyle.
+              {content.collaborateBody ||
+                "AfriPebbles works with brands on UGC content, sponsored posts, and creative partnerships across faith, wellness, beauty, and lifestyle."}
             </p>
             <Link href="/collaborate">
               <Button className="rounded-full px-8">Start a Collaboration</Button>
@@ -315,16 +332,18 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Newsletter / Community */}
+      {content.showNewsletterSection && (
       <section className="py-24 bg-secondary/10 border-t border-border">
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="space-y-6">
             <Mail className="w-8 h-8 text-primary mx-auto" />
-            <h2 className="text-3xl md:text-4xl font-serif">Join the community</h2>
+            <h2 className="text-3xl md:text-4xl font-serif">{content.newsletterHeading || "Join the community"}</h2>
             <p className="text-foreground/70 leading-relaxed text-lg">
-              A quiet space in your inbox — gentle encouragement, curated resources, and an invitation to live
-              on purpose.
+              {content.newsletterBody ||
+                "A quiet space in your inbox — gentle encouragement, curated resources, and an invitation to live on purpose."}
             </p>
             <Link href="/community">
               <Button size="lg" className="rounded-full px-8">
@@ -334,6 +353,7 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      )}
     </Layout>
   );
 }

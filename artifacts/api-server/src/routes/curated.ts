@@ -1,10 +1,8 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { db, curatedPicksTable } from "@workspace/db";
-import {
-  ListCuratedPicksQueryParams,
-  ListCuratedPicksResponse,
-} from "@workspace/api-zod";
+import { ListCuratedPicksQueryParams, ListCuratedPicksResponse } from "@workspace/api-zod";
+import { isPubliclyVisible } from "../lib/visibility";
 
 const router: IRouter = Router();
 
@@ -15,12 +13,16 @@ router.get("/curated-picks", async (req, res): Promise<void> => {
     return;
   }
 
-  const picks = query.data.category
-    ? await db
-        .select()
-        .from(curatedPicksTable)
-        .where(eq(curatedPicksTable.category, query.data.category))
-    : await db.select().from(curatedPicksTable);
+  const conditions = [isPubliclyVisible(curatedPicksTable.status, curatedPicksTable.scheduledAt)];
+  if (query.data.category) {
+    conditions.push(eq(curatedPicksTable.category, query.data.category));
+  }
+
+  const picks = await db
+    .select()
+    .from(curatedPicksTable)
+    .where(and(...conditions))
+    .orderBy(asc(curatedPicksTable.displayOrder));
 
   res.json(ListCuratedPicksResponse.parse(picks));
 });

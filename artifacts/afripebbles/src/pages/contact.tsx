@@ -3,7 +3,7 @@ import Layout from "@/components/layout/Layout";
 import { Seo } from "@/components/Seo";
 import { useSearch } from "wouter";
 import { useForm } from "react-hook-form";
-import { useSubmitContactEnquiry } from "@workspace/api-client-react";
+import { useSubmitContactEnquiry, useGetSiteSettings } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { Mail, Send, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getConfiguredSocialLinks, siteConfig } from "@/content/site";
+import { resolveSiteSettings } from "@/lib/settings";
 
 const INQUIRY_LABELS: Record<string, string> = {
   general: "General question",
@@ -91,7 +91,9 @@ export default function Contact() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
-  const socialLinks = getConfiguredSocialLinks();
+  const { data: siteSettings } = useGetSiteSettings();
+  const resolved = resolveSiteSettings(siteSettings);
+  const socialLinks = resolved.socialLinks;
 
   return (
     <Layout>
@@ -133,8 +135,8 @@ export default function Contact() {
                 </div>
               </div>
             )}
-            {siteConfig.contact.whatsapp && (
-              <a href={siteConfig.contact.whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+            {resolved.whatsappNumber && (
+              <a href={resolved.whatsappNumber} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
                 <MessageCircle size={16} /> Chat on WhatsApp
               </a>
             )}

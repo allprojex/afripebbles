@@ -12,9 +12,16 @@ export const contactEnquiriesTable = pgTable("contact_enquiries", {
   subject: text("subject"),
   message: text("message").notNull(),
   consentGiven: boolean("consent_given").notNull().default(false),
+  status: text("status").notNull().default("new"), // see ENQUIRY_STATUS
+  internalNotes: text("internal_notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertContactEnquirySchema = createInsertSchema(contactEnquiriesTable).omit({ id: true, createdAt: true });
+export const insertContactEnquirySchema = createInsertSchema(contactEnquiriesTable).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  internalNotes: true,
+});
 export type InsertContactEnquiry = z.infer<typeof insertContactEnquirySchema>;
 export type ContactEnquiry = typeof contactEnquiriesTable.$inferSelect;

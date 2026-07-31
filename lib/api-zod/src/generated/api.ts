@@ -17,7 +17,7 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * @summary List all products
+ * @summary List published products
  */
 export const ListProductsQueryParams = zod.object({
   "type": zod.enum(['digital', 'physical']).optional().describe('Filter by product type'),
@@ -36,12 +36,14 @@ export const ListProductsResponseItem = zod.object({
   "type": zod.enum(['digital', 'physical']),
   "category": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
   "previewImageUrl": zod.string().nullable(),
   "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
-  "preorderOpensAt": zod.string().nullable(),
-  "preorderClosesAt": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
   "regions": zod.array(zod.string()),
   "variants": zod.array(zod.object({
@@ -50,13 +52,18 @@ export const ListProductsResponseItem = zod.object({
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
-  "createdAt": zod.coerce.date()
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })
 export const ListProductsResponse = zod.array(ListProductsResponseItem)
 
 
 /**
- * @summary Get a single product
+ * @summary Get a single published product
  */
 export const GetProductParams = zod.object({
   "id": zod.coerce.number()
@@ -73,12 +80,14 @@ export const GetProductResponse = zod.object({
   "type": zod.enum(['digital', 'physical']),
   "category": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
   "previewImageUrl": zod.string().nullable(),
   "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
-  "preorderOpensAt": zod.string().nullable(),
-  "preorderClosesAt": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
   "regions": zod.array(zod.string()),
   "variants": zod.array(zod.object({
@@ -87,12 +96,17 @@ export const GetProductResponse = zod.object({
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
-  "createdAt": zod.coerce.date()
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })
 
 
 /**
- * @summary List podcast episodes
+ * @summary List published podcast episodes
  */
 export const ListPodcastEpisodesQueryParams = zod.object({
   "featured": zod.enum(['true', 'false']).optional().describe('Filter featured episodes only'),
@@ -101,26 +115,35 @@ export const ListPodcastEpisodesQueryParams = zod.object({
 
 export const ListPodcastEpisodesResponseItem = zod.object({
   "id": zod.number(),
+  "slug": zod.string(),
   "title": zod.string(),
   "description": zod.string(),
   "episodeNumber": zod.number(),
   "season": zod.number().nullable(),
   "audioUrl": zod.string().nullable(),
   "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
   "guestName": zod.string().nullable(),
   "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
   "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
   "coverImageUrl": zod.string().nullable(),
   "durationSeconds": zod.number().nullable(),
   "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 })
 export const ListPodcastEpisodesResponse = zod.array(ListPodcastEpisodesResponseItem)
 
 
 /**
- * @summary Get a single podcast episode
+ * @summary Get a single published podcast episode
  */
 export const GetPodcastEpisodeParams = zod.object({
   "id": zod.coerce.number()
@@ -128,25 +151,34 @@ export const GetPodcastEpisodeParams = zod.object({
 
 export const GetPodcastEpisodeResponse = zod.object({
   "id": zod.number(),
+  "slug": zod.string(),
   "title": zod.string(),
   "description": zod.string(),
   "episodeNumber": zod.number(),
   "season": zod.number().nullable(),
   "audioUrl": zod.string().nullable(),
   "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
   "guestName": zod.string().nullable(),
   "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
   "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
   "coverImageUrl": zod.string().nullable(),
   "durationSeconds": zod.number().nullable(),
   "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 })
 
 
 /**
- * @summary List blog posts
+ * @summary List published blog posts
  */
 export const ListBlogPostsQueryParams = zod.object({
   "category": zod.coerce.string().optional().describe('Filter by category'),
@@ -160,18 +192,26 @@ export const ListBlogPostsResponseItem = zod.object({
   "slug": zod.string(),
   "excerpt": zod.string(),
   "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
   "category": zod.string(),
   "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
   "isFeatured": zod.boolean(),
   "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 })
 export const ListBlogPostsResponse = zod.array(ListBlogPostsResponseItem)
 
 
 /**
- * @summary Get a single blog post by slug
+ * @summary Get a single published blog post by slug
  */
 export const GetBlogPostParams = zod.object({
   "slug": zod.coerce.string()
@@ -183,17 +223,25 @@ export const GetBlogPostResponse = zod.object({
   "slug": zod.string(),
   "excerpt": zod.string(),
   "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
   "category": zod.string(),
   "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
   "isFeatured": zod.boolean(),
   "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 })
 
 
 /**
- * @summary List curated affiliate recommendations
+ * @summary List published curated affiliate recommendations
  */
 export const ListCuratedPicksQueryParams = zod.object({
   "category": zod.coerce.string().optional().describe('Filter by category')
@@ -201,6 +249,7 @@ export const ListCuratedPicksQueryParams = zod.object({
 
 export const ListCuratedPicksResponseItem = zod.object({
   "id": zod.number(),
+  "slug": zod.string(),
   "title": zod.string(),
   "description": zod.string(),
   "category": zod.string(),
@@ -208,8 +257,16 @@ export const ListCuratedPicksResponseItem = zod.object({
   "affiliateUrl": zod.string(),
   "brand": zod.string(),
   "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
   "isPersonallyTested": zod.boolean(),
-  "isFeatured": zod.boolean()
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })
 export const ListCuratedPicksResponse = zod.array(ListCuratedPicksResponseItem)
 
@@ -254,6 +311,8 @@ export const SubmitCollaborationEnquiryResponse = zod.object({
   "timeline": zod.string().nullable(),
   "links": zod.string().nullable(),
   "message": zod.string(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
   "createdAt": zod.coerce.date()
 })
 
@@ -278,6 +337,8 @@ export const SubmitContactEnquiryResponse = zod.object({
   "subject": zod.string().nullable(),
   "message": zod.string(),
   "consentGiven": zod.boolean(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
   "createdAt": zod.coerce.date()
 })
 
@@ -297,12 +358,14 @@ export const GetHomepageSummaryResponse = zod.object({
   "type": zod.enum(['digital', 'physical']),
   "category": zod.string().nullable(),
   "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
   "previewImageUrl": zod.string().nullable(),
   "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
-  "preorderOpensAt": zod.string().nullable(),
-  "preorderClosesAt": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
   "regions": zod.array(zod.string()),
   "variants": zod.array(zod.object({
@@ -311,23 +374,37 @@ export const GetHomepageSummaryResponse = zod.object({
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
-  "createdAt": zod.coerce.date()
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })),
   "latestEpisode": zod.union([zod.object({
   "id": zod.number(),
+  "slug": zod.string(),
   "title": zod.string(),
   "description": zod.string(),
   "episodeNumber": zod.number(),
   "season": zod.number().nullable(),
   "audioUrl": zod.string().nullable(),
   "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
   "guestName": zod.string().nullable(),
   "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
   "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
   "coverImageUrl": zod.string().nullable(),
   "durationSeconds": zod.number().nullable(),
   "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 }),zod.null()]),
   "featuredBlogPosts": zod.array(zod.object({
@@ -336,15 +413,24 @@ export const GetHomepageSummaryResponse = zod.object({
   "slug": zod.string(),
   "excerpt": zod.string(),
   "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
   "category": zod.string(),
   "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
   "isFeatured": zod.boolean(),
   "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
   "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
   "tags": zod.array(zod.string())
 })),
   "featuredCuratedPicks": zod.array(zod.object({
   "id": zod.number(),
+  "slug": zod.string(),
   "title": zod.string(),
   "description": zod.string(),
   "category": zod.string(),
@@ -352,11 +438,1191 @@ export const GetHomepageSummaryResponse = zod.object({
   "affiliateUrl": zod.string(),
   "brand": zod.string(),
   "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
   "isPersonallyTested": zod.boolean(),
-  "isFeatured": zod.boolean()
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })),
   "totalEpisodes": zod.number(),
   "totalBlogPosts": zod.number()
 })
+
+
+/**
+ * @summary Get public site settings (falls back to defaults when unset)
+ */
+export const GetSiteSettingsResponse = zod.union([zod.object({
+  "id": zod.number(),
+  "brandName": zod.string().nullable(),
+  "tagline": zod.string().nullable(),
+  "contactEmail": zod.string().nullable(),
+  "supportEmail": zod.string().nullable(),
+  "collaborationEmail": zod.string().nullable(),
+  "whatsappNumber": zod.string().nullable(),
+  "instagramUrl": zod.string().nullable(),
+  "facebookUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "tiktokUrl": zod.string().nullable(),
+  "seoDefaultTitle": zod.string().nullable(),
+  "seoDefaultDescription": zod.string().nullable(),
+  "canonicalUrl": zod.string().nullable(),
+  "socialShareImageUrl": zod.string().nullable(),
+  "businessCountry": zod.string().nullable(),
+  "supportedRegions": zod.array(zod.string()),
+  "defaultCurrency": zod.string().nullable(),
+  "newsletterWording": zod.string().nullable(),
+  "footerText": zod.string().nullable(),
+  "podcastLaunchStatus": zod.string().nullable(),
+  "shopStatus": zod.string().nullable(),
+  "preorderNotice": zod.string().nullable(),
+  "shippingNotice": zod.string().nullable(),
+  "affiliateDisclosure": zod.string().nullable(),
+  "privacyContactInfo": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+}),zod.null()])
+
+
+/**
+ * @summary Get public homepage content overrides (falls back to defaults when unset)
+ */
+export const GetHomepageContentResponse = zod.union([zod.object({
+  "id": zod.number(),
+  "heroHeading": zod.string().nullable(),
+  "heroSubheading": zod.string().nullable(),
+  "heroImageUrl": zod.string().nullable(),
+  "primaryCtaLabel": zod.string().nullable(),
+  "primaryCtaHref": zod.string().nullable(),
+  "secondaryCtaLabel": zod.string().nullable(),
+  "secondaryCtaHref": zod.string().nullable(),
+  "showPodcastSection": zod.boolean(),
+  "showShopSection": zod.boolean(),
+  "showJournalSection": zod.boolean(),
+  "showRecommendationsSection": zod.boolean(),
+  "showCollaborateSection": zod.boolean(),
+  "showNewsletterSection": zod.boolean(),
+  "newsletterHeading": zod.string().nullable(),
+  "newsletterBody": zod.string().nullable(),
+  "collaborateHeading": zod.string().nullable(),
+  "collaborateBody": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+}),zod.null()])
+
+
+/**
+ * @summary Confirm the current bearer token belongs to an admin
+ */
+export const GetAdminMeResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "role": zod.string()
+})
+
+
+/**
+ * @summary Real content and enquiry counts for the admin dashboard
+ */
+export const GetAdminDashboardResponse = zod.object({
+  "products": zod.object({
+  "total": zod.number(),
+  "published": zod.number(),
+  "draft": zod.number()
+}),
+  "preorderProducts": zod.number(),
+  "podcastEpisodes": zod.object({
+  "total": zod.number(),
+  "published": zod.number(),
+  "draft": zod.number()
+}),
+  "recommendations": zod.object({
+  "total": zod.number(),
+  "published": zod.number(),
+  "draft": zod.number()
+}),
+  "articles": zod.object({
+  "total": zod.number(),
+  "published": zod.number(),
+  "draft": zod.number()
+}),
+  "newsletterSubscribers": zod.number(),
+  "contactEnquiries": zod.number(),
+  "collaborationEnquiries": zod.number(),
+  "productEnquiries": zod.number(),
+  "recentlyUpdated": zod.array(zod.object({
+  "contentType": zod.enum(['product', 'podcast_episode', 'blog_post', 'curated_pick']),
+  "id": zod.number(),
+  "title": zod.string(),
+  "status": zod.string(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary List all products regardless of status
+ */
+export const AdminListProductsQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListProductsResponseItem = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullable(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
+  "previewImageUrl": zod.string().nullable(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
+  "isFeatured": zod.boolean(),
+  "downloadUrl": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
+  "estimatedFulfilment": zod.string().nullable(),
+  "regions": zod.array(zod.string()),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})),
+  "externalPurchaseUrl": zod.string().nullable(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListProductsResponse = zod.array(AdminListProductsResponseItem)
+
+
+/**
+ * @summary Create a product
+ */
+export const AdminCreateProductBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullish(),
+  "price": zod.number(),
+  "currency": zod.string().optional(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "images": zod.array(zod.string()).optional(),
+  "previewImageUrl": zod.string().nullish(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']).optional(),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "downloadUrl": zod.string().nullish(),
+  "preorderOpensAt": zod.coerce.date().nullish(),
+  "preorderClosesAt": zod.coerce.date().nullish(),
+  "estimatedFulfilment": zod.string().nullish(),
+  "regions": zod.array(zod.string()).optional(),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})).optional(),
+  "externalPurchaseUrl": zod.string().nullish(),
+  "tags": zod.array(zod.string()).optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish()
+})
+
+export const AdminCreateProductResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullable(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
+  "previewImageUrl": zod.string().nullable(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
+  "isFeatured": zod.boolean(),
+  "downloadUrl": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
+  "estimatedFulfilment": zod.string().nullable(),
+  "regions": zod.array(zod.string()),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})),
+  "externalPurchaseUrl": zod.string().nullable(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a product by id regardless of status
+ */
+export const AdminGetProductParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetProductResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullable(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
+  "previewImageUrl": zod.string().nullable(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
+  "isFeatured": zod.boolean(),
+  "downloadUrl": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
+  "estimatedFulfilment": zod.string().nullable(),
+  "regions": zod.array(zod.string()),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})),
+  "externalPurchaseUrl": zod.string().nullable(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a product
+ */
+export const AdminUpdateProductParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateProductBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullish(),
+  "price": zod.number(),
+  "currency": zod.string().optional(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "images": zod.array(zod.string()).optional(),
+  "previewImageUrl": zod.string().nullish(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']).optional(),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "downloadUrl": zod.string().nullish(),
+  "preorderOpensAt": zod.coerce.date().nullish(),
+  "preorderClosesAt": zod.coerce.date().nullish(),
+  "estimatedFulfilment": zod.string().nullish(),
+  "regions": zod.array(zod.string()).optional(),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})).optional(),
+  "externalPurchaseUrl": zod.string().nullish(),
+  "tags": zod.array(zod.string()).optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish()
+})
+
+export const AdminUpdateProductResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "shortDescription": zod.string().nullable(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "type": zod.enum(['digital', 'physical']),
+  "category": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "images": zod.array(zod.string()),
+  "previewImageUrl": zod.string().nullable(),
+  "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
+  "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
+  "isFeatured": zod.boolean(),
+  "downloadUrl": zod.string().nullable(),
+  "preorderOpensAt": zod.coerce.date().nullable(),
+  "preorderClosesAt": zod.coerce.date().nullable(),
+  "estimatedFulfilment": zod.string().nullable(),
+  "regions": zod.array(zod.string()),
+  "variants": zod.array(zod.object({
+  "label": zod.string(),
+  "options": zod.array(zod.string())
+})),
+  "externalPurchaseUrl": zod.string().nullable(),
+  "tags": zod.array(zod.string()),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a product
+ */
+export const AdminDeleteProductParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteProductResponse = zod.void()
+
+
+/**
+ * @summary List all podcast episodes regardless of status
+ */
+export const AdminListPodcastEpisodesQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListPodcastEpisodesResponseItem = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullable(),
+  "audioUrl": zod.string().nullable(),
+  "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "guestName": zod.string().nullable(),
+  "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
+  "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
+  "coverImageUrl": zod.string().nullable(),
+  "durationSeconds": zod.number().nullable(),
+  "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+export const AdminListPodcastEpisodesResponse = zod.array(AdminListPodcastEpisodesResponseItem)
+
+
+/**
+ * @summary Create a podcast episode
+ */
+export const AdminCreatePodcastEpisodeBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullish(),
+  "audioUrl": zod.string().nullish(),
+  "externalUrl": zod.string().nullish(),
+  "youtubeVideoId": zod.string().nullish(),
+  "guestName": zod.string().nullish(),
+  "showNotesUrl": zod.string().nullish(),
+  "showNotes": zod.string().nullish(),
+  "transcriptUrl": zod.string().nullish(),
+  "transcript": zod.string().nullish(),
+  "coverImageUrl": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().optional(),
+  "tags": zod.array(zod.string()).optional()
+})
+
+export const AdminCreatePodcastEpisodeResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullable(),
+  "audioUrl": zod.string().nullable(),
+  "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "guestName": zod.string().nullable(),
+  "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
+  "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
+  "coverImageUrl": zod.string().nullable(),
+  "durationSeconds": zod.number().nullable(),
+  "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Get a podcast episode by id regardless of status
+ */
+export const AdminGetPodcastEpisodeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetPodcastEpisodeResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullable(),
+  "audioUrl": zod.string().nullable(),
+  "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "guestName": zod.string().nullable(),
+  "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
+  "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
+  "coverImageUrl": zod.string().nullable(),
+  "durationSeconds": zod.number().nullable(),
+  "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Update a podcast episode
+ */
+export const AdminUpdatePodcastEpisodeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdatePodcastEpisodeBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullish(),
+  "audioUrl": zod.string().nullish(),
+  "externalUrl": zod.string().nullish(),
+  "youtubeVideoId": zod.string().nullish(),
+  "guestName": zod.string().nullish(),
+  "showNotesUrl": zod.string().nullish(),
+  "showNotes": zod.string().nullish(),
+  "transcriptUrl": zod.string().nullish(),
+  "transcript": zod.string().nullish(),
+  "coverImageUrl": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().optional(),
+  "tags": zod.array(zod.string()).optional()
+})
+
+export const AdminUpdatePodcastEpisodeResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "episodeNumber": zod.number(),
+  "season": zod.number().nullable(),
+  "audioUrl": zod.string().nullable(),
+  "externalUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "guestName": zod.string().nullable(),
+  "showNotesUrl": zod.string().nullable(),
+  "showNotes": zod.string().nullable(),
+  "transcriptUrl": zod.string().nullable(),
+  "transcript": zod.string().nullable(),
+  "coverImageUrl": zod.string().nullable(),
+  "durationSeconds": zod.number().nullable(),
+  "isFeatured": zod.boolean(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Delete a podcast episode
+ */
+export const AdminDeletePodcastEpisodeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeletePodcastEpisodeResponse = zod.void()
+
+
+/**
+ * @summary List all blog posts regardless of status
+ */
+export const AdminListBlogPostsQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListBlogPostsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+export const AdminListBlogPostsResponse = zod.array(AdminListBlogPostsResponseItem)
+
+
+/**
+ * @summary Create a blog post
+ */
+export const AdminCreateBlogPostBody = zod.object({
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']).optional(),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "authorDisplayName": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "readTimeMinutes": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().optional(),
+  "tags": zod.array(zod.string()).optional()
+})
+
+export const AdminCreateBlogPostResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Get a blog post by id regardless of status
+ */
+export const AdminGetBlogPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetBlogPostResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Update a blog post
+ */
+export const AdminUpdateBlogPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateBlogPostBody = zod.object({
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']).optional(),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "authorDisplayName": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "readTimeMinutes": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().optional(),
+  "tags": zod.array(zod.string()).optional()
+})
+
+export const AdminUpdateBlogPostResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "slug": zod.string(),
+  "excerpt": zod.string(),
+  "content": zod.string(),
+  "contentType": zod.enum(['article', 'guide', 'video', 'vlog', 'reflection', 'wellness', 'beauty', 'financial']),
+  "category": zod.string(),
+  "coverImageUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "authorDisplayName": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "readTimeMinutes": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "publishedAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date(),
+  "tags": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Delete a blog post
+ */
+export const AdminDeleteBlogPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteBlogPostResponse = zod.void()
+
+
+/**
+ * @summary List all curated picks regardless of status
+ */
+export const AdminListCuratedPicksQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListCuratedPicksResponseItem = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
+  "isPersonallyTested": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListCuratedPicksResponse = zod.array(AdminListCuratedPicksResponseItem)
+
+
+/**
+ * @summary Create a curated pick
+ */
+export const AdminCreateCuratedPickBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean().optional(),
+  "affiliateDisclosureText": zod.string().nullish(),
+  "isPersonallyTested": zod.boolean().optional(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish()
+})
+
+export const AdminCreateCuratedPickResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
+  "isPersonallyTested": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a curated pick by id regardless of status
+ */
+export const AdminGetCuratedPickParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetCuratedPickResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
+  "isPersonallyTested": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a curated pick
+ */
+export const AdminUpdateCuratedPickParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateCuratedPickBody = zod.object({
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean().optional(),
+  "affiliateDisclosureText": zod.string().nullish(),
+  "isPersonallyTested": zod.boolean().optional(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish(),
+  "seoTitle": zod.string().nullish(),
+  "seoDescription": zod.string().nullish()
+})
+
+export const AdminUpdateCuratedPickResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "category": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "affiliateUrl": zod.string(),
+  "brand": zod.string(),
+  "isAffiliate": zod.boolean(),
+  "affiliateDisclosureText": zod.string().nullable(),
+  "isPersonallyTested": zod.boolean(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "seoTitle": zod.string().nullable(),
+  "seoDescription": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a curated pick
+ */
+export const AdminDeleteCuratedPickParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteCuratedPickResponse = zod.void()
+
+
+/**
+ * @summary Get the homepage content overrides
+ */
+export const AdminGetHomepageContentResponse = zod.object({
+  "id": zod.number(),
+  "heroHeading": zod.string().nullable(),
+  "heroSubheading": zod.string().nullable(),
+  "heroImageUrl": zod.string().nullable(),
+  "primaryCtaLabel": zod.string().nullable(),
+  "primaryCtaHref": zod.string().nullable(),
+  "secondaryCtaLabel": zod.string().nullable(),
+  "secondaryCtaHref": zod.string().nullable(),
+  "showPodcastSection": zod.boolean(),
+  "showShopSection": zod.boolean(),
+  "showJournalSection": zod.boolean(),
+  "showRecommendationsSection": zod.boolean(),
+  "showCollaborateSection": zod.boolean(),
+  "showNewsletterSection": zod.boolean(),
+  "newsletterHeading": zod.string().nullable(),
+  "newsletterBody": zod.string().nullable(),
+  "collaborateHeading": zod.string().nullable(),
+  "collaborateBody": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Upsert the homepage content overrides
+ */
+export const AdminUpdateHomepageContentBody = zod.object({
+  "heroHeading": zod.string().nullish(),
+  "heroSubheading": zod.string().nullish(),
+  "heroImageUrl": zod.string().nullish(),
+  "primaryCtaLabel": zod.string().nullish(),
+  "primaryCtaHref": zod.string().nullish(),
+  "secondaryCtaLabel": zod.string().nullish(),
+  "secondaryCtaHref": zod.string().nullish(),
+  "showPodcastSection": zod.boolean().optional(),
+  "showShopSection": zod.boolean().optional(),
+  "showJournalSection": zod.boolean().optional(),
+  "showRecommendationsSection": zod.boolean().optional(),
+  "showCollaborateSection": zod.boolean().optional(),
+  "showNewsletterSection": zod.boolean().optional(),
+  "newsletterHeading": zod.string().nullish(),
+  "newsletterBody": zod.string().nullish(),
+  "collaborateHeading": zod.string().nullish(),
+  "collaborateBody": zod.string().nullish()
+})
+
+export const AdminUpdateHomepageContentResponse = zod.object({
+  "id": zod.number(),
+  "heroHeading": zod.string().nullable(),
+  "heroSubheading": zod.string().nullable(),
+  "heroImageUrl": zod.string().nullable(),
+  "primaryCtaLabel": zod.string().nullable(),
+  "primaryCtaHref": zod.string().nullable(),
+  "secondaryCtaLabel": zod.string().nullable(),
+  "secondaryCtaHref": zod.string().nullable(),
+  "showPodcastSection": zod.boolean(),
+  "showShopSection": zod.boolean(),
+  "showJournalSection": zod.boolean(),
+  "showRecommendationsSection": zod.boolean(),
+  "showCollaborateSection": zod.boolean(),
+  "showNewsletterSection": zod.boolean(),
+  "newsletterHeading": zod.string().nullable(),
+  "newsletterBody": zod.string().nullable(),
+  "collaborateHeading": zod.string().nullable(),
+  "collaborateBody": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get site settings
+ */
+export const AdminGetSiteSettingsResponse = zod.object({
+  "id": zod.number(),
+  "brandName": zod.string().nullable(),
+  "tagline": zod.string().nullable(),
+  "contactEmail": zod.string().nullable(),
+  "supportEmail": zod.string().nullable(),
+  "collaborationEmail": zod.string().nullable(),
+  "whatsappNumber": zod.string().nullable(),
+  "instagramUrl": zod.string().nullable(),
+  "facebookUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "tiktokUrl": zod.string().nullable(),
+  "seoDefaultTitle": zod.string().nullable(),
+  "seoDefaultDescription": zod.string().nullable(),
+  "canonicalUrl": zod.string().nullable(),
+  "socialShareImageUrl": zod.string().nullable(),
+  "businessCountry": zod.string().nullable(),
+  "supportedRegions": zod.array(zod.string()),
+  "defaultCurrency": zod.string().nullable(),
+  "newsletterWording": zod.string().nullable(),
+  "footerText": zod.string().nullable(),
+  "podcastLaunchStatus": zod.string().nullable(),
+  "shopStatus": zod.string().nullable(),
+  "preorderNotice": zod.string().nullable(),
+  "shippingNotice": zod.string().nullable(),
+  "affiliateDisclosure": zod.string().nullable(),
+  "privacyContactInfo": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Upsert site settings
+ */
+export const AdminUpdateSiteSettingsBody = zod.object({
+  "brandName": zod.string().nullish(),
+  "tagline": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "supportEmail": zod.string().nullish(),
+  "collaborationEmail": zod.string().nullish(),
+  "whatsappNumber": zod.string().nullish(),
+  "instagramUrl": zod.string().nullish(),
+  "facebookUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "tiktokUrl": zod.string().nullish(),
+  "seoDefaultTitle": zod.string().nullish(),
+  "seoDefaultDescription": zod.string().nullish(),
+  "canonicalUrl": zod.string().nullish(),
+  "socialShareImageUrl": zod.string().nullish(),
+  "businessCountry": zod.string().nullish(),
+  "supportedRegions": zod.array(zod.string()).optional(),
+  "defaultCurrency": zod.string().nullish(),
+  "newsletterWording": zod.string().nullish(),
+  "footerText": zod.string().nullish(),
+  "podcastLaunchStatus": zod.string().nullish(),
+  "shopStatus": zod.string().nullish(),
+  "preorderNotice": zod.string().nullish(),
+  "shippingNotice": zod.string().nullish(),
+  "affiliateDisclosure": zod.string().nullish(),
+  "privacyContactInfo": zod.string().nullish()
+})
+
+export const AdminUpdateSiteSettingsResponse = zod.object({
+  "id": zod.number(),
+  "brandName": zod.string().nullable(),
+  "tagline": zod.string().nullable(),
+  "contactEmail": zod.string().nullable(),
+  "supportEmail": zod.string().nullable(),
+  "collaborationEmail": zod.string().nullable(),
+  "whatsappNumber": zod.string().nullable(),
+  "instagramUrl": zod.string().nullable(),
+  "facebookUrl": zod.string().nullable(),
+  "youtubeUrl": zod.string().nullable(),
+  "tiktokUrl": zod.string().nullable(),
+  "seoDefaultTitle": zod.string().nullable(),
+  "seoDefaultDescription": zod.string().nullable(),
+  "canonicalUrl": zod.string().nullable(),
+  "socialShareImageUrl": zod.string().nullable(),
+  "businessCountry": zod.string().nullable(),
+  "supportedRegions": zod.array(zod.string()),
+  "defaultCurrency": zod.string().nullable(),
+  "newsletterWording": zod.string().nullable(),
+  "footerText": zod.string().nullable(),
+  "podcastLaunchStatus": zod.string().nullable(),
+  "shopStatus": zod.string().nullable(),
+  "preorderNotice": zod.string().nullable(),
+  "shippingNotice": zod.string().nullable(),
+  "affiliateDisclosure": zod.string().nullable(),
+  "privacyContactInfo": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List contact enquiries (product enquiries are inquiryType=product)
+ */
+export const AdminListContactEnquiriesQueryParams = zod.object({
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']).optional(),
+  "inquiryType": zod.enum(['general', 'collaboration', 'order-support', 'product']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListContactEnquiriesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "inquiryType": zod.string(),
+  "subject": zod.string().nullable(),
+  "message": zod.string(),
+  "consentGiven": zod.boolean(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListContactEnquiriesResponse = zod.array(AdminListContactEnquiriesResponseItem)
+
+
+/**
+ * @summary Update a contact enquiry's status/notes
+ */
+export const AdminUpdateContactEnquiryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateContactEnquiryBody = zod.object({
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']).optional(),
+  "internalNotes": zod.string().nullish()
+})
+
+export const AdminUpdateContactEnquiryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "inquiryType": zod.string(),
+  "subject": zod.string().nullable(),
+  "message": zod.string(),
+  "consentGiven": zod.boolean(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List collaboration enquiries
+ */
+export const AdminListCollaborationEnquiriesQueryParams = zod.object({
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListCollaborationEnquiriesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "company": zod.string().nullable(),
+  "campaignType": zod.string().nullable(),
+  "budgetRange": zod.string().nullable(),
+  "timeline": zod.string().nullable(),
+  "links": zod.string().nullable(),
+  "message": zod.string(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListCollaborationEnquiriesResponse = zod.array(AdminListCollaborationEnquiriesResponseItem)
+
+
+/**
+ * @summary Update a collaboration enquiry's status/notes
+ */
+export const AdminUpdateCollaborationEnquiryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateCollaborationEnquiryBody = zod.object({
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']).optional(),
+  "internalNotes": zod.string().nullish()
+})
+
+export const AdminUpdateCollaborationEnquiryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "company": zod.string().nullable(),
+  "campaignType": zod.string().nullable(),
+  "budgetRange": zod.string().nullable(),
+  "timeline": zod.string().nullable(),
+  "links": zod.string().nullable(),
+  "message": zod.string(),
+  "status": zod.enum(['new', 'read', 'resolved', 'archived']),
+  "internalNotes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List newsletter subscribers
+ */
+export const AdminListNewsletterSubscriptionsQueryParams = zod.object({
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListNewsletterSubscriptionsResponseItem = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "firstName": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const AdminListNewsletterSubscriptionsResponse = zod.array(AdminListNewsletterSubscriptionsResponseItem)
 
 

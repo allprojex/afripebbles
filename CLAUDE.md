@@ -40,6 +40,45 @@ This repo was originally scaffolded on Replit; it now also runs standalone
 - `lib/api-spec/openapi.yaml` — source of truth for the API contract; codegen produces `lib/api-client-react` and `lib/api-zod`. Never hand-edit the generated files — edit the spec and run codegen.
 - `attached_assets/` — brand brief + generated imagery, referenced from the frontend via the `@assets` Vite alias. `AfriPebbles_Questionnaire_Draft (2).docx` (in the repo's parent Downloads folder, not committed) is the authoritative source for all brand facts — extracted into `src/content/site.ts`.
 
+## Admin Area
+
+`/admin` is a content-management area for the AfriPebbles owner — products, podcast
+episodes, articles, recommendations, homepage copy, site settings, and enquiries
+are all managed there instead of by editing the database directly.
+
+- **Auth**: Supabase Auth. The frontend (`artifacts/afripebbles/src/admin/`) talks
+  to Supabase directly for login/logout/forgot-password/reset-password
+  (`@supabase/supabase-js`, anon key — safe to expose). The API server never
+  touches passwords; every `/api/admin/*` route is gated by `requireAdmin`
+  (`artifacts/api-server/src/middlewares/auth.ts`), which verifies the bearer
+  token against Supabase and checks the `admin_users` table — never trusting a
+  client-side claim. There is no public self-registration route.
+- **First admin**: create the user yourself in the Supabase Dashboard
+  (Authentication → Users → Add user — never through the app), then run
+  `pnpm --filter scripts run make-admin -- you@example.com` (needs
+  `scripts/.env`: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`).
+  See `scripts/src/make-admin.ts`.
+- **Content status**: `products`, `podcast_episodes`, `blog_posts`, and
+  `curated_picks` each have a `status` (`draft`/`scheduled`/`published`/`archived`)
+  and `scheduledAt`. Public routes only ever return published (or due-scheduled)
+  rows — see `isPubliclyVisible()` in `artifacts/api-server/src/lib/visibility.ts`.
+- **Storage**: image uploads go through `POST /api/admin/uploads` (admin-only,
+  multipart), which validates MIME type/size/dimensions and writes to a Supabase
+  Storage bucket with the service-role key — the browser never gets that key.
+  Buckets: `product-images`, `podcast-covers`, `article-images`,
+  `recommendation-images`, `branding` (all public-read, must be created manually
+  in the Supabase Dashboard). This endpoint is intentionally outside the
+  OpenAPI/Orval pipeline — see `artifacts/afripebbles/src/admin/lib/adminApi.ts`.
+- **Homepage & site settings**: `homepage_content` and `site_settings` are
+  singleton tables (id fixed to `1`). Public pages merge the saved values over
+  the verified defaults in `src/content/site.ts` via
+  `artifacts/afripebbles/src/lib/settings.ts` — an unset field always falls back
+  to the confirmed static copy, never a blank or invented value.
+- Required env additions beyond the ones in Gotchas: `artifacts/afripebbles/.env`
+  needs `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`; `artifacts/api-server/.env`
+  needs `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` (service-role is a secret,
+  server-only).
+
 ## Architecture decisions
 
 - Products use an `availability` enum rather than a single `isPreOrder` boolean, because the shop needs to distinguish available / pre-order / coming-soon / out-of-stock, not just "is or isn't a pre-order."
