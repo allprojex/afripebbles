@@ -103,7 +103,7 @@ export default function AdminRecommendationEdit() {
         {
           onSuccess: (created) => {
             toast({ title: "Recommendation created" });
-            setLocation(`/admin/recommendations/${created.id}`);
+            setLocation(`/recommendations/${created.id}`);
           },
           onError,
         },
@@ -120,7 +120,7 @@ export default function AdminRecommendationEdit() {
       {
         onSuccess: () => {
           toast({ title: "Recommendation deleted" });
-          setLocation("/admin/recommendations");
+          setLocation("/recommendations");
         },
         onError: (err) => toast({ variant: "destructive", title: "Couldn't delete", description: err instanceof Error ? err.message : undefined }),
       },
@@ -134,7 +134,7 @@ export default function AdminRecommendationEdit() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/recommendations" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
+          <Link href="/recommendations" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
             <ArrowLeft size={14} /> Recommendations
           </Link>
           <h1 className="text-3xl font-serif">{isNew ? "New recommendation" : "Edit recommendation"}</h1>
@@ -411,7 +411,7 @@ export default function AdminRecommendationEdit() {
           </section>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Link href="/admin/recommendations">
+            <Link href="/recommendations">
               <Button type="button" variant="outline">
                 Cancel
               </Button>

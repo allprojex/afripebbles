@@ -16,15 +16,15 @@ import { Button } from "@/components/ui/button";
 import { useAdminAuth } from "../context/AdminAuthContext";
 
 const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; exact: boolean }[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/products", label: "Products", icon: ShoppingBag, exact: false },
-  { href: "/admin/recommendations", label: "Recommendations", icon: Star, exact: false },
-  { href: "/admin/podcast", label: "Podcast", icon: Headphones, exact: false },
-  { href: "/admin/articles", label: "Articles", icon: BookOpen, exact: false },
-  { href: "/admin/homepage", label: "Homepage", icon: Home, exact: false },
-  { href: "/admin/settings", label: "Site settings", icon: Settings, exact: false },
-  { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, exact: false },
-  { href: "/admin/newsletter", label: "Newsletter", icon: Mail, exact: false },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/products", label: "Products", icon: ShoppingBag, exact: false },
+  { href: "/recommendations", label: "Recommendations", icon: Star, exact: false },
+  { href: "/podcast", label: "Podcast", icon: Headphones, exact: false },
+  { href: "/articles", label: "Articles", icon: BookOpen, exact: false },
+  { href: "/homepage", label: "Homepage", icon: Home, exact: false },
+  { href: "/settings", label: "Site settings", icon: Settings, exact: false },
+  { href: "/enquiries", label: "Enquiries", icon: Inbox, exact: false },
+  { href: "/newsletter", label: "Newsletter", icon: Mail, exact: false },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {

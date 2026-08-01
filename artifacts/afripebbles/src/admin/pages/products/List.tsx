@@ -25,7 +25,7 @@ export default function AdminProductsList() {
           <h1 className="text-3xl font-serif mb-1">Products</h1>
           <p className="text-foreground/60">Digital products and seasonal pre-order decor.</p>
         </div>
-        <Link href="/admin/products/new">
+        <Link href="/products/new">
           <Button className="gap-2">
             <Plus size={16} /> New product
           </Button>
@@ -74,7 +74,7 @@ export default function AdminProductsList() {
               {products.map((product) => (
                 <TableRow key={product.id} className="cursor-pointer">
                   <TableCell>
-                    <Link href={`/admin/products/${product.id}`} className="font-medium hover:text-primary">
+                    <Link href={`/products/${product.id}`} className="font-medium hover:text-primary">
                       {product.title}
                     </Link>
                     {product.isFeatured && <span className="ml-2 text-xs text-primary">★ featured</span>}

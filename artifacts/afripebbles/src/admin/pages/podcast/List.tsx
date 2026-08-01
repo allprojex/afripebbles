@@ -25,7 +25,7 @@ export default function AdminPodcastList() {
           <h1 className="text-3xl font-serif mb-1">The Glow Up Sanctuary</h1>
           <p className="text-foreground/60">Podcast episodes. The public page stays in its coming-soon state until one is published.</p>
         </div>
-        <Link href="/admin/podcast/new">
+        <Link href="/podcast/new">
           <Button className="gap-2">
             <Plus size={16} /> New episode
           </Button>
@@ -74,7 +74,7 @@ export default function AdminPodcastList() {
                 <TableRow key={episode.id}>
                   <TableCell>#{episode.episodeNumber}</TableCell>
                   <TableCell>
-                    <Link href={`/admin/podcast/${episode.id}`} className="font-medium hover:text-primary">
+                    <Link href={`/podcast/${episode.id}`} className="font-medium hover:text-primary">
                       {episode.title}
                     </Link>
                     {episode.isFeatured && <span className="ml-2 text-xs text-primary">★ featured</span>}

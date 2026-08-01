@@ -30,7 +30,7 @@ export default function AdminLogin() {
   });
 
   if (!isLoading && isAdmin) {
-    setLocation("/admin");
+    setLocation("/");
     return null;
   }
 
@@ -44,7 +44,7 @@ export default function AdminLogin() {
       return;
     }
 
-    setLocation("/admin");
+    setLocation("/");
   };
 
   return (
@@ -100,7 +100,7 @@ export default function AdminLogin() {
         )}
 
         <div className="text-center">
-          <Link href="/admin/forgot-password" className="text-sm text-primary hover:underline">
+          <Link href="/forgot-password" className="text-sm text-primary hover:underline">
             Forgot your password?
           </Link>
         </div>

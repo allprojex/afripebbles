@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "make-admin": "dotenv -e .env -- tsx ./src/make-admin.ts",
+    "setup-storage": "dotenv -e .env -- tsx ./src/setup-storage.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

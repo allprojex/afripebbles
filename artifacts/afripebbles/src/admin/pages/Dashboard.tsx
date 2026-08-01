@@ -11,10 +11,10 @@ const CONTENT_LABEL: Record<string, string> = {
 };
 
 const CONTENT_HREF: Record<string, string> = {
-  product: "/admin/products",
-  podcast_episode: "/admin/podcast",
-  blog_post: "/admin/articles",
-  curated_pick: "/admin/recommendations",
+  product: "/products",
+  podcast_episode: "/podcast",
+  blog_post: "/articles",
+  curated_pick: "/recommendations",
 };
 
 function StatCard({
@@ -59,10 +59,10 @@ export default function AdminDashboard() {
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50 mb-4">Products</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={ShoppingBag} label="Published" value={data.products.published} href="/admin/products?status=published" />
-          <StatCard icon={ShoppingBag} label="Draft" value={data.products.draft} href="/admin/products?status=draft" />
-          <StatCard icon={ShoppingBag} label="Pre-order" value={data.preorderProducts} href="/admin/products?availability=preorder" />
-          <StatCard icon={ShoppingBag} label="Total" value={data.products.total} href="/admin/products" />
+          <StatCard icon={ShoppingBag} label="Published" value={data.products.published} href="/products?status=published" />
+          <StatCard icon={ShoppingBag} label="Draft" value={data.products.draft} href="/products?status=draft" />
+          <StatCard icon={ShoppingBag} label="Pre-order" value={data.preorderProducts} href="/products?availability=preorder" />
+          <StatCard icon={ShoppingBag} label="Total" value={data.products.total} href="/products" />
         </div>
       </section>
 
@@ -74,32 +74,32 @@ export default function AdminDashboard() {
             label="Podcast episodes"
             value={data.podcastEpisodes.total}
             sub={`${data.podcastEpisodes.published} published`}
-            href="/admin/podcast"
+            href="/podcast"
           />
           <StatCard
             icon={BookOpen}
             label="Articles"
             value={data.articles.total}
             sub={`${data.articles.published} published`}
-            href="/admin/articles"
+            href="/articles"
           />
           <StatCard
             icon={Star}
             label="Recommendations"
             value={data.recommendations.total}
             sub={`${data.recommendations.published} published`}
-            href="/admin/recommendations"
+            href="/recommendations"
           />
-          <StatCard icon={Mail} label="Newsletter subscribers" value={data.newsletterSubscribers} href="/admin/newsletter" />
+          <StatCard icon={Mail} label="Newsletter subscribers" value={data.newsletterSubscribers} href="/newsletter" />
         </div>
       </section>
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50 mb-4">Enquiries</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={Inbox} label="Contact" value={data.contactEnquiries} href="/admin/enquiries?tab=contact" />
-          <StatCard icon={Inbox} label="Collaboration" value={data.collaborationEnquiries} href="/admin/enquiries?tab=collaboration" />
-          <StatCard icon={Inbox} label="Product enquiries" value={data.productEnquiries} href="/admin/enquiries?tab=product" />
+          <StatCard icon={Inbox} label="Contact" value={data.contactEnquiries} href="/enquiries?tab=contact" />
+          <StatCard icon={Inbox} label="Collaboration" value={data.collaborationEnquiries} href="/enquiries?tab=collaboration" />
+          <StatCard icon={Inbox} label="Product enquiries" value={data.productEnquiries} href="/enquiries?tab=product" />
         </div>
       </section>
 

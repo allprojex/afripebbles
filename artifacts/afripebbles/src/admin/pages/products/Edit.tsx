@@ -125,7 +125,7 @@ export default function AdminProductEdit() {
         {
           onSuccess: (created) => {
             toast({ title: "Product created" });
-            setLocation(`/admin/products/${created.id}`);
+            setLocation(`/products/${created.id}`);
           },
           onError,
         },
@@ -148,7 +148,7 @@ export default function AdminProductEdit() {
       {
         onSuccess: () => {
           toast({ title: "Product deleted" });
-          setLocation("/admin/products");
+          setLocation("/products");
         },
         onError: (err) => toast({ variant: "destructive", title: "Couldn't delete product", description: err instanceof Error ? err.message : undefined }),
       },
@@ -167,7 +167,7 @@ export default function AdminProductEdit() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/products" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
+          <Link href="/products" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
             <ArrowLeft size={14} /> Products
           </Link>
           <h1 className="text-3xl font-serif">{isNew ? "New product" : "Edit product"}</h1>
@@ -604,7 +604,7 @@ export default function AdminProductEdit() {
           </section>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Link href="/admin/products">
+            <Link href="/products">
               <Button type="button" variant="outline">
                 Cancel
               </Button>

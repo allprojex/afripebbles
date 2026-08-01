@@ -75,7 +75,7 @@ export default function AdminForgotPassword() {
         )}
 
         <div className="text-center">
-          <Link href="/admin/login" className="text-sm text-primary hover:underline">
+          <Link href="/login" className="text-sm text-primary hover:underline">
             Back to sign in
           </Link>
         </div>

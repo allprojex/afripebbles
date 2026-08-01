@@ -25,7 +25,7 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   }
 
   if (!isAdmin) {
-    return <Redirect to="/admin/login" />;
+    return <Redirect to="/login" />;
   }
 
   return <>{children}</>;

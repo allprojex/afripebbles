@@ -25,7 +25,7 @@ export default function AdminArticlesList() {
           <h1 className="text-3xl font-serif mb-1">Articles</h1>
           <p className="text-foreground/60">Journal posts, guides, reflections, and embedded videos.</p>
         </div>
-        <Link href="/admin/articles/new">
+        <Link href="/articles/new">
           <Button className="gap-2">
             <Plus size={16} /> New article
           </Button>
@@ -73,7 +73,7 @@ export default function AdminArticlesList() {
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell>
-                    <Link href={`/admin/articles/${post.id}`} className="font-medium hover:text-primary">
+                    <Link href={`/articles/${post.id}`} className="font-medium hover:text-primary">
                       {post.title}
                     </Link>
                     {post.isFeatured && <span className="ml-2 text-xs text-primary">★ featured</span>}

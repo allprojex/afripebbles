@@ -25,7 +25,7 @@ export default function AdminRecommendationsList() {
           <h1 className="text-3xl font-serif mb-1">Recommendations</h1>
           <p className="text-foreground/60">Curated affiliate and non-affiliate picks.</p>
         </div>
-        <Link href="/admin/recommendations/new">
+        <Link href="/recommendations/new">
           <Button className="gap-2">
             <Plus size={16} /> New recommendation
           </Button>
@@ -73,7 +73,7 @@ export default function AdminRecommendationsList() {
               {picks.map((pick) => (
                 <TableRow key={pick.id}>
                   <TableCell>
-                    <Link href={`/admin/recommendations/${pick.id}`} className="font-medium hover:text-primary">
+                    <Link href={`/recommendations/${pick.id}`} className="font-medium hover:text-primary">
                       {pick.title}
                     </Link>
                     {pick.isFeatured && <span className="ml-2 text-xs text-primary">★ featured</span>}

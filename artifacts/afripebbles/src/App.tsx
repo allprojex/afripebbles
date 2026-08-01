@@ -63,7 +63,7 @@ function Router() {
       <Route path="/digital-product-terms" component={DigitalProductTermsPage} />
 
       <Route path="/admin" component={AdminApp} />
-      <Route path="/admin/:rest*" component={AdminApp} />
+      <Route path="/admin/*" component={AdminApp} />
 
       <Route component={NotFound} />
     </Switch>

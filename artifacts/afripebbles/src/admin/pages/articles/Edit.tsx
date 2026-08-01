@@ -109,7 +109,7 @@ export default function AdminArticleEdit() {
         {
           onSuccess: (created) => {
             toast({ title: "Article created" });
-            setLocation(`/admin/articles/${created.id}`);
+            setLocation(`/articles/${created.id}`);
           },
           onError,
         },
@@ -126,7 +126,7 @@ export default function AdminArticleEdit() {
       {
         onSuccess: () => {
           toast({ title: "Article deleted" });
-          setLocation("/admin/articles");
+          setLocation("/articles");
         },
         onError: (err) => toast({ variant: "destructive", title: "Couldn't delete", description: err instanceof Error ? err.message : undefined }),
       },
@@ -140,7 +140,7 @@ export default function AdminArticleEdit() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/articles" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
+          <Link href="/articles" className="inline-flex items-center gap-1 text-sm text-foreground/60 hover:text-primary mb-2">
             <ArrowLeft size={14} /> Articles
           </Link>
           <h1 className="text-3xl font-serif">{isNew ? "New article" : "Edit article"}</h1>
@@ -425,7 +425,7 @@ export default function AdminArticleEdit() {
           </section>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Link href="/admin/articles">
+            <Link href="/articles">
               <Button type="button" variant="outline">
                 Cancel
               </Button>

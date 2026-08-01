@@ -65,7 +65,7 @@ export default function AdminResetPassword() {
     }
 
     toast({ title: "Password updated", description: "You're signed in with your new password." });
-    setLocation("/admin");
+    setLocation("/");
   };
 
   return (
@@ -85,7 +85,7 @@ export default function AdminResetPassword() {
         ) : !hasRecoverySession ? (
           <p className="text-sm text-center text-foreground/70">
             This reset link is invalid or has expired. Request a new one from the{" "}
-            <Link href="/admin/forgot-password" className="text-primary hover:underline">
+            <Link href="/forgot-password" className="text-primary hover:underline">
               forgot password
             </Link>{" "}
             page.
