@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { uploadImage, deleteImage } from "../lib/adminApi";
+import { uploadImage } from "../lib/adminApi";
 import type { StorageBucket } from "../lib/buckets";
 
 interface MultiImageUploaderProps {
@@ -12,6 +12,12 @@ interface MultiImageUploaderProps {
   label?: string;
 }
 
+/**
+ * Adding or removing an image only ever changes local form state here — it
+ * never deletes a file from storage. That happens server-side, after the
+ * content record is actually saved, so a removed image is never lost if the
+ * admin cancels or the save fails validation.
+ */
 export function MultiImageUploader({ bucket, value, onChange, label = "Additional images" }: MultiImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -38,7 +44,6 @@ export function MultiImageUploader({ bucket, value, onChange, label = "Additiona
   };
 
   const handleRemove = (url: string) => {
-    void deleteImage(url);
     onChange(value.filter((u) => u !== url));
   };
 

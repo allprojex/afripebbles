@@ -14,6 +14,8 @@ import {
   AdminDeleteCuratedPickParams,
 } from "@workspace/api-zod";
 import { isSlugTaken } from "../../lib/slug";
+import { collectImageUrls, cleanupOrphanedImages } from "../../lib/imageCleanup";
+import { logger } from "../../lib/logger";
 
 const router: IRouter = Router();
 
@@ -83,6 +85,12 @@ router.put("/curated-picks/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(curatedPicksTable).where(eq(curatedPicksTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Pick not found" });
+    return;
+  }
+
   if (await isSlugTaken(curatedPicksTable, curatedPicksTable.slug, curatedPicksTable.id, body.data.slug, params.data.id)) {
     res.status(409).json({ error: `Slug "${body.data.slug}" is already in use by another pick.` });
     return;
@@ -99,6 +107,17 @@ router.put("/curated-picks/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  if (existing.imageUrl && existing.imageUrl !== pick.imageUrl) {
+    try {
+      const cleanup = await cleanupOrphanedImages([existing.imageUrl]);
+      if (cleanup.failed.length > 0) {
+        logger.warn({ pickId: pick.id, failed: cleanup.failed.length }, "curated pick update: replaced image could not be removed from storage");
+      }
+    } catch (err) {
+      logger.warn({ pickId: pick.id, err: err instanceof Error ? err.message : String(err) }, "curated pick update: image cleanup threw");
+    }
+  }
+
   res.json(AdminUpdateCuratedPickResponse.parse(pick));
 });
 
@@ -106,6 +125,12 @@ router.delete("/curated-picks/:id", async (req, res): Promise<void> => {
   const params = AdminDeleteCuratedPickParams.safeParse({ id: parseFloat(req.params.id) });
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [existing] = await db.select().from(curatedPicksTable).where(eq(curatedPicksTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Pick not found" });
     return;
   }
 
@@ -117,6 +142,15 @@ router.delete("/curated-picks/:id", async (req, res): Promise<void> => {
   if (!deleted) {
     res.status(404).json({ error: "Pick not found" });
     return;
+  }
+
+  try {
+    const cleanup = await cleanupOrphanedImages(collectImageUrls(existing.imageUrl));
+    if (cleanup.failed.length > 0) {
+      logger.warn({ pickId: deleted.id, failed: cleanup.failed.length }, "curated pick delete: image could not be removed from storage");
+    }
+  } catch (err) {
+    logger.warn({ pickId: deleted.id, err: err instanceof Error ? err.message : String(err) }, "curated pick delete: image cleanup threw");
   }
 
   res.status(204).send();

@@ -14,6 +14,8 @@ import {
   AdminDeleteBlogPostParams,
 } from "@workspace/api-zod";
 import { isSlugTaken } from "../../lib/slug";
+import { collectImageUrls, cleanupOrphanedImages } from "../../lib/imageCleanup";
+import { logger } from "../../lib/logger";
 
 const router: IRouter = Router();
 
@@ -81,6 +83,12 @@ router.put("/blog-posts/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(blogPostsTable).where(eq(blogPostsTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Post not found" });
+    return;
+  }
+
   if (await isSlugTaken(blogPostsTable, blogPostsTable.slug, blogPostsTable.id, body.data.slug, params.data.id)) {
     res.status(409).json({ error: `Slug "${body.data.slug}" is already in use by another post.` });
     return;
@@ -97,6 +105,17 @@ router.put("/blog-posts/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  if (existing.coverImageUrl && existing.coverImageUrl !== post.coverImageUrl) {
+    try {
+      const cleanup = await cleanupOrphanedImages([existing.coverImageUrl]);
+      if (cleanup.failed.length > 0) {
+        logger.warn({ postId: post.id, failed: cleanup.failed.length }, "blog post update: replaced cover image could not be removed from storage");
+      }
+    } catch (err) {
+      logger.warn({ postId: post.id, err: err instanceof Error ? err.message : String(err) }, "blog post update: image cleanup threw");
+    }
+  }
+
   res.json(AdminUpdateBlogPostResponse.parse(post));
 });
 
@@ -107,10 +126,25 @@ router.delete("/blog-posts/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(blogPostsTable).where(eq(blogPostsTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Post not found" });
+    return;
+  }
+
   const [deleted] = await db.delete(blogPostsTable).where(eq(blogPostsTable.id, params.data.id)).returning({ id: blogPostsTable.id });
   if (!deleted) {
     res.status(404).json({ error: "Post not found" });
     return;
+  }
+
+  try {
+    const cleanup = await cleanupOrphanedImages(collectImageUrls(existing.coverImageUrl));
+    if (cleanup.failed.length > 0) {
+      logger.warn({ postId: deleted.id, failed: cleanup.failed.length }, "blog post delete: cover image could not be removed from storage");
+    }
+  } catch (err) {
+    logger.warn({ postId: deleted.id, err: err instanceof Error ? err.message : String(err) }, "blog post delete: image cleanup threw");
   }
 
   res.status(204).send();

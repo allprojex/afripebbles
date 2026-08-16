@@ -30,18 +30,3 @@ export async function uploadImage(bucket: string, file: File): Promise<string> {
   const data = (await res.json()) as { url: string };
   return data.url;
 }
-
-/** Best-effort cleanup — never blocks the admin's save/replace workflow. */
-export async function deleteImage(url: string): Promise<void> {
-  try {
-    const res = await fetch(`/api/admin/uploads?url=${encodeURIComponent(url)}`, {
-      method: "DELETE",
-      headers: await authHeader(),
-    });
-    if (!res.ok && res.status !== 404) {
-      console.warn(`Failed to delete storage object (${res.status}): ${url}`);
-    }
-  } catch (err) {
-    console.warn("Failed to delete storage object", err);
-  }
-}

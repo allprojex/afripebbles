@@ -14,6 +14,8 @@ import {
   AdminDeleteProductParams,
 } from "@workspace/api-zod";
 import { isSlugTaken } from "../../lib/slug";
+import { collectImageUrls, cleanupOrphanedImages } from "../../lib/imageCleanup";
+import { logger } from "../../lib/logger";
 
 const router: IRouter = Router();
 
@@ -85,6 +87,12 @@ router.put("/products/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(productsTable).where(eq(productsTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+
   if (await isSlugTaken(productsTable, productsTable.slug, productsTable.id, body.data.slug, params.data.id)) {
     res.status(409).json({ error: `Slug "${body.data.slug}" is already in use by another product.` });
     return;
@@ -101,6 +109,28 @@ router.put("/products/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  // Only images this product no longer references — a failed update never reaches here,
+  // so the currently active image set is never touched.
+  const newUrls = new Set(collectImageUrls(product.imageUrl, product.previewImageUrl, product.images));
+  const removedUrls = collectImageUrls(existing.imageUrl, existing.previewImageUrl, existing.images).filter((url) => !newUrls.has(url));
+
+  if (removedUrls.length > 0) {
+    try {
+      const cleanup = await cleanupOrphanedImages(removedUrls);
+      if (cleanup.failed.length > 0) {
+        logger.warn(
+          { productId: product.id, failed: cleanup.failed.length },
+          "product update: some replaced images could not be removed from storage",
+        );
+      }
+    } catch (err) {
+      logger.warn(
+        { productId: product.id, err: err instanceof Error ? err.message : String(err) },
+        "product update: image cleanup threw",
+      );
+    }
+  }
+
   res.json(AdminUpdateProductResponse.parse(product));
 });
 
@@ -111,10 +141,27 @@ router.delete("/products/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(productsTable).where(eq(productsTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Product not found" });
+    return;
+  }
+
   const [deleted] = await db.delete(productsTable).where(eq(productsTable.id, params.data.id)).returning({ id: productsTable.id });
   if (!deleted) {
     res.status(404).json({ error: "Product not found" });
     return;
+  }
+
+  // The DB row is already gone at this point — storage cleanup is best-effort
+  // and must never turn a successful delete into an error response.
+  try {
+    const cleanup = await cleanupOrphanedImages(collectImageUrls(existing.imageUrl, existing.previewImageUrl, existing.images));
+    if (cleanup.failed.length > 0) {
+      logger.warn({ productId: deleted.id, failed: cleanup.failed.length }, "product delete: some images could not be removed from storage");
+    }
+  } catch (err) {
+    logger.warn({ productId: deleted.id, err: err instanceof Error ? err.message : String(err) }, "product delete: image cleanup threw");
   }
 
   res.status(204).send();

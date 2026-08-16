@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { uploadImage, deleteImage } from "../lib/adminApi";
+import { uploadImage } from "../lib/adminApi";
 import type { StorageBucket } from "../lib/buckets";
 
 interface ImageUploaderProps {
@@ -12,6 +12,12 @@ interface ImageUploaderProps {
   label?: string;
 }
 
+/**
+ * Replacing or removing an image only ever changes local form state here —
+ * it never deletes the previous file from storage. That happens server-side,
+ * after the product/content record is actually saved, so a replaced image
+ * is never lost if the admin cancels or the save fails validation.
+ */
 export function ImageUploader({ bucket, value, onChange, label = "Image" }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -21,9 +27,7 @@ export function ImageUploader({ bucket, value, onChange, label = "Image" }: Imag
     setUploading(true);
     try {
       const url = await uploadImage(bucket, file);
-      const previous = value;
       onChange(url);
-      if (previous) void deleteImage(previous);
     } catch (err) {
       toast({
         variant: "destructive",
@@ -37,7 +41,6 @@ export function ImageUploader({ bucket, value, onChange, label = "Image" }: Imag
   };
 
   const handleRemove = () => {
-    if (value) void deleteImage(value);
     onChange(null);
   };
 

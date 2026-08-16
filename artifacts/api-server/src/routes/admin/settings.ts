@@ -2,6 +2,8 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, siteSettingsTable } from "@workspace/db";
 import { AdminGetSiteSettingsResponse, AdminUpdateSiteSettingsBody, AdminUpdateSiteSettingsResponse } from "@workspace/api-zod";
+import { cleanupOrphanedImages } from "../../lib/imageCleanup";
+import { logger } from "../../lib/logger";
 
 const router: IRouter = Router();
 
@@ -47,6 +49,8 @@ router.put("/site-settings", async (req, res): Promise<void> => {
     return;
   }
 
+  const [existing] = await db.select().from(siteSettingsTable).where(eq(siteSettingsTable.id, 1));
+
   const [settings] = await db
     .insert(siteSettingsTable)
     .values({ id: 1, ...body.data, updatedAt: new Date() })
@@ -55,6 +59,17 @@ router.put("/site-settings", async (req, res): Promise<void> => {
       set: { ...body.data, updatedAt: new Date() },
     })
     .returning();
+
+  if (existing?.socialShareImageUrl && existing.socialShareImageUrl !== settings.socialShareImageUrl) {
+    try {
+      const cleanup = await cleanupOrphanedImages([existing.socialShareImageUrl]);
+      if (cleanup.failed.length > 0) {
+        logger.warn({ failed: cleanup.failed.length }, "site settings update: replaced social share image could not be removed from storage");
+      }
+    } catch (err) {
+      logger.warn({ err: err instanceof Error ? err.message : String(err) }, "site settings update: image cleanup threw");
+    }
+  }
 
   res.json(AdminUpdateSiteSettingsResponse.parse(settings));
 });
