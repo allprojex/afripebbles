@@ -9,4 +9,6 @@
 export interface NewsletterSubscriptionInput {
   email: string;
   firstName?: string;
+  /** Must be true — explicit, unchecked-by-default consent to receive emails. */
+  consent: boolean;
 }

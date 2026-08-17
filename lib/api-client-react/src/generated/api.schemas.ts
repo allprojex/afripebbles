@@ -152,6 +152,76 @@ export interface Product {
   updatedAt: string;
 }
 
+export type PublicProductType = typeof PublicProductType[keyof typeof PublicProductType];
+
+
+export const PublicProductType = {
+  digital: 'digital',
+  physical: 'physical',
+} as const;
+
+export type PublicProductAvailability = typeof PublicProductAvailability[keyof typeof PublicProductAvailability];
+
+
+export const PublicProductAvailability = {
+  available: 'available',
+  preorder: 'preorder',
+  coming_soon: 'coming_soon',
+  out_of_stock: 'out_of_stock',
+} as const;
+
+export type PublicProductStockStatus = typeof PublicProductStockStatus[keyof typeof PublicProductStockStatus];
+
+
+export const PublicProductStockStatus = {
+  in_stock: 'in_stock',
+  limited: 'limited',
+  out_of_stock: 'out_of_stock',
+} as const;
+
+export interface PublicProduct {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  /** @nullable */
+  shortDescription: string | null;
+  price: number;
+  currency: string;
+  type: PublicProductType;
+  /** @nullable */
+  category: string | null;
+  /** @nullable */
+  imageUrl: string | null;
+  images: string[];
+  /** @nullable */
+  previewImageUrl: string | null;
+  availability: PublicProductAvailability;
+  stockStatus: PublicProductStockStatus;
+  isFeatured: boolean;
+  hasDownload: boolean;
+  /** @nullable */
+  preorderOpensAt: string | null;
+  /** @nullable */
+  preorderClosesAt: string | null;
+  /** @nullable */
+  estimatedFulfilment: string | null;
+  regions: string[];
+  variants: ProductVariant[];
+  /** @nullable */
+  externalPurchaseUrl: string | null;
+  tags: string[];
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  /** @nullable */
+  seoTitle: string | null;
+  /** @nullable */
+  seoDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ProductInputType = typeof ProductInputType[keyof typeof ProductInputType];
 
 
@@ -433,9 +503,111 @@ export interface CuratedPickInput {
   seoDescription?: string | null;
 }
 
+export type UgcEntryMediaType = typeof UgcEntryMediaType[keyof typeof UgcEntryMediaType];
+
+
+export const UgcEntryMediaType = {
+  image: 'image',
+  video: 'video',
+} as const;
+
+export interface UgcEntry {
+  id: number;
+  title: string;
+  description: string;
+  /** @nullable */
+  projectCategory: string | null;
+  mediaType: UgcEntryMediaType;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  youtubeVideoId: string | null;
+  /** @nullable */
+  brandName: string | null;
+  /** @nullable */
+  externalLink: string | null;
+  isFeatured: boolean;
+  displayOrder: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UgcEntryInputMediaType = typeof UgcEntryInputMediaType[keyof typeof UgcEntryInputMediaType];
+
+
+export const UgcEntryInputMediaType = {
+  image: 'image',
+  video: 'video',
+} as const;
+
+export interface UgcEntryInput {
+  title: string;
+  description: string;
+  /** @nullable */
+  projectCategory?: string | null;
+  mediaType?: UgcEntryInputMediaType;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  youtubeVideoId?: string | null;
+  /** @nullable */
+  brandName?: string | null;
+  /** @nullable */
+  externalLink?: string | null;
+  isFeatured?: boolean;
+  displayOrder?: number;
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+}
+
+export interface Testimonial {
+  id: number;
+  displayName: string;
+  /** @nullable */
+  roleCompany: string | null;
+  testimonialText: string;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  category: string | null;
+  isFeatured: boolean;
+  displayOrder: number;
+  status: ContentStatus;
+  /** @nullable */
+  scheduledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TestimonialInput {
+  displayName: string;
+  /** @nullable */
+  roleCompany?: string | null;
+  testimonialText: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  category?: string | null;
+  isFeatured?: boolean;
+  displayOrder?: number;
+  status?: ContentStatus;
+  /** @nullable */
+  scheduledAt?: string | null;
+}
+
 export interface NewsletterSubscriptionInput {
   email: string;
   firstName?: string;
+  /** Must be true — explicit, unchecked-by-default consent to receive emails. */
+  consent: boolean;
+}
+
+export interface NewsletterUnsubscribeInput {
+  token: string;
 }
 
 export interface NewsletterSubscription {
@@ -443,6 +615,10 @@ export interface NewsletterSubscription {
   email: string;
   /** @nullable */
   firstName: string | null;
+  consentGivenAt: string;
+  /** @nullable */
+  unsubscribedAt: string | null;
+  unsubscribeToken: string;
   createdAt: string;
 }
 
@@ -539,6 +715,7 @@ export interface HomepageContent {
   showJournalSection: boolean;
   showRecommendationsSection: boolean;
   showCollaborateSection: boolean;
+  showTestimonialsSection: boolean;
   showNewsletterSection: boolean;
   /** @nullable */
   newsletterHeading: string | null;
@@ -571,6 +748,7 @@ export interface HomepageContentInput {
   showJournalSection?: boolean;
   showRecommendationsSection?: boolean;
   showCollaborateSection?: boolean;
+  showTestimonialsSection?: boolean;
   showNewsletterSection?: boolean;
   /** @nullable */
   newsletterHeading?: string | null;
@@ -803,6 +981,16 @@ search?: string;
 };
 
 export type AdminListCuratedPicksParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListUgcEntriesParams = {
+status?: ContentStatus;
+search?: string;
+};
+
+export type AdminListTestimonialsParams = {
 status?: ContentStatus;
 search?: string;
 };

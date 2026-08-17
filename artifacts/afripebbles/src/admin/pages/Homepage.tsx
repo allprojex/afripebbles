@@ -22,6 +22,7 @@ interface FormValues {
   showJournalSection: boolean;
   showRecommendationsSection: boolean;
   showCollaborateSection: boolean;
+  showTestimonialsSection: boolean;
   showNewsletterSection: boolean;
   newsletterHeading: string | null;
   newsletterBody: string | null;
@@ -35,6 +36,7 @@ const SECTION_TOGGLES: { name: keyof FormValues; label: string }[] = [
   { name: "showJournalSection", label: "Journal section" },
   { name: "showRecommendationsSection", label: "Recommendations section" },
   { name: "showCollaborateSection", label: "Collaboration section" },
+  { name: "showTestimonialsSection", label: "Testimonials section" },
   { name: "showNewsletterSection", label: "Newsletter section" },
 ];
 
@@ -57,6 +59,7 @@ export default function AdminHomepage() {
       showJournalSection: true,
       showRecommendationsSection: true,
       showCollaborateSection: true,
+      showTestimonialsSection: true,
       showNewsletterSection: true,
       newsletterHeading: null,
       newsletterBody: null,

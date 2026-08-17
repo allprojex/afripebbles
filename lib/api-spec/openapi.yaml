@@ -18,6 +18,10 @@ tags:
     description: Blog posts and inspirational content
   - name: curated
     description: Curated affiliate recommendations
+  - name: ugc
+    description: AfriPebbles UGC portfolio
+  - name: testimonials
+    description: Client/collaborator testimonials
   - name: newsletter
     description: Newsletter subscriptions
   - name: collaborations
@@ -79,7 +83,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Product"
+                  $ref: "#/components/schemas/PublicProduct"
 
   /products/{id}:
     get:
@@ -98,7 +102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/PublicProduct"
         "404":
           description: Not found
           content:
@@ -246,6 +250,42 @@ paths:
                   $ref: "#/components/schemas/CuratedPick"
 
   # ---------------------------------------------------------------------------
+  # Public: UGC portfolio
+  # ---------------------------------------------------------------------------
+  /ugc-entries:
+    get:
+      operationId: listUgcEntries
+      tags: [ugc]
+      summary: List published UGC portfolio entries
+      responses:
+        "200":
+          description: List of published UGC entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UgcEntry"
+
+  # ---------------------------------------------------------------------------
+  # Public: testimonials
+  # ---------------------------------------------------------------------------
+  /testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List published testimonials
+      responses:
+        "200":
+          description: List of published testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+
+  # ---------------------------------------------------------------------------
   # Public: newsletter / collaboration / contact submissions
   # ---------------------------------------------------------------------------
   /newsletter-subscriptions:
@@ -268,6 +308,31 @@ paths:
                 $ref: "#/components/schemas/NewsletterSubscription"
         "409":
           description: Already subscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /newsletter-subscriptions/unsubscribe:
+    post:
+      operationId: unsubscribeNewsletter
+      tags: [newsletter]
+      summary: Unsubscribe using the token from an unsubscribe link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterUnsubscribeInput"
+      responses:
+        "200":
+          description: Unsubscribed (or already was — idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscription"
+        "404":
+          description: Unknown token
           content:
             application/json:
               schema:
@@ -912,6 +977,240 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   # ---------------------------------------------------------------------------
+  # Admin: UGC portfolio
+  # ---------------------------------------------------------------------------
+  /admin/ugc-entries:
+    get:
+      operationId: adminListUgcEntries
+      tags: [admin]
+      summary: List all UGC entries regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All UGC entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UgcEntry"
+    post:
+      operationId: adminCreateUgcEntry
+      tags: [admin]
+      summary: Create a UGC entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UgcEntryInput"
+      responses:
+        "201":
+          description: Entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UgcEntry"
+
+  /admin/ugc-entries/{id}:
+    get:
+      operationId: adminGetUgcEntry
+      tags: [admin]
+      summary: Get a UGC entry by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UgcEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateUgcEntry
+      tags: [admin]
+      summary: Update a UGC entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UgcEntryInput"
+      responses:
+        "200":
+          description: Entry updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UgcEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteUgcEntry
+      tags: [admin]
+      summary: Delete a UGC entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: testimonials
+  # ---------------------------------------------------------------------------
+  /admin/testimonials:
+    get:
+      operationId: adminListTestimonials
+      tags: [admin]
+      summary: List all testimonials regardless of status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ContentStatus"
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: adminCreateTestimonial
+      tags: [admin]
+      summary: Create a testimonial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Testimonial created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /admin/testimonials/{id}:
+    get:
+      operationId: adminGetTestimonial
+      tags: [admin]
+      summary: Get a testimonial by id regardless of status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Testimonial
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateTestimonial
+      tags: [admin]
+      summary: Update a testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "200":
+          description: Testimonial updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteTestimonial
+      tags: [admin]
+      summary: Delete a testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
   # Admin: homepage content & site settings (singleton resources)
   # ---------------------------------------------------------------------------
   /admin/homepage-content:
@@ -1111,6 +1410,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/NewsletterSubscription"
+
+  /admin/newsletter-subscriptions/{id}/unsubscribe:
+    post:
+      operationId: adminUnsubscribeNewsletterSubscription
+      tags: [admin]
+      summary: Manually unsubscribe a subscriber (support-driven opt-out). Idempotent.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Subscriber unsubscribed (or already was)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsletterSubscription"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
@@ -1332,6 +1656,117 @@ components:
         - stockStatus
         - isFeatured
         - downloadUrl
+        - preorderOpensAt
+        - preorderClosesAt
+        - estimatedFulfilment
+        - regions
+        - variants
+        - externalPurchaseUrl
+        - tags
+        - status
+        - scheduledAt
+        - seoTitle
+        - seoDescription
+        - createdAt
+        - updatedAt
+
+    # Public product shape — deliberately distinct from Product. downloadUrl is the
+    # private storage location of a digital file and must never reach an
+    # unauthenticated caller; hasDownload signals downloadability without it.
+    PublicProduct:
+      type: object
+      properties:
+        id:
+          type: number
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: ["string", "null"]
+        price:
+          type: number
+        currency:
+          type: string
+        type:
+          type: string
+          enum: [digital, physical]
+        category:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        images:
+          type: array
+          items:
+            type: string
+        previewImageUrl:
+          type: ["string", "null"]
+        availability:
+          type: string
+          enum: [available, preorder, coming_soon, out_of_stock]
+        stockStatus:
+          type: string
+          enum: [in_stock, limited, out_of_stock]
+        isFeatured:
+          type: boolean
+        hasDownload:
+          type: boolean
+        preorderOpensAt:
+          type: ["string", "null"]
+          format: date-time
+        preorderClosesAt:
+          type: ["string", "null"]
+          format: date-time
+        estimatedFulfilment:
+          type: ["string", "null"]
+        regions:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariant"
+        externalPurchaseUrl:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+        - description
+        - shortDescription
+        - price
+        - currency
+        - type
+        - category
+        - imageUrl
+        - images
+        - previewImageUrl
+        - availability
+        - stockStatus
+        - isFeatured
+        - hasDownload
         - preorderOpensAt
         - preorderClosesAt
         - estimatedFulfilment
@@ -1787,6 +2222,163 @@ components:
         - affiliateUrl
         - brand
 
+    UgcEntry:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        projectCategory:
+          type: ["string", "null"]
+        mediaType:
+          type: string
+          enum: [image, video]
+        imageUrl:
+          type: ["string", "null"]
+        youtubeVideoId:
+          type: ["string", "null"]
+        brandName:
+          type: ["string", "null"]
+        externalLink:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - projectCategory
+        - mediaType
+        - imageUrl
+        - youtubeVideoId
+        - brandName
+        - externalLink
+        - isFeatured
+        - displayOrder
+        - status
+        - scheduledAt
+        - createdAt
+        - updatedAt
+
+    UgcEntryInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        projectCategory:
+          type: ["string", "null"]
+        mediaType:
+          type: string
+          enum: [image, video]
+        imageUrl:
+          type: ["string", "null"]
+        youtubeVideoId:
+          type: ["string", "null"]
+        brandName:
+          type: ["string", "null"]
+        externalLink:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - title
+        - description
+
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: number
+        displayName:
+          type: string
+        roleCompany:
+          type: ["string", "null"]
+        testimonialText:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - displayName
+        - roleCompany
+        - testimonialText
+        - imageUrl
+        - category
+        - isFeatured
+        - displayOrder
+        - status
+        - scheduledAt
+        - createdAt
+        - updatedAt
+
+    TestimonialInput:
+      type: object
+      properties:
+        displayName:
+          type: string
+        roleCompany:
+          type: ["string", "null"]
+        testimonialText:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        isFeatured:
+          type: boolean
+        displayOrder:
+          type: number
+        status:
+          $ref: "#/components/schemas/ContentStatus"
+        scheduledAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - displayName
+        - testimonialText
+
     NewsletterSubscriptionInput:
       type: object
       properties:
@@ -1795,8 +2387,20 @@ components:
 
         firstName:
           type: string
+        consent:
+          type: boolean
+          description: Must be true — explicit, unchecked-by-default consent to receive emails.
       required:
         - email
+        - consent
+
+    NewsletterUnsubscribeInput:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
 
     NewsletterSubscription:
       type: object
@@ -1807,10 +2411,21 @@ components:
           type: string
         firstName:
           type: ["string", "null"]
+        consentGivenAt:
+          type: string
+          format: date-time
+        unsubscribedAt:
+          type: ["string", "null"]
+          format: date-time
+        unsubscribeToken:
+          type: string
         createdAt:
           type: string
           format: date-time
       required:
+        - consentGivenAt
+        - unsubscribedAt
+        - unsubscribeToken
         - id
         - email
         - firstName
@@ -1980,6 +2595,8 @@ components:
           type: boolean
         showCollaborateSection:
           type: boolean
+        showTestimonialsSection:
+          type: boolean
         showNewsletterSection:
           type: boolean
         newsletterHeading:
@@ -2007,6 +2624,7 @@ components:
         - showJournalSection
         - showRecommendationsSection
         - showCollaborateSection
+        - showTestimonialsSection
         - showNewsletterSection
         - newsletterHeading
         - newsletterBody
@@ -2040,6 +2658,8 @@ components:
         showRecommendationsSection:
           type: boolean
         showCollaborateSection:
+          type: boolean
+        showTestimonialsSection:
           type: boolean
         showNewsletterSection:
           type: boolean

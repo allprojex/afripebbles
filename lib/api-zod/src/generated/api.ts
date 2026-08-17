@@ -41,7 +41,7 @@ export const ListProductsResponseItem = zod.object({
   "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
-  "downloadUrl": zod.string().nullable(),
+  "hasDownload": zod.boolean(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -85,7 +85,7 @@ export const GetProductResponse = zod.object({
   "availability": zod.enum(['available', 'preorder', 'coming_soon', 'out_of_stock']),
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
-  "downloadUrl": zod.string().nullable(),
+  "hasDownload": zod.boolean(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -272,17 +272,82 @@ export const ListCuratedPicksResponse = zod.array(ListCuratedPicksResponseItem)
 
 
 /**
+ * @summary List published UGC portfolio entries
+ */
+export const ListUgcEntriesResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullable(),
+  "mediaType": zod.enum(['image', 'video']),
+  "imageUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "brandName": zod.string().nullable(),
+  "externalLink": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListUgcEntriesResponse = zod.array(ListUgcEntriesResponseItem)
+
+
+/**
+ * @summary List published testimonials
+ */
+export const ListTestimonialsResponseItem = zod.object({
+  "id": zod.number(),
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullable(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "category": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListTestimonialsResponse = zod.array(ListTestimonialsResponseItem)
+
+
+/**
  * @summary Subscribe to the newsletter
  */
 export const SubscribeNewsletterBody = zod.object({
   "email": zod.string(),
-  "firstName": zod.string().optional()
+  "firstName": zod.string().optional(),
+  "consent": zod.boolean().describe('Must be true — explicit, unchecked-by-default consent to receive emails.')
 })
 
 export const SubscribeNewsletterResponse = zod.object({
   "id": zod.number(),
   "email": zod.string(),
   "firstName": zod.string().nullable(),
+  "consentGivenAt": zod.coerce.date(),
+  "unsubscribedAt": zod.coerce.date().nullable(),
+  "unsubscribeToken": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Unsubscribe using the token from an unsubscribe link
+ */
+export const UnsubscribeNewsletterBody = zod.object({
+  "token": zod.string()
+})
+
+export const UnsubscribeNewsletterResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "firstName": zod.string().nullable(),
+  "consentGivenAt": zod.coerce.date(),
+  "unsubscribedAt": zod.coerce.date().nullable(),
+  "unsubscribeToken": zod.string(),
   "createdAt": zod.coerce.date()
 })
 
@@ -505,6 +570,7 @@ export const GetHomepageContentResponse = zod.union([zod.object({
   "showJournalSection": zod.boolean(),
   "showRecommendationsSection": zod.boolean(),
   "showCollaborateSection": zod.boolean(),
+  "showTestimonialsSection": zod.boolean(),
   "showNewsletterSection": zod.boolean(),
   "newsletterHeading": zod.string().nullable(),
   "newsletterBody": zod.string().nullable(),
@@ -1340,6 +1406,272 @@ export const AdminDeleteCuratedPickResponse = zod.void()
 
 
 /**
+ * @summary List all UGC entries regardless of status
+ */
+export const AdminListUgcEntriesQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListUgcEntriesResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullable(),
+  "mediaType": zod.enum(['image', 'video']),
+  "imageUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "brandName": zod.string().nullable(),
+  "externalLink": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListUgcEntriesResponse = zod.array(AdminListUgcEntriesResponseItem)
+
+
+/**
+ * @summary Create a UGC entry
+ */
+export const AdminCreateUgcEntryBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullish(),
+  "mediaType": zod.enum(['image', 'video']).optional(),
+  "imageUrl": zod.string().nullish(),
+  "youtubeVideoId": zod.string().nullish(),
+  "brandName": zod.string().nullish(),
+  "externalLink": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish()
+})
+
+export const AdminCreateUgcEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullable(),
+  "mediaType": zod.enum(['image', 'video']),
+  "imageUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "brandName": zod.string().nullable(),
+  "externalLink": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a UGC entry by id regardless of status
+ */
+export const AdminGetUgcEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetUgcEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullable(),
+  "mediaType": zod.enum(['image', 'video']),
+  "imageUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "brandName": zod.string().nullable(),
+  "externalLink": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a UGC entry
+ */
+export const AdminUpdateUgcEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateUgcEntryBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullish(),
+  "mediaType": zod.enum(['image', 'video']).optional(),
+  "imageUrl": zod.string().nullish(),
+  "youtubeVideoId": zod.string().nullish(),
+  "brandName": zod.string().nullish(),
+  "externalLink": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish()
+})
+
+export const AdminUpdateUgcEntryResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "projectCategory": zod.string().nullable(),
+  "mediaType": zod.enum(['image', 'video']),
+  "imageUrl": zod.string().nullable(),
+  "youtubeVideoId": zod.string().nullable(),
+  "brandName": zod.string().nullable(),
+  "externalLink": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a UGC entry
+ */
+export const AdminDeleteUgcEntryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteUgcEntryResponse = zod.void()
+
+
+/**
+ * @summary List all testimonials regardless of status
+ */
+export const AdminListTestimonialsQueryParams = zod.object({
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const AdminListTestimonialsResponseItem = zod.object({
+  "id": zod.number(),
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullable(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "category": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListTestimonialsResponse = zod.array(AdminListTestimonialsResponseItem)
+
+
+/**
+ * @summary Create a testimonial
+ */
+export const AdminCreateTestimonialBody = zod.object({
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullish(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish()
+})
+
+export const AdminCreateTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullable(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "category": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a testimonial by id regardless of status
+ */
+export const AdminGetTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullable(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "category": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a testimonial
+ */
+export const AdminUpdateTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateTestimonialBody = zod.object({
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullish(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullish(),
+  "category": zod.string().nullish(),
+  "isFeatured": zod.boolean().optional(),
+  "displayOrder": zod.number().optional(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
+  "scheduledAt": zod.coerce.date().nullish()
+})
+
+export const AdminUpdateTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "displayName": zod.string(),
+  "roleCompany": zod.string().nullable(),
+  "testimonialText": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "category": zod.string().nullable(),
+  "isFeatured": zod.boolean(),
+  "displayOrder": zod.number(),
+  "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
+  "scheduledAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a testimonial
+ */
+export const AdminDeleteTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteTestimonialResponse = zod.void()
+
+
+/**
  * @summary Get the homepage content overrides
  */
 export const AdminGetHomepageContentResponse = zod.object({
@@ -1356,6 +1688,7 @@ export const AdminGetHomepageContentResponse = zod.object({
   "showJournalSection": zod.boolean(),
   "showRecommendationsSection": zod.boolean(),
   "showCollaborateSection": zod.boolean(),
+  "showTestimonialsSection": zod.boolean(),
   "showNewsletterSection": zod.boolean(),
   "newsletterHeading": zod.string().nullable(),
   "newsletterBody": zod.string().nullable(),
@@ -1381,6 +1714,7 @@ export const AdminUpdateHomepageContentBody = zod.object({
   "showJournalSection": zod.boolean().optional(),
   "showRecommendationsSection": zod.boolean().optional(),
   "showCollaborateSection": zod.boolean().optional(),
+  "showTestimonialsSection": zod.boolean().optional(),
   "showNewsletterSection": zod.boolean().optional(),
   "newsletterHeading": zod.string().nullish(),
   "newsletterBody": zod.string().nullish(),
@@ -1402,6 +1736,7 @@ export const AdminUpdateHomepageContentResponse = zod.object({
   "showJournalSection": zod.boolean(),
   "showRecommendationsSection": zod.boolean(),
   "showCollaborateSection": zod.boolean(),
+  "showTestimonialsSection": zod.boolean(),
   "showNewsletterSection": zod.boolean(),
   "newsletterHeading": zod.string().nullable(),
   "newsletterBody": zod.string().nullable(),
@@ -1621,8 +1956,29 @@ export const AdminListNewsletterSubscriptionsResponseItem = zod.object({
   "id": zod.number(),
   "email": zod.string(),
   "firstName": zod.string().nullable(),
+  "consentGivenAt": zod.coerce.date(),
+  "unsubscribedAt": zod.coerce.date().nullable(),
+  "unsubscribeToken": zod.string(),
   "createdAt": zod.coerce.date()
 })
 export const AdminListNewsletterSubscriptionsResponse = zod.array(AdminListNewsletterSubscriptionsResponseItem)
+
+
+/**
+ * @summary Manually unsubscribe a subscriber (support-driven opt-out). Idempotent.
+ */
+export const AdminUnsubscribeNewsletterSubscriptionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUnsubscribeNewsletterSubscriptionResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "firstName": zod.string().nullable(),
+  "consentGivenAt": zod.coerce.date(),
+  "unsubscribedAt": zod.coerce.date().nullable(),
+  "unsubscribeToken": zod.string(),
+  "createdAt": zod.coerce.date()
+})
 
 

@@ -7,6 +7,7 @@ import { siteConfig } from "@/content/site";
 vi.mock("@workspace/api-client-react", () => ({
   useGetHomepageSummary: () => ({ data: undefined, isLoading: false }),
   useGetHomepageContent: () => ({ data: null, isLoading: false }),
+  useListTestimonials: () => ({ data: undefined, isLoading: false }),
   // Footer and Seo (rendered by every page via Layout) need these too.
   useSubscribeNewsletter: () => ({ mutate: vi.fn(), isPending: false }),
   useGetSiteSettings: () => ({ data: null }),

@@ -8,7 +8,7 @@ export interface SeoProps {
   description?: string;
   path?: string;
   image?: string;
-  /** Set false for pages that shouldn't be indexed yet (none currently). */
+  /** Set false for pages that must never be indexed (draft previews, unsubscribe links). */
   index?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
@@ -39,7 +39,7 @@ function setLink(rel: string, href: string) {
  * client-only Vite SPA (no SSR), so a react-helmet-style library would add
  * dependency weight for no real benefit over a small effect hook.
  */
-export function Seo({ title, description, path, image, jsonLd }: SeoProps) {
+export function Seo({ title, description, path, image, index, jsonLd }: SeoProps) {
   const { data: siteSettings } = useGetSiteSettings();
   const resolved = resolveSiteSettings(siteSettings);
 
@@ -53,6 +53,11 @@ export function Seo({ title, description, path, image, jsonLd }: SeoProps) {
     document.title = fullTitle;
     setMeta("name", "description", desc);
     setLink("canonical", canonicalUrl);
+    if (index === false) {
+      setMeta("name", "robots", "noindex, nofollow");
+    } else {
+      document.head.querySelector('meta[name="robots"]')?.remove();
+    }
 
     setMeta("property", "og:title", fullTitle);
     setMeta("property", "og:description", desc);
@@ -78,7 +83,7 @@ export function Seo({ title, description, path, image, jsonLd }: SeoProps) {
     return () => {
       document.getElementById(scriptId)?.remove();
     };
-  }, [title, description, path, image, jsonLd, resolved.seoDefaultDescription, resolved.canonicalUrl, resolved.socialShareImageUrl]);
+  }, [title, description, path, image, index, jsonLd, resolved.seoDefaultDescription, resolved.canonicalUrl, resolved.socialShareImageUrl]);
 
   return null;
 }

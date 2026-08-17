@@ -8,6 +8,8 @@ const STATUS_LABEL: Record<string, string> = {
   new: "New",
   read: "Read",
   resolved: "Resolved",
+  active: "Active",
+  unsubscribed: "Unsubscribed",
 };
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -18,6 +20,8 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
   new: "default",
   read: "secondary",
   resolved: "outline",
+  active: "default",
+  unsubscribed: "destructive",
 };
 
 export function StatusBadge({ status }: { status: string }) {

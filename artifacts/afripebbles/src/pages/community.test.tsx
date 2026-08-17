@@ -37,7 +37,7 @@ describe("Newsletter validation (Community page)", () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it("submits with a valid email and first name", async () => {
+  it("rejects submission without checking the consent checkbox", async () => {
     const user = userEvent.setup();
     renderCommunity();
 
@@ -46,8 +46,24 @@ describe("Newsletter validation (Community page)", () => {
     await user.click(screen.getByRole("button", { name: /join now/i }));
 
     await waitFor(() => {
+      expect(screen.getByText(/please agree to receive emails/i)).toBeInTheDocument();
+    });
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it("submits with a valid email, first name, and consent checked", async () => {
+    const user = userEvent.setup();
+    renderCommunity();
+
+    await user.type(screen.getByPlaceholderText(/your first name/i), "Jane");
+    await user.type(screen.getAllByPlaceholderText(/your email address/i)[0], "jane@example.com");
+    // The page's own consent checkbox, not the Footer's (also rendered via Layout).
+    await user.click(screen.getAllByRole("checkbox")[0]);
+    await user.click(screen.getByRole("button", { name: /join now/i }));
+
+    await waitFor(() => {
       expect(mockMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { email: "jane@example.com", firstName: "Jane" } }),
+        expect.objectContaining({ data: { email: "jane@example.com", firstName: "Jane", consent: true } }),
         expect.anything()
       );
     });

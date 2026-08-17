@@ -175,6 +175,7 @@ export const siteConfig = {
       { href: "/journal", label: "Journal" },
       { href: "/recommendations", label: "Recommendations" },
       { href: "/collaborate", label: "Collaborate" },
+      { href: "/ugc", label: "UGC" },
     ] satisfies NavLink[],
     footerExplore: [
       { href: "/about", label: "About Us" },
@@ -182,6 +183,7 @@ export const siteConfig = {
       { href: "/shop", label: "Shop" },
       { href: "/journal", label: "Journal" },
       { href: "/recommendations", label: "Recommendations" },
+      { href: "/ugc", label: "UGC" },
       { href: "/contact", label: "Contact" },
     ] satisfies NavLink[],
     footerLegal: [

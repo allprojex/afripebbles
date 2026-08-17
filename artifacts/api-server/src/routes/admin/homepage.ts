@@ -21,6 +21,7 @@ const DEFAULT_HOMEPAGE_CONTENT = {
   showJournalSection: true,
   showRecommendationsSection: true,
   showCollaborateSection: true,
+  showTestimonialsSection: true,
   showNewsletterSection: true,
   newsletterHeading: null,
   newsletterBody: null,

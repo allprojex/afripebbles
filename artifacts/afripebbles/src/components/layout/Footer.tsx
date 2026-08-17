@@ -1,12 +1,18 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useForm, Controller } from "react-hook-form";
 import { useSubscribeNewsletter, useGetSiteSettings } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { Instagram, Facebook, Youtube, ArrowRight } from "lucide-react";
 import { siteConfig } from "@/content/site";
 import { resolveSiteSettings } from "@/lib/settings";
+
+interface FooterNewsletterForm {
+  email: string;
+  consent: boolean;
+}
 
 const SOCIAL_ICONS: Record<string, typeof Instagram> = {
   Instagram: Instagram,
@@ -17,15 +23,17 @@ const SOCIAL_ICONS: Record<string, typeof Instagram> = {
 
 export default function Footer() {
   const { toast } = useToast();
-  const { register, handleSubmit, reset, formState } = useForm<{ email: string }>();
+  const { register, control, handleSubmit, reset, formState } = useForm<FooterNewsletterForm>({
+    defaultValues: { email: "", consent: false },
+  });
   const subscribeMutation = useSubscribeNewsletter();
   const { data: siteSettings } = useGetSiteSettings();
   const resolved = resolveSiteSettings(siteSettings);
   const socialLinks = resolved.socialLinks;
 
-  const onSubmit = (data: { email: string }) => {
+  const onSubmit = (data: FooterNewsletterForm) => {
     subscribeMutation.mutate(
-      { data: { email: data.email } },
+      { data: { email: data.email, consent: data.consent } },
       {
         onSuccess: () => {
           toast({
@@ -125,9 +133,28 @@ export default function Footer() {
                 <ArrowRight size={18} />
               </Button>
             </form>
-            <p className="text-xs text-foreground/40">
-              By subscribing, you agree to receive emails from AfriPebbles. Unsubscribe anytime.
-            </p>
+            <label className="flex items-start gap-2 text-xs text-foreground/50">
+              <Controller
+                control={control}
+                name="consent"
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    aria-invalid={formState.errors.consent ? "true" : "false"}
+                    className="mt-0.5"
+                  />
+                )}
+              />
+              <span>
+                I agree to receive emails from AfriPebbles. See our{" "}
+                <Link href="/privacy" className="underline hover:text-primary">
+                  Privacy Policy
+                </Link>
+                . Unsubscribe anytime.
+              </span>
+            </label>
           </div>
         </div>
 

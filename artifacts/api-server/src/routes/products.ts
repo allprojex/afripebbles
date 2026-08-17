@@ -8,6 +8,7 @@ import {
   GetProductResponse,
 } from "@workspace/api-zod";
 import { isPubliclyVisible } from "../lib/visibility";
+import { toPublicProduct } from "../lib/publicProduct";
 
 const router: IRouter = Router();
 
@@ -35,7 +36,7 @@ router.get("/products", async (req, res): Promise<void> => {
     .where(and(...conditions))
     .orderBy(productsTable.createdAt);
 
-  res.json(ListProductsResponse.parse(products));
+  res.json(ListProductsResponse.parse(products.map(toPublicProduct)));
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
@@ -56,7 +57,7 @@ router.get("/products/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetProductResponse.parse(product));
+  res.json(GetProductResponse.parse(toPublicProduct(product)));
 });
 
 export default router;

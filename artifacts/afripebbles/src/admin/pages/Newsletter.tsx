@@ -1,18 +1,33 @@
 import { useState } from "react";
-import { useAdminListNewsletterSubscriptions } from "@workspace/api-client-react";
+import { useAdminListNewsletterSubscriptions, useAdminUnsubscribeNewsletterSubscription } from "@workspace/api-client-react";
 import { Download, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatusBadge } from "../components/StatusBadge";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useToast } from "@/hooks/use-toast";
 import { downloadCsv } from "../lib/csv";
 
 export default function AdminNewsletter() {
   const [search, setSearch] = useState("");
   const { data: subscribers, isLoading } = useAdminListNewsletterSubscriptions({ search: search || undefined });
+  const unsubscribeMutation = useAdminUnsubscribeNewsletterSubscription();
+  const { toast } = useToast();
 
   const handleExport = () => {
     if (!subscribers || subscribers.length === 0) return;
     downloadCsv("newsletter-subscribers.csv", subscribers as unknown as Record<string, unknown>[]);
+  };
+
+  const handleUnsubscribe = (id: number) => {
+    unsubscribeMutation.mutate(
+      { id },
+      {
+        onSuccess: () => toast({ title: "Subscriber unsubscribed" }),
+        onError: (err) => toast({ variant: "destructive", title: "Couldn't unsubscribe", description: err instanceof Error ? err.message : undefined }),
+      },
+    );
   };
 
   return (
@@ -43,7 +58,9 @@ export default function AdminNewsletter() {
               <TableRow>
                 <TableHead>Email</TableHead>
                 <TableHead>First name</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Subscribed</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -51,7 +68,24 @@ export default function AdminNewsletter() {
                 <TableRow key={sub.id}>
                   <TableCell className="font-medium">{sub.email}</TableCell>
                   <TableCell>{sub.firstName ?? "—"}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={sub.unsubscribedAt ? "unsubscribed" : "active"} />
+                  </TableCell>
                   <TableCell className="text-foreground/50 text-sm">{new Date(sub.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    {!sub.unsubscribedAt && (
+                      <ConfirmDialog
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            Unsubscribe
+                          </Button>
+                        }
+                        title="Unsubscribe this contact?"
+                        description={`${sub.email} will no longer receive emails from AfriPebbles. They can resubscribe themselves at any time.`}
+                        onConfirm={() => handleUnsubscribe(sub.id)}
+                      />
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

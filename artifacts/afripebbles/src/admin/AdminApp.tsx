@@ -11,6 +11,11 @@ import AdminResetPassword from "./pages/auth/ResetPassword";
 import AdminDashboard from "./pages/Dashboard";
 import AdminProductsList from "./pages/products/List";
 import AdminProductEdit from "./pages/products/Edit";
+import AdminProductPreview from "./pages/products/Preview";
+import AdminUgcList from "./pages/ugc/List";
+import AdminUgcEdit from "./pages/ugc/Edit";
+import AdminTestimonialsList from "./pages/testimonials/List";
+import AdminTestimonialEdit from "./pages/testimonials/Edit";
 import AdminRecommendationsList from "./pages/recommendations/List";
 import AdminRecommendationEdit from "./pages/recommendations/Edit";
 import AdminPodcastList from "./pages/podcast/List";
@@ -48,7 +53,14 @@ export default function AdminApp() {
           <Route path="/" component={() => <Protected component={AdminDashboard} />} />
 
           <Route path="/products" component={() => <Protected component={AdminProductsList} />} />
+          <Route path="/products/:id/preview" component={() => <RequireAdmin><AdminProductPreview /></RequireAdmin>} />
           <Route path="/products/:id" component={() => <Protected component={AdminProductEdit} />} />
+
+          <Route path="/ugc" component={() => <Protected component={AdminUgcList} />} />
+          <Route path="/ugc/:id" component={() => <Protected component={AdminUgcEdit} />} />
+
+          <Route path="/testimonials" component={() => <Protected component={AdminTestimonialsList} />} />
+          <Route path="/testimonials/:id" component={() => <Protected component={AdminTestimonialEdit} />} />
 
           <Route path="/recommendations" component={() => <Protected component={AdminRecommendationsList} />} />
           <Route path="/recommendations/:id" component={() => <Protected component={AdminRecommendationEdit} />} />

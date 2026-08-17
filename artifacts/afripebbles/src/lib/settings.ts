@@ -77,6 +77,7 @@ export interface ResolvedHomepageContent {
   showJournalSection: boolean;
   showRecommendationsSection: boolean;
   showCollaborateSection: boolean;
+  showTestimonialsSection: boolean;
   showNewsletterSection: boolean;
   newsletterHeading: string | null;
   newsletterBody: string | null;
@@ -98,6 +99,7 @@ export function resolveHomepageContent(content: HomepageContent | null | undefin
     showJournalSection: content?.showJournalSection ?? true,
     showRecommendationsSection: content?.showRecommendationsSection ?? true,
     showCollaborateSection: content?.showCollaborateSection ?? true,
+    showTestimonialsSection: content?.showTestimonialsSection ?? true,
     showNewsletterSection: content?.showNewsletterSection ?? true,
     newsletterHeading: content?.newsletterHeading ?? null,
     newsletterBody: content?.newsletterBody ?? null,

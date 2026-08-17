@@ -18,6 +18,8 @@ import Collaborate from '@/pages/collaborate';
 import Community from '@/pages/community';
 import Contact from '@/pages/contact';
 import Faq from '@/pages/faq';
+import Ugc from '@/pages/ugc';
+import Unsubscribe from '@/pages/unsubscribe';
 import AdminApp from '@/admin/AdminApp';
 
 // Legal / policy pages
@@ -52,6 +54,8 @@ function Router() {
       <Route path="/community" component={Community} />
       <Route path="/contact" component={Contact} />
       <Route path="/faq" component={Faq} />
+      <Route path="/ugc" component={Ugc} />
+      <Route path="/unsubscribe" component={Unsubscribe} />
 
       <Route path="/privacy" component={PrivacyPolicyPage} />
       <Route path="/cookies" component={CookiePolicyPage} />

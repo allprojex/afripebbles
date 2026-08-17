@@ -3,7 +3,7 @@ import { useParams, useLocation, Link } from "wouter";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Eye } from "lucide-react";
 import {
   useAdminGetProduct,
   useAdminCreateProduct,
@@ -173,16 +173,23 @@ export default function AdminProductEdit() {
           <h1 className="text-3xl font-serif">{isNew ? "New product" : "Edit product"}</h1>
         </div>
         {!isNew && (
-          <ConfirmDialog
-            trigger={
-              <Button variant="destructive" size="sm" className="gap-2">
-                <Trash2 size={14} /> Delete
+          <div className="flex gap-2">
+            <a href={`/admin/products/${id}/preview`} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Eye size={14} /> Preview
               </Button>
-            }
-            title="Delete this product?"
-            description="This permanently removes the product. This can't be undone."
-            onConfirm={handleDelete}
-          />
+            </a>
+            <ConfirmDialog
+              trigger={
+                <Button variant="destructive" size="sm" className="gap-2">
+                  <Trash2 size={14} /> Delete
+                </Button>
+              }
+              title="Delete this product?"
+              description="This permanently removes the product. This can't be undone."
+              onConfirm={handleDelete}
+            />
+          </div>
         )}
       </div>
 

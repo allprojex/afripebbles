@@ -8,6 +8,7 @@ import { ArrowRight, PlayCircle, ShoppingBag, Heart, Headphones, Star, Camera, M
 import { siteConfig } from "@/content/site";
 import { AVAILABILITY_LABEL } from "@/lib/product";
 import { resolveHomepageContent } from "@/lib/settings";
+import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 // @ts-ignore
 import heroImage from "@assets/generated_images/hero.jpg";
 // @ts-ignore
@@ -333,6 +334,9 @@ export default function Home() {
         </div>
       </section>
       )}
+
+      {/* Testimonials */}
+      {content.showTestimonialsSection && <TestimonialsSection />}
 
       {/* Newsletter / Community */}
       {content.showNewsletterSection && (

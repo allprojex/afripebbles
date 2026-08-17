@@ -27,6 +27,7 @@ export interface HomepageContent {
   showJournalSection: boolean;
   showRecommendationsSection: boolean;
   showCollaborateSection: boolean;
+  showTestimonialsSection: boolean;
   showNewsletterSection: boolean;
   /** @nullable */
   newsletterHeading: string | null;

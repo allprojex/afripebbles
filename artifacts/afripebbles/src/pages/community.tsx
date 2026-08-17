@@ -1,11 +1,13 @@
 import Layout from "@/components/layout/Layout";
 import { Seo } from "@/components/Seo";
+import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { useSubscribeNewsletter } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { Mail, Sparkles, HeartHandshake, Coffee, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(2, "First name is required"),
+  consent: z.boolean().refine((v) => v === true, { message: "Please agree to receive emails to join." }),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -27,12 +30,13 @@ export default function Community() {
     defaultValues: {
       email: "",
       firstName: "",
+      consent: false,
     },
   });
 
   const onSubmit = (data: FormValues) => {
     mutation.mutate(
-      { data },
+      { data: { email: data.email, firstName: data.firstName, consent: data.consent } },
       {
         onSuccess: () => {
           toast({
@@ -135,12 +139,34 @@ export default function Community() {
                         )}
                       />
 
-                      <Button 
-                        type="submit" 
+                      <FormField
+                        control={form.control}
+                        name="consent"
+                        render={({ field }) => (
+                          <FormItem className="flex items-start gap-2 space-y-0">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} className="mt-0.5" />
+                            </FormControl>
+                            <div>
+                              <p className="text-xs text-foreground/60 leading-relaxed">
+                                I agree to receive emails from AfriPebbles. See our{" "}
+                                <Link href="/privacy" className="underline hover:text-primary">
+                                  Privacy Policy
+                                </Link>
+                                .
+                              </p>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        type="submit"
                         className="w-full h-12 rounded-xl mt-4 group"
                         disabled={mutation.isPending}
                       >
-                        {mutation.isPending ? "Subscribing..." : "Join Now"} 
+                        {mutation.isPending ? "Subscribing..." : "Join Now"}
                         <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </form>

@@ -22,6 +22,7 @@ export const homepageContentTable = pgTable("homepage_content", {
   showJournalSection: boolean("show_journal_section").notNull().default(true),
   showRecommendationsSection: boolean("show_recommendations_section").notNull().default(true),
   showCollaborateSection: boolean("show_collaborate_section").notNull().default(true),
+  showTestimonialsSection: boolean("show_testimonials_section").notNull().default(true),
   showNewsletterSection: boolean("show_newsletter_section").notNull().default(true),
   newsletterHeading: text("newsletter_heading"),
   newsletterBody: text("newsletter_body"),

@@ -11,5 +11,9 @@ export interface NewsletterSubscription {
   email: string;
   /** @nullable */
   firstName: string | null;
+  consentGivenAt: Date;
+  /** @nullable */
+  unsubscribedAt: Date | null;
+  unsubscribeToken: string;
   createdAt: Date;
 }
