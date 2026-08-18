@@ -16,10 +16,22 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Static shell shown only until React mounts and replaces this div's
+      contents (createRoot().render() overwrites all children — no
+      hydration is used here, so there is no mismatch risk). Keeps the
+      first paint from being a blank white screen while the JS bundle
+      downloads/parses; intentionally no animation so it can't itself
+      delay anything.
+    -->
+    <div id="root">
+      <div class="min-h-screen flex items-center justify-center bg-background">
+        <span class="font-serif text-2xl text-foreground/60 tracking-wide">AfriPebbles</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

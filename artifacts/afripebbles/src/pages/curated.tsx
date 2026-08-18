@@ -104,6 +104,7 @@ export default function CuratedPicks() {
                   <img
                     src={pick.imageUrl}
                     alt={pick.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   )}

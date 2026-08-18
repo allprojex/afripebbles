@@ -39,6 +39,8 @@ export default function Home() {
           <img
             src={content.heroImageUrl || heroImage}
             alt="AfriPebbles Lifestyle"
+            loading="eager"
+            fetchPriority="high"
             className="w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px]"></div>
@@ -158,6 +160,7 @@ export default function Home() {
                 <img
                   src={summary?.latestEpisode?.coverImageUrl || placeholderPodcast}
                   alt={siteConfig.podcast.name}
+                  loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
@@ -225,6 +228,7 @@ export default function Home() {
                           <img
                             src={product.imageUrl}
                             alt={product.title}
+                            loading="lazy"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                         )}
@@ -278,6 +282,7 @@ export default function Home() {
                         <img
                           src={post.coverImageUrl}
                           alt={post.title}
+                          loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       )}

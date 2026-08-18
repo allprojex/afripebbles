@@ -94,9 +94,10 @@ export default function BlogListing() {
                   className={`group flex flex-col ${isFeatured ? 'md:col-span-2 lg:col-span-2 md:flex-row gap-8 items-center border-b border-border pb-16 mb-4' : ''}`}
                 >
                   <Link href={`/journal/${post.slug}`} className={`block overflow-hidden rounded-xl bg-muted ${isFeatured ? 'w-full md:w-1/2 aspect-[4/3] md:aspect-[16/10]' : 'w-full aspect-[4/3] mb-6'} shadow-sm`}>
-                    <img 
-                      src={post.coverImageUrl || placeholderBlog} 
+                    <img
+                      src={post.coverImageUrl || placeholderBlog}
                       alt={post.title}
+                      loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                     />
                   </Link>

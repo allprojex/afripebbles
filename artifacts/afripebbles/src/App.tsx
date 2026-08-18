@@ -1,6 +1,8 @@
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Spinner } from '@/components/ui/spinner';
 import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 
@@ -24,8 +26,28 @@ import Cart from '@/pages/cart';
 import Checkout from '@/pages/checkout';
 import OrderConfirmation from '@/pages/order-confirmation';
 import TrackOrder from '@/pages/track-order';
-import AdminApp from '@/admin/AdminApp';
 import { CartProvider } from '@/lib/cart';
+
+// Code-split so ordinary public visitors never download the admin
+// application (or trigger the Supabase Auth client it pulls in) — the
+// chunk is only fetched once someone actually navigates to /admin.
+const AdminApp = lazy(() => import('@/admin/AdminApp'));
+
+function AdminLoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Spinner className="size-8 text-primary" />
+    </div>
+  );
+}
+
+function LazyAdminApp() {
+  return (
+    <Suspense fallback={<AdminLoadingFallback />}>
+      <AdminApp />
+    </Suspense>
+  );
+}
 
 // Legal / policy pages
 import PrivacyPolicyPage from '@/pages/legal/privacy';
@@ -76,8 +98,8 @@ function Router() {
       <Route path="/affiliate-disclosure" component={AffiliateDisclosurePage} />
       <Route path="/digital-product-terms" component={DigitalProductTermsPage} />
 
-      <Route path="/admin" component={AdminApp} />
-      <Route path="/admin/*" component={AdminApp} />
+      <Route path="/admin" component={LazyAdminApp} />
+      <Route path="/admin/*" component={LazyAdminApp} />
 
       <Route component={NotFound} />
     </Switch>
