@@ -20,7 +20,7 @@ import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
 export default function AdminOrderDetail() {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
-  const { data, isLoading } = useAdminGetOrder(id);
+  const { data, isLoading, refetch } = useAdminGetOrder(id);
   const { data: settings } = useGetSiteSettings();
   const updateMutation = useAdminUpdateOrder();
   const { toast } = useToast();
@@ -43,6 +43,7 @@ export default function AdminOrderDetail() {
         onSuccess: () => {
           toast({ title: "Order updated" });
           setStatusChangeNote("");
+          refetch();
         },
         onError: () => toast({ variant: "destructive", title: "Couldn't update the order" }),
       },
@@ -60,7 +61,13 @@ export default function AdminOrderDetail() {
         },
       },
       {
-        onSuccess: () => toast({ title: "Order updated" }),
+        onSuccess: () => {
+          toast({ title: "Order updated" });
+          setTrackingNumber(null);
+          setInternalNotes(null);
+          setPaymentNote(null);
+          refetch();
+        },
         onError: () => toast({ variant: "destructive", title: "Couldn't update the order" }),
       },
     );
