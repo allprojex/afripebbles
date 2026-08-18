@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeWhatsAppNumber, formatWhatsAppOrderMessage, buildWhatsAppOrderLink } from "./whatsapp";
+import { normalizeWhatsAppNumber, formatWhatsAppOrderMessage, buildWhatsAppOrderLink, resolveCommerceWhatsappNumber } from "./whatsapp";
 import type { OrderWithItems } from "@workspace/api-client-react";
 
 function baseOrder(overrides: Partial<OrderWithItems> = {}): OrderWithItems {
@@ -182,5 +182,36 @@ describe("buildWhatsAppOrderLink — URL encoding and pure link generation", () 
     // Confirms order creation success is fully decoupled from this call:
     // the order object is untouched by generating (or never opening) the link.
     expect(JSON.stringify(order)).toBe(before);
+  });
+});
+
+describe("resolveCommerceWhatsappNumber — falls back to the general contact WhatsApp number", () => {
+  it("uses commerceWhatsappNumber when it's set, even if the general number is also set", () => {
+    expect(resolveCommerceWhatsappNumber({ commerceWhatsappNumber: "233241234567", whatsappNumber: "233209999999" })).toBe("233241234567");
+  });
+
+  it("falls back to the general whatsappNumber when commerceWhatsappNumber is unset", () => {
+    expect(resolveCommerceWhatsappNumber({ commerceWhatsappNumber: null, whatsappNumber: "233242325818" })).toBe("233242325818");
+  });
+
+  it("falls back even when commerceWhatsappNumber is an empty string", () => {
+    expect(resolveCommerceWhatsappNumber({ commerceWhatsappNumber: "", whatsappNumber: "233242325818" })).toBe("233242325818");
+  });
+
+  it("returns null when neither number is configured", () => {
+    expect(resolveCommerceWhatsappNumber({ commerceWhatsappNumber: null, whatsappNumber: null })).toBeNull();
+  });
+
+  it("returns null for null/undefined settings instead of throwing", () => {
+    expect(resolveCommerceWhatsappNumber(null)).toBeNull();
+    expect(resolveCommerceWhatsappNumber(undefined)).toBeNull();
+  });
+
+  it("works end to end with buildWhatsAppOrderLink using only the general number", () => {
+    const order = baseOrder();
+    const number = resolveCommerceWhatsappNumber({ commerceWhatsappNumber: null, whatsappNumber: "233242325818" });
+    expect(number).toBe("233242325818");
+    const link = buildWhatsAppOrderLink(order, number!);
+    expect(link).toMatch(/^https:\/\/wa\.me\/233242325818\?text=/);
   });
 });

@@ -272,7 +272,7 @@ export default function AdminSiteSettings() {
             <TextField
               control={form.control}
               name="commerceWhatsappNumber"
-              label="Order WhatsApp number"
+              label="Order WhatsApp number (optional — defaults to the WhatsApp number above if left blank)"
               placeholder="Digits only with country code, e.g. 233241234567 — no +, spaces, or leading 0"
             />
             <FormField

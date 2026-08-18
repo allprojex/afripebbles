@@ -52,11 +52,12 @@ const baseOrder = {
 const mockUseAdminGetOrder = vi.fn();
 const mockUpdateMutate = vi.fn();
 const mockRefetch = vi.fn();
+let mockSettings: unknown = null;
 
 vi.mock("@workspace/api-client-react", () => ({
   useAdminGetOrder: (...args: unknown[]) => mockUseAdminGetOrder(...args),
   useAdminUpdateOrder: () => ({ mutate: mockUpdateMutate, isPending: false }),
-  useGetSiteSettings: () => ({ data: null }),
+  useGetSiteSettings: () => ({ data: mockSettings }),
 }));
 
 function renderDetail(path = "/25") {
@@ -73,6 +74,7 @@ describe("AdminOrderDetail — status changes must be reflected, not silently re
     mockUseAdminGetOrder.mockReset();
     mockUpdateMutate.mockReset();
     mockRefetch.mockReset();
+    mockSettings = null;
   });
 
   it("submits the new payment status and refetches on success, so the UI doesn't snap back to the stale server value", async () => {
@@ -113,5 +115,27 @@ describe("AdminOrderDetail — status changes must be reflected, not silently re
     const [, callbacks] = mockUpdateMutate.mock.calls[0];
     callbacks.onSuccess({});
     expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('"Open in WhatsApp" falls back to the general whatsappNumber when commerceWhatsappNumber is unset', async () => {
+    mockUseAdminGetOrder.mockReturnValue({ data: { order: baseOrder, history: [] }, isLoading: false, refetch: mockRefetch });
+    mockSettings = { commerceWhatsappNumber: null, whatsappNumber: "233242325818" };
+    renderDetail();
+
+    await waitFor(() => expect(screen.getByText("AP-20260101-ABC123")).toBeInTheDocument());
+
+    const link = screen.getByRole("link", { name: /open in whatsapp/i });
+    expect(link).toHaveAttribute("href", expect.stringMatching(/^https:\/\/wa\.me\/233242325818\?text=/));
+  });
+
+  it('"Open in WhatsApp" is hidden and shows the setup hint when neither number is configured', async () => {
+    mockUseAdminGetOrder.mockReturnValue({ data: { order: baseOrder, history: [] }, isLoading: false, refetch: mockRefetch });
+    mockSettings = { commerceWhatsappNumber: null, whatsappNumber: null };
+    renderDetail();
+
+    await waitFor(() => expect(screen.getByText("AP-20260101-ABC123")).toBeInTheDocument());
+
+    expect(screen.queryByRole("link", { name: /open in whatsapp/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/set a.*whatsapp number in site settings/i)).toBeInTheDocument();
   });
 });

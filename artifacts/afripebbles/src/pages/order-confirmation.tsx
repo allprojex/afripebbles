@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
-import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
+import { buildWhatsAppOrderLink, resolveCommerceWhatsappNumber } from "@/lib/whatsapp";
 import { useGetSiteSettings, type OrderWithItems } from "@workspace/api-client-react";
 
 const ORDER_STORAGE_KEY = "afripebbles_last_order";
@@ -39,7 +39,7 @@ export default function OrderConfirmation() {
     );
   }
 
-  const whatsappNumber = settings?.commerceWhatsappNumber;
+  const whatsappNumber = resolveCommerceWhatsappNumber(settings);
   const whatsappLink = whatsappNumber ? buildWhatsAppOrderLink(order, whatsappNumber) : null;
 
   return (

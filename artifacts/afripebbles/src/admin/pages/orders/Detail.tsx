@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { StatusBadge } from "../../components/StatusBadge";
 import { formatCurrency } from "@/lib/currency";
-import { buildWhatsAppOrderLink } from "@/lib/whatsapp";
+import { buildWhatsAppOrderLink, resolveCommerceWhatsappNumber } from "@/lib/whatsapp";
 
 export default function AdminOrderDetail() {
   const params = useParams<{ id: string }>();
@@ -34,7 +34,8 @@ export default function AdminOrderDetail() {
   if (!data) return <p className="text-foreground/60">Order not found.</p>;
 
   const { order, history } = data;
-  const whatsappLink = settings?.commerceWhatsappNumber ? buildWhatsAppOrderLink(order, settings.commerceWhatsappNumber) : null;
+  const whatsappNumber = resolveCommerceWhatsappNumber(settings);
+  const whatsappLink = whatsappNumber ? buildWhatsAppOrderLink(order, whatsappNumber) : null;
 
   const updateField = (field: "paymentStatus" | "orderStatus", value: PaymentStatus | OrderStatus) => {
     updateMutation.mutate(

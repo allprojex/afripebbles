@@ -86,3 +86,15 @@ export function buildWhatsAppOrderLink(order: OrderWithItems, ownerNumber: strin
   const message = formatWhatsAppOrderMessage(order);
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }
+
+/**
+ * `commerceWhatsappNumber` is an optional override for the order-WhatsApp
+ * flow specifically; the pre-existing general-contact `whatsappNumber` is
+ * the fallback so a store owner who only ever filled in the original
+ * "WhatsApp number" field doesn't see orders go unconfigured.
+ */
+export function resolveCommerceWhatsappNumber(
+  settings: { commerceWhatsappNumber?: string | null; whatsappNumber?: string | null } | null | undefined,
+): string | null {
+  return settings?.commerceWhatsappNumber || settings?.whatsappNumber || null;
+}
