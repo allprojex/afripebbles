@@ -20,6 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploader } from "../../components/ImageUploader";
 import { MultiImageUploader } from "../../components/MultiImageUploader";
+import { DigitalFileUploader } from "../../components/DigitalFileUploader";
 import { TagsInput } from "../../components/TagsInput";
 import { DateTimeInput } from "../../components/DateTimeInput";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
@@ -44,6 +45,8 @@ const schema = z.object({
   stockStatus: z.enum(["in_stock", "limited", "out_of_stock"]),
   isFeatured: z.boolean(),
   downloadUrl: z.string().nullable(),
+  shippingAmount: z.coerce.number().min(0, "Can't be negative"),
+  digitalDownloadPath: z.string().nullable(),
   preorderOpensAt: z.string().nullable(),
   preorderClosesAt: z.string().nullable(),
   estimatedFulfilment: z.string().nullable(),
@@ -75,6 +78,8 @@ const DEFAULT_VALUES: FormValues = {
   stockStatus: "in_stock",
   isFeatured: false,
   downloadUrl: null,
+  shippingAmount: 0,
+  digitalDownloadPath: null,
   preorderOpensAt: null,
   preorderClosesAt: null,
   estimatedFulfilment: null,
@@ -416,6 +421,20 @@ export default function AdminProductEdit() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="shippingAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shipping amount (physical products)</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" min="0" {...field} />
+                    </FormControl>
+                    <FormDescription>Fixed shipping charged once per order line. Digital products are always shipped free.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </section>
 
@@ -533,12 +552,18 @@ export default function AdminProductEdit() {
               name="downloadUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Download URL (digital products)</FormLabel>
+                  <FormLabel>Legacy download URL (unused by order fulfilment)</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
                   </FormControl>
+                  <FormDescription>Superseded by the secure digital file below — kept only for backward compatibility.</FormDescription>
                 </FormItem>
               )}
+            />
+            <FormField
+              control={form.control}
+              name="digitalDownloadPath"
+              render={({ field }) => <DigitalFileUploader value={field.value} onChange={field.onChange} label="Digital file (delivered after payment)" />}
             />
           </section>
 

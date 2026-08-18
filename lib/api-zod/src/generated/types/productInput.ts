@@ -32,6 +32,9 @@ export interface ProductInput {
   isFeatured?: boolean;
   /** @nullable */
   downloadUrl?: string | null;
+  shippingAmount?: number;
+  /** @nullable */
+  digitalDownloadPath?: string | null;
   /** @nullable */
   preorderOpensAt?: Date | null;
   /** @nullable */

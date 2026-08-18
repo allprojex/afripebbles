@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import Collaborate from "./collaborate";
 import { siteConfig } from "@/content/site";
 
@@ -17,7 +18,9 @@ vi.mock("@workspace/api-client-react", () => ({
 function renderCollaborate() {
   return render(
     <Router base="">
-      <Collaborate />
+      <CartProvider>
+        <Collaborate />
+      </CartProvider>
     </Router>
   );
 }

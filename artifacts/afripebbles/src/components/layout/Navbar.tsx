@@ -1,9 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/content/site";
+import { useCart } from "@/lib/cart";
+
+function CartLink({ className }: { className?: string }) {
+  const { itemCount } = useCart();
+  return (
+    <Link href="/cart" className={cn("relative p-2 text-foreground/80 hover:text-primary transition-colors", className)} aria-label={`Cart (${itemCount} items)`}>
+      <ShoppingBag size={22} />
+      {itemCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center">
+          {itemCount}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -56,7 +71,8 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-2">
+          <CartLink />
           <Link href="/community">
             <Button variant="default" className="rounded-full px-6">
               Join the Community
@@ -65,14 +81,17 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <button
-          className="lg:hidden p-2 text-foreground"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="lg:hidden flex items-center gap-1">
+          <CartLink />
+          <button
+            className="p-2 text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Nav */}

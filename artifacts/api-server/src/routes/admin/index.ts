@@ -13,6 +13,8 @@ import settingsRouter from "./settings";
 import enquiriesRouter from "./enquiries";
 import newsletterRouter from "./newsletter";
 import uploadsRouter from "./uploads";
+import ordersRouter from "./orders";
+import couponsRouter from "./coupons";
 
 const router: IRouter = Router();
 
@@ -33,5 +35,7 @@ router.use(settingsRouter);
 router.use(enquiriesRouter);
 router.use(newsletterRouter);
 router.use(uploadsRouter);
+router.use(ordersRouter);
+router.use(couponsRouter);
 
 export default router;

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import PodcastListing from "./index";
 import { siteConfig } from "@/content/site";
 
@@ -15,7 +16,9 @@ describe("PodcastListing (pre-launch)", () => {
   it("shows an honest coming-soon state instead of fake episodes", () => {
     render(
       <Router base="">
-        <PodcastListing />
+        <CartProvider>
+          <PodcastListing />
+        </CartProvider>
       </Router>
     );
 

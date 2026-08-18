@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import ShopProduct from "./product";
 
 const baseProduct = {
@@ -39,13 +41,20 @@ vi.mock("@workspace/api-client-react", () => ({
 function renderProductPage() {
   return render(
     <Router base="">
-      <ShopProduct />
+      <CartProvider>
+        <ShopProduct />
+      </CartProvider>
     </Router>
   );
 }
 
-describe("ShopProduct — honesty of the purchase action", () => {
-  it("never claims an item was added to a bag (no cart exists)", () => {
+describe("ShopProduct — real cart, no fake purchase states", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("adds an available product to the cart via a real Add to Cart action", async () => {
+    const user = userEvent.setup();
     mockUseGetProduct.mockReturnValue({
       data: { ...baseProduct, availability: "available" },
       isLoading: false,
@@ -54,10 +63,13 @@ describe("ShopProduct — honesty of the purchase action", () => {
 
     renderProductPage();
 
-    expect(screen.queryByText(/added to (your )?bag/i)).not.toBeInTheDocument();
+    expect(screen.getAllByLabelText("Cart (0 items)").length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: /add to cart/i }));
+    await screen.findAllByLabelText("Cart (1 items)");
   });
 
-  it("offers an honest pre-order enquiry action for pre-order products, not a fake purchase", () => {
+  it("allows adding a preorder item to the cart when no window restricts it, with no fake immediate-purchase claim", async () => {
+    const user = userEvent.setup();
     mockUseGetProduct.mockReturnValue({
       data: { ...baseProduct, availability: "preorder", type: "physical" },
       isLoading: false,
@@ -66,8 +78,39 @@ describe("ShopProduct — honesty of the purchase action", () => {
 
     renderProductPage();
 
-    expect(screen.getByRole("link", { name: /join the pre-order list/i })).toBeInTheDocument();
-    expect(screen.queryByText(/3-4 weeks/i)).not.toBeInTheDocument();
+    const button = screen.getByRole("button", { name: /add pre-order to cart/i });
+    expect(button).toBeEnabled();
+    await user.click(button);
+    await screen.findAllByLabelText("Cart (1 items)");
+  });
+
+  it("disables adding a preorder item to the cart once its preorder window has closed", () => {
+    mockUseGetProduct.mockReturnValue({
+      data: { ...baseProduct, availability: "preorder", preorderClosesAt: new Date(Date.now() - 86_400_000).toISOString() },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+    expect(screen.getByRole("button", { name: /add pre-order to cart/i })).toBeDisabled();
+    expect(screen.getByText(/pre-orders aren't open right now/i)).toBeInTheDocument();
+  });
+
+  it("requires a variant selection before a variant product can be added to the cart", async () => {
+    const user = userEvent.setup();
+    mockUseGetProduct.mockReturnValue({
+      data: { ...baseProduct, availability: "available", type: "physical", variants: [{ label: "Size", options: ["S", "M"] }] },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+
+    const addButton = screen.getByRole("button", { name: /add to cart/i });
+    expect(addButton).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "M" }));
+    expect(addButton).toBeEnabled();
   });
 
   it("offers a coming-soon notify action instead of a purchase button when not orderable", () => {
@@ -79,6 +122,20 @@ describe("ShopProduct — honesty of the purchase action", () => {
 
     renderProductPage();
 
-    expect(screen.getByText(/isn't orderable yet/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /notify me when available/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /add to cart/i })).not.toBeInTheDocument();
+  });
+
+  it("respects an external purchase URL instead of adding to the internal cart", () => {
+    mockUseGetProduct.mockReturnValue({
+      data: { ...baseProduct, availability: "available", externalPurchaseUrl: "https://example.com/buy" },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+
+    expect(screen.getByRole("link", { name: /purchase/i })).toHaveAttribute("href", "https://example.com/buy");
+    expect(screen.queryByRole("button", { name: /add to cart/i })).not.toBeInTheDocument();
   });
 });

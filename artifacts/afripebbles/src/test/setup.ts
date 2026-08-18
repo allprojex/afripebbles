@@ -4,6 +4,10 @@ import "@testing-library/jest-dom/vitest";
 
 afterEach(() => {
   cleanup();
+  // The guest cart persists to localStorage — without this, cart state leaks
+  // across tests within the same file (jsdom's localStorage isn't reset
+  // between tests automatically).
+  localStorage.clear();
 });
 
 // jsdom doesn't implement these — framer-motion's `whileInView` and several

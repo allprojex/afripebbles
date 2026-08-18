@@ -130,6 +130,9 @@ export interface Product {
   isFeatured: boolean;
   /** @nullable */
   downloadUrl: string | null;
+  shippingAmount: number;
+  /** @nullable */
+  digitalDownloadPath: string | null;
   /** @nullable */
   preorderOpensAt: string | null;
   /** @nullable */
@@ -200,6 +203,7 @@ export interface PublicProduct {
   stockStatus: PublicProductStockStatus;
   isFeatured: boolean;
   hasDownload: boolean;
+  shippingAmount: number;
   /** @nullable */
   preorderOpensAt: string | null;
   /** @nullable */
@@ -270,6 +274,9 @@ export interface ProductInput {
   isFeatured?: boolean;
   /** @nullable */
   downloadUrl?: string | null;
+  shippingAmount?: number;
+  /** @nullable */
+  digitalDownloadPath?: string | null;
   /** @nullable */
   preorderOpensAt?: string | null;
   /** @nullable */
@@ -760,6 +767,21 @@ export interface HomepageContentInput {
   collaborateBody?: string | null;
 }
 
+export interface MobileMoneyDetails {
+  provider: string;
+  accountNumber: string;
+  accountName: string;
+  instructions: string;
+}
+
+export interface BankTransferDetails {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  ibanOrSwift?: string;
+  instructions: string;
+}
+
 export interface SiteSettings {
   id: number;
   /** @nullable */
@@ -811,6 +833,17 @@ export interface SiteSettings {
   affiliateDisclosure: string | null;
   /** @nullable */
   privacyContactInfo: string | null;
+  /** @nullable */
+  commerceWhatsappNumber: string | null;
+  /** @nullable */
+  paypalPaymentLink: string | null;
+  mobileMoneyDetails: MobileMoneyDetails | null;
+  bankTransferDetails: BankTransferDetails | null;
+  supportedCurrencies: string[];
+  /** @nullable */
+  orderContactEmail: string | null;
+  /** @nullable */
+  checkoutInstructions: string | null;
   updatedAt: string;
 }
 
@@ -864,6 +897,17 @@ export interface SiteSettingsInput {
   affiliateDisclosure?: string | null;
   /** @nullable */
   privacyContactInfo?: string | null;
+  /** @nullable */
+  commerceWhatsappNumber?: string | null;
+  /** @nullable */
+  paypalPaymentLink?: string | null;
+  mobileMoneyDetails?: MobileMoneyDetails | null;
+  bankTransferDetails?: BankTransferDetails | null;
+  supportedCurrencies?: string[];
+  /** @nullable */
+  orderContactEmail?: string | null;
+  /** @nullable */
+  checkoutInstructions?: string | null;
 }
 
 export interface HomepageSummary {
@@ -873,6 +917,283 @@ export interface HomepageSummary {
   featuredCuratedPicks: CuratedPick[];
   totalEpisodes: number;
   totalBlogPosts: number;
+}
+
+export type PaymentMethod = typeof PaymentMethod[keyof typeof PaymentMethod];
+
+
+export const PaymentMethod = {
+  paypal: 'paypal',
+  mobile_money: 'mobile_money',
+  bank_transfer: 'bank_transfer',
+} as const;
+
+export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus];
+
+
+export const PaymentStatus = {
+  pending: 'pending',
+  paid: 'paid',
+  failed: 'failed',
+  refunded: 'refunded',
+  cancelled: 'cancelled',
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  pending_payment: 'pending_payment',
+  paid: 'paid',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+} as const;
+
+export type CouponDiscountType = typeof CouponDiscountType[keyof typeof CouponDiscountType];
+
+
+export const CouponDiscountType = {
+  percentage: 'percentage',
+  fixed: 'fixed',
+} as const;
+
+export interface OrderItemVariant {
+  label: string;
+  option: string;
+}
+
+export interface CartItemInput {
+  productId: number;
+  quantity: number;
+  variant?: OrderItemVariant | null;
+}
+
+export type OrderItemProductType = typeof OrderItemProductType[keyof typeof OrderItemProductType];
+
+
+export const OrderItemProductType = {
+  digital: 'digital',
+  physical: 'physical',
+} as const;
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  /** @nullable */
+  productId: number | null;
+  productName: string;
+  productType: OrderItemProductType;
+  variant: OrderItemVariant | null;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  shippingAmount: number;
+  isDigital: boolean;
+  isPreorder: boolean;
+  /** @nullable */
+  preorderFulfilmentText: string | null;
+  createdAt: string;
+}
+
+export interface Order {
+  id: number;
+  orderReference: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  country: string;
+  /** @nullable */
+  deliveryAddress: string | null;
+  /** @nullable */
+  notes: string | null;
+  currency: string;
+  subtotal: number;
+  shippingTotal: number;
+  discountTotal: number;
+  grandTotal: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  orderStatus: OrderStatus;
+  /** @nullable */
+  paymentNote: string | null;
+  /** @nullable */
+  paidAt: string | null;
+  /** @nullable */
+  trackingNumber: string | null;
+  /** @nullable */
+  internalNotes: string | null;
+  /** @nullable */
+  couponCode: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OrderWithItems = Order & {
+  items: OrderItem[];
+};
+
+export type OrderStatusHistoryEntryField = typeof OrderStatusHistoryEntryField[keyof typeof OrderStatusHistoryEntryField];
+
+
+export const OrderStatusHistoryEntryField = {
+  payment_status: 'payment_status',
+  order_status: 'order_status',
+} as const;
+
+export interface OrderStatusHistoryEntry {
+  id: number;
+  orderId: number;
+  changedBy: string;
+  field: OrderStatusHistoryEntryField;
+  oldValue: string;
+  newValue: string;
+  /** @nullable */
+  note: string | null;
+  createdAt: string;
+}
+
+export interface AdminOrderDetail {
+  order: OrderWithItems;
+  history: OrderStatusHistoryEntry[];
+}
+
+export interface AdminOrdersPage {
+  orders: Order[];
+  total: number;
+}
+
+export interface AdminUpdateOrderInput {
+  paymentStatus?: PaymentStatus;
+  orderStatus?: OrderStatus;
+  /** @nullable */
+  trackingNumber?: string | null;
+  /** @nullable */
+  internalNotes?: string | null;
+  /** @nullable */
+  paymentNote?: string | null;
+  statusChangeNote?: string;
+}
+
+export interface PublicOrderTrackingItem {
+  /** @nullable */
+  productId: number | null;
+  productName: string;
+  variant: OrderItemVariant | null;
+  quantity: number;
+  lineTotal: number;
+  isDigital: boolean;
+  isPreorder: boolean;
+}
+
+export interface PublicOrderTracking {
+  orderReference: string;
+  createdAt: string;
+  currency: string;
+  grandTotal: number;
+  paymentStatus: PaymentStatus;
+  orderStatus: OrderStatus;
+  /** @nullable */
+  trackingNumber: string | null;
+  items: PublicOrderTrackingItem[];
+}
+
+export interface TrackOrderInput {
+  orderReference: string;
+  email: string;
+}
+
+export interface CreateOrderInput {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  country: string;
+  /** @nullable */
+  deliveryAddress?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  paymentMethod: PaymentMethod;
+  /** @nullable */
+  couponCode?: string | null;
+  items: CartItemInput[];
+  consent: boolean;
+}
+
+export interface QuoteOrderInput {
+  items: CartItemInput[];
+  /** @nullable */
+  couponCode?: string | null;
+}
+
+export interface QuoteResultItem {
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  shippingAmount: number;
+  isDigital: boolean;
+  isPreorder: boolean;
+}
+
+export interface QuoteResult {
+  currency: string;
+  subtotal: number;
+  shippingTotal: number;
+  discountTotal: number;
+  grandTotal: number;
+  items: QuoteResultItem[];
+}
+
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+}
+
+export interface Coupon {
+  id: number;
+  code: string;
+  discountType: CouponDiscountType;
+  discountValue: number;
+  /** @nullable */
+  currency: string | null;
+  /** @nullable */
+  activeFrom: string | null;
+  /** @nullable */
+  activeUntil: string | null;
+  /** @nullable */
+  usageLimit: number | null;
+  usageCount: number;
+  /** @nullable */
+  minimumOrderAmount: number | null;
+  isActive: boolean;
+  /** @nullable */
+  restrictedProductIds: number[] | null;
+  /** @nullable */
+  restrictedCategory: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CouponInput {
+  code: string;
+  discountType: CouponDiscountType;
+  discountValue: number;
+  /** @nullable */
+  currency?: string | null;
+  /** @nullable */
+  activeFrom?: string | null;
+  /** @nullable */
+  activeUntil?: string | null;
+  /** @nullable */
+  usageLimit?: number | null;
+  /** @nullable */
+  minimumOrderAmount?: number | null;
+  isActive?: boolean;
+  /** @nullable */
+  restrictedProductIds?: number[] | null;
+  /** @nullable */
+  restrictedCategory?: string | null;
 }
 
 export type ListProductsParams = {
@@ -1018,5 +1339,22 @@ search?: string;
 
 export type AdminListNewsletterSubscriptionsParams = {
 search?: string;
+};
+
+export type GetOrderItemDownloadUrlParams = {
+orderReference: string;
+productId: number;
+email: string;
+};
+
+export type AdminListOrdersParams = {
+paymentStatus?: PaymentStatus;
+orderStatus?: OrderStatus;
+country?: string;
+dateFrom?: string;
+dateTo?: string;
+search?: string;
+limit?: number;
+offset?: number;
 };
 

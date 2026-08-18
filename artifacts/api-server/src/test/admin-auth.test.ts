@@ -41,6 +41,16 @@ const ADMIN_ROUTES: { method: "get" | "post" | "put" | "patch" | "delete"; path:
   { method: "post", path: "/api/admin/newsletter-subscriptions/1/unsubscribe" },
   { method: "post", path: "/api/admin/uploads" },
   { method: "delete", path: "/api/admin/uploads" },
+  { method: "post", path: "/api/admin/uploads/digital" },
+  { method: "delete", path: "/api/admin/uploads/digital" },
+  { method: "get", path: "/api/admin/orders" },
+  { method: "get", path: "/api/admin/orders/1" },
+  { method: "patch", path: "/api/admin/orders/1" },
+  { method: "get", path: "/api/admin/coupons" },
+  { method: "post", path: "/api/admin/coupons" },
+  { method: "get", path: "/api/admin/coupons/1" },
+  { method: "put", path: "/api/admin/coupons/1" },
+  { method: "delete", path: "/api/admin/coupons/1" },
 ];
 
 describe("admin route protection", () => {

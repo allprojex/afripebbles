@@ -9,6 +9,6 @@ import type { Product } from "@workspace/db";
  * delivery flow.
  */
 export function toPublicProduct(product: Product) {
-  const { downloadUrl, ...rest } = product;
+  const { downloadUrl, digitalDownloadPath, ...rest } = product;
   return { ...rest, hasDownload: Boolean(downloadUrl) };
 }

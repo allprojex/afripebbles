@@ -20,6 +20,20 @@ export function isStorageBucket(value: unknown): value is StorageBucket {
   return typeof value === "string" && (STORAGE_BUCKETS as readonly string[]).includes(value);
 }
 
+// Deliberately not part of STORAGE_BUCKETS above: that list is for public,
+// image-only buckets handled by the generic upload/delete/cleanup endpoints.
+// This one is private (must be created manually in the Supabase Dashboard,
+// public-read OFF) and holds purchasable digital files, so it gets its own
+// endpoints, allowlist, and size limit — see routes/admin/uploads.ts.
+export const DIGITAL_DOWNLOAD_BUCKET = "digital-downloads";
+export const ALLOWED_DIGITAL_MIME_TYPES = [
+  "application/pdf",
+  "application/zip",
+  "application/epub+zip",
+  "application/vnd.amazon.ebook",
+] as const;
+export const MAX_DIGITAL_UPLOAD_BYTES = 50 * 1024 * 1024; // 50MB
+
 /** Origin of the configured Supabase project, or null if unset/unparseable. */
 function getConfiguredSupabaseOrigin(): string | null {
   const url = process.env.SUPABASE_URL;

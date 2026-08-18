@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import Community from "./community";
 
 const mockMutate = vi.fn();
@@ -15,7 +16,9 @@ vi.mock("@workspace/api-client-react", () => ({
 function renderCommunity() {
   return render(
     <Router base="">
-      <Community />
+      <CartProvider>
+        <Community />
+      </CartProvider>
     </Router>
   );
 }

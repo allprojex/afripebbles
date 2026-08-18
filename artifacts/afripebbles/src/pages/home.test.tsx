@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import Home from "./home";
 import { siteConfig } from "@/content/site";
 
@@ -17,7 +18,9 @@ describe("Home route", () => {
   it("renders without crashing and sets the homepage title", () => {
     render(
       <Router base="">
-        <Home />
+        <CartProvider>
+          <Home />
+        </CartProvider>
       </Router>
     );
 
@@ -28,7 +31,9 @@ describe("Home route", () => {
   it("names the real podcast and uses the confirmed brand description, not placeholder copy", () => {
     render(
       <Router base="">
-        <Home />
+        <CartProvider>
+          <Home />
+        </CartProvider>
       </Router>
     );
 

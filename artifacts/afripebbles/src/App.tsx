@@ -20,7 +20,12 @@ import Contact from '@/pages/contact';
 import Faq from '@/pages/faq';
 import Ugc from '@/pages/ugc';
 import Unsubscribe from '@/pages/unsubscribe';
+import Cart from '@/pages/cart';
+import Checkout from '@/pages/checkout';
+import OrderConfirmation from '@/pages/order-confirmation';
+import TrackOrder from '@/pages/track-order';
 import AdminApp from '@/admin/AdminApp';
+import { CartProvider } from '@/lib/cart';
 
 // Legal / policy pages
 import PrivacyPolicyPage from '@/pages/legal/privacy';
@@ -57,6 +62,11 @@ function Router() {
       <Route path="/ugc" component={Ugc} />
       <Route path="/unsubscribe" component={Unsubscribe} />
 
+      <Route path="/cart" component={Cart} />
+      <Route path="/checkout" component={Checkout} />
+      <Route path="/order-confirmation" component={OrderConfirmation} />
+      <Route path="/track-order" component={TrackOrder} />
+
       <Route path="/privacy" component={PrivacyPolicyPage} />
       <Route path="/cookies" component={CookiePolicyPage} />
       <Route path="/terms" component={TermsPage} />
@@ -78,10 +88,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <CartProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </CartProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

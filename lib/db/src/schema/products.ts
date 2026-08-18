@@ -30,6 +30,12 @@ export const productsTable = pgTable("products", {
   stockStatus: text("stock_status").notNull().default("in_stock"), // see PRODUCT_STOCK_STATUS
   isFeatured: boolean("is_featured").notNull().default(false),
   downloadUrl: text("download_url"),
+  // Fixed shipping per product (physical only) — digital products are always 0 at checkout regardless of this value.
+  shippingAmount: real("shipping_amount").notNull().default(0),
+  // Storage key inside the private `digital-downloads` Supabase bucket, distinct from the
+  // legacy public download_url/hasDownload pair above. Never exposed publicly — only used
+  // server-side to mint a short-lived signed URL once an order containing this product is paid.
+  digitalDownloadPath: text("digital_download_path"),
   // Pre-order specific fields — only meaningful when availability = 'preorder'.
   preorderOpensAt: timestamp("preorder_opens_at", { withTimezone: true }),
   preorderClosesAt: timestamp("preorder_closes_at", { withTimezone: true }),

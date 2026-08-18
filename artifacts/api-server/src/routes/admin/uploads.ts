@@ -9,16 +9,27 @@ import {
   MAX_UPLOAD_BYTES,
   isStorageBucket,
   parsePublicStorageUrl,
+  DIGITAL_DOWNLOAD_BUCKET,
+  ALLOWED_DIGITAL_MIME_TYPES,
+  MAX_DIGITAL_UPLOAD_BYTES,
 } from "../../lib/storage";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_UPLOAD_BYTES } });
+const uploadDigital = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_DIGITAL_UPLOAD_BYTES } });
 
 const EXTENSION_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
+};
+
+const DIGITAL_EXTENSION_BY_MIME: Record<string, string> = {
+  "application/pdf": "pdf",
+  "application/zip": "zip",
+  "application/epub+zip": "epub",
+  "application/vnd.amazon.ebook": "azw",
 };
 
 router.post("/uploads", upload.single("file"), async (req, res): Promise<void> => {
@@ -85,6 +96,56 @@ router.delete("/uploads", async (req, res): Promise<void> => {
   }
 
   const { error } = await getSupabaseAdmin().storage.from(parsed.bucket).remove([parsed.path]);
+  if (error) {
+    res.status(502).json({ error: `Delete failed: ${error.message}` });
+    return;
+  }
+
+  res.status(204).send();
+});
+
+// Digital product files (private bucket) — deliberately separate from the
+// image endpoints above: no image-dimension check applies, a much larger
+// size limit, and the response never includes a public URL, only the
+// storage path. Products.digitalDownloadPath stores that path; a signed,
+// time-limited URL is only ever minted for a verified paid order (see
+// lib/digitalDownload.ts and routes/orders.ts).
+router.post("/uploads/digital", uploadDigital.single("file"), async (req, res): Promise<void> => {
+  const file = req.file;
+  if (!file) {
+    res.status(400).json({ error: "A file is required" });
+    return;
+  }
+
+  if (!(ALLOWED_DIGITAL_MIME_TYPES as readonly string[]).includes(file.mimetype)) {
+    res.status(400).json({ error: `Unsupported file type "${file.mimetype}". Allowed: ${ALLOWED_DIGITAL_MIME_TYPES.join(", ")}` });
+    return;
+  }
+
+  const extension = DIGITAL_EXTENSION_BY_MIME[file.mimetype] ?? "bin";
+  const path = `${randomUUID()}.${extension}`;
+  const supabaseAdmin = getSupabaseAdmin();
+
+  const { error: uploadError } = await supabaseAdmin.storage.from(DIGITAL_DOWNLOAD_BUCKET).upload(path, file.buffer, {
+    contentType: file.mimetype,
+    upsert: false,
+  });
+  if (uploadError) {
+    res.status(502).json({ error: `Upload failed: ${uploadError.message}` });
+    return;
+  }
+
+  res.status(201).json({ path });
+});
+
+router.delete("/uploads/digital", async (req, res): Promise<void> => {
+  const path = typeof req.query.path === "string" ? req.query.path : null;
+  if (!path) {
+    res.status(400).json({ error: "A path query parameter is required" });
+    return;
+  }
+
+  const { error } = await getSupabaseAdmin().storage.from(DIGITAL_DOWNLOAD_BUCKET).remove([path]);
   if (error) {
     res.status(502).json({ error: `Delete failed: ${error.message}` });
     return;

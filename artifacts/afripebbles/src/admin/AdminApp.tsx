@@ -26,6 +26,10 @@ import AdminHomepage from "./pages/Homepage";
 import AdminSiteSettings from "./pages/SiteSettings";
 import AdminEnquiries from "./pages/Enquiries";
 import AdminNewsletter from "./pages/Newsletter";
+import AdminOrdersList from "./pages/orders/List";
+import AdminOrderDetail from "./pages/orders/Detail";
+import AdminCouponsList from "./pages/coupons/List";
+import AdminCouponEdit from "./pages/coupons/Edit";
 
 function Protected({ component: Component }: { component: ComponentType }) {
   return (
@@ -75,6 +79,12 @@ export default function AdminApp() {
           <Route path="/settings" component={() => <Protected component={AdminSiteSettings} />} />
           <Route path="/enquiries" component={() => <Protected component={AdminEnquiries} />} />
           <Route path="/newsletter" component={() => <Protected component={AdminNewsletter} />} />
+
+          <Route path="/orders" component={() => <Protected component={AdminOrdersList} />} />
+          <Route path="/orders/:id" component={() => <Protected component={AdminOrderDetail} />} />
+
+          <Route path="/coupons" component={() => <Protected component={AdminCouponsList} />} />
+          <Route path="/coupons/:id" component={() => <Protected component={AdminCouponEdit} />} />
 
           <Route component={() => <Protected component={NotFoundAdmin} />} />
         </Switch>

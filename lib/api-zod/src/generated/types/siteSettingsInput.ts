@@ -5,6 +5,8 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BankTransferDetails } from './bankTransferDetails';
+import type { MobileMoneyDetails } from './mobileMoneyDetails';
 
 export interface SiteSettingsInput {
   /** @nullable */
@@ -56,4 +58,15 @@ export interface SiteSettingsInput {
   affiliateDisclosure?: string | null;
   /** @nullable */
   privacyContactInfo?: string | null;
+  /** @nullable */
+  commerceWhatsappNumber?: string | null;
+  /** @nullable */
+  paypalPaymentLink?: string | null;
+  mobileMoneyDetails?: MobileMoneyDetails | null;
+  bankTransferDetails?: BankTransferDetails | null;
+  supportedCurrencies?: string[];
+  /** @nullable */
+  orderContactEmail?: string | null;
+  /** @nullable */
+  checkoutInstructions?: string | null;
 }

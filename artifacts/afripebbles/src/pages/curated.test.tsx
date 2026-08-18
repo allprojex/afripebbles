@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Router } from "wouter";
+import { CartProvider } from "@/lib/cart";
 import CuratedPicks from "./curated";
 import { siteConfig } from "@/content/site";
 
@@ -16,7 +17,9 @@ vi.mock("@workspace/api-client-react", () => ({
 function renderCurated() {
   return render(
     <Router base="">
-      <CuratedPicks />
+      <CartProvider>
+        <CuratedPicks />
+      </CartProvider>
     </Router>,
   );
 }

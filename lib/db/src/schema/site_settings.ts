@@ -1,4 +1,5 @@
 import { pgTable, integer, text, jsonb, timestamp } from "drizzle-orm/pg-core";
+import type { MobileMoneyDetails, BankTransferDetails } from "./shared";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -34,6 +35,16 @@ export const siteSettingsTable = pgTable("site_settings", {
   shippingNotice: text("shipping_notice"),
   affiliateDisclosure: text("affiliate_disclosure"),
   privacyContactInfo: text("privacy_contact_info"),
+  // Commerce settings (V1: manual/external payment methods only, no embedded gateway).
+  // Deliberately separate from the general-contact `whatsappNumber` above — this one
+  // is only ever used for the checkout "Send Order to WhatsApp" flow.
+  commerceWhatsappNumber: text("commerce_whatsapp_number"), // digits only, international code, no leading '+'
+  paypalPaymentLink: text("paypal_payment_link"),
+  mobileMoneyDetails: jsonb("mobile_money_details").$type<MobileMoneyDetails | null>(),
+  bankTransferDetails: jsonb("bank_transfer_details").$type<BankTransferDetails | null>(),
+  supportedCurrencies: jsonb("supported_currencies").$type<string[]>().notNull().default(["GHS", "EUR"]),
+  orderContactEmail: text("order_contact_email"),
+  checkoutInstructions: text("checkout_instructions"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

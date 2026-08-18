@@ -35,7 +35,17 @@ interface FormValues {
   shippingNotice: string | null;
   affiliateDisclosure: string | null;
   privacyContactInfo: string | null;
+  commerceWhatsappNumber: string | null;
+  paypalPaymentLink: string | null;
+  mobileMoneyDetails: { provider: string; accountNumber: string; accountName: string; instructions: string };
+  bankTransferDetails: { bankName: string; accountName: string; accountNumber: string; ibanOrSwift: string; instructions: string };
+  supportedCurrencies: string[];
+  orderContactEmail: string | null;
+  checkoutInstructions: string | null;
 }
+
+const EMPTY_MOBILE_MONEY = { provider: "", accountNumber: "", accountName: "", instructions: "" };
+const EMPTY_BANK_TRANSFER = { bankName: "", accountName: "", accountNumber: "", ibanOrSwift: "", instructions: "" };
 
 const DEFAULT_VALUES: FormValues = {
   brandName: null,
@@ -63,9 +73,20 @@ const DEFAULT_VALUES: FormValues = {
   shippingNotice: null,
   affiliateDisclosure: null,
   privacyContactInfo: null,
+  commerceWhatsappNumber: null,
+  paypalPaymentLink: null,
+  mobileMoneyDetails: EMPTY_MOBILE_MONEY,
+  bankTransferDetails: EMPTY_BANK_TRANSFER,
+  supportedCurrencies: ["GHS", "EUR"],
+  orderContactEmail: null,
+  checkoutInstructions: null,
 };
 
-function TextField({ control, name, label, placeholder }: { control: any; name: keyof FormValues; label: string; placeholder?: string }) {
+function isBlankObject(obj: Record<string, string>): boolean {
+  return Object.values(obj).every((v) => !v);
+}
+
+function TextField({ control, name, label, placeholder }: { control: any; name: string; label: string; placeholder?: string }) {
   return (
     <FormField
       control={control}
@@ -90,12 +111,24 @@ export default function AdminSiteSettings() {
   const form = useForm<FormValues>({ defaultValues: DEFAULT_VALUES });
 
   useEffect(() => {
-    if (data) form.reset(data);
+    if (data) {
+      form.reset({
+        ...data,
+        mobileMoneyDetails: data.mobileMoneyDetails ?? EMPTY_MOBILE_MONEY,
+        bankTransferDetails: data.bankTransferDetails ?? EMPTY_BANK_TRANSFER,
+      });
+    }
   }, [data, form]);
 
   const onSubmit = (values: FormValues) => {
     updateMutation.mutate(
-      { data: values },
+      {
+        data: {
+          ...values,
+          mobileMoneyDetails: isBlankObject(values.mobileMoneyDetails) ? null : values.mobileMoneyDetails,
+          bankTransferDetails: isBlankObject(values.bankTransferDetails) ? null : values.bankTransferDetails,
+        },
+      },
       {
         onSuccess: () => toast({ title: "Site settings saved" }),
         onError: (err) => toast({ variant: "destructive", title: "Couldn't save", description: err instanceof Error ? err.message : undefined }),
@@ -228,6 +261,84 @@ export default function AdminSiteSettings() {
                 </FormItem>
               )}
             />
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">Commerce &amp; payment</h2>
+            <p className="text-sm text-foreground/50">
+              V1 uses manual/external payment — no card processor is connected. These details are shown to customers at checkout and used to build
+              the WhatsApp order message.
+            </p>
+            <TextField
+              control={form.control}
+              name="commerceWhatsappNumber"
+              label="Order WhatsApp number"
+              placeholder="Digits only with country code, e.g. 233241234567 — no +, spaces, or leading 0"
+            />
+            <FormField
+              control={form.control}
+              name="supportedCurrencies"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Supported currencies</FormLabel>
+                  <TagsInput value={field.value} onChange={field.onChange} placeholder="e.g. GHS, EUR" />
+                </FormItem>
+              )}
+            />
+            <TextField control={form.control} name="orderContactEmail" label="Order contact email" />
+            <FormField
+              control={form.control}
+              name="checkoutInstructions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Checkout instructions</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <TextField control={form.control} name="paypalPaymentLink" label="PayPal payment link" placeholder="https://paypal.me/..." />
+
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <p className="text-sm font-medium">Mobile Money details</p>
+              <TextField control={form.control} name="mobileMoneyDetails.provider" label="Provider" placeholder="e.g. MTN Mobile Money" />
+              <TextField control={form.control} name="mobileMoneyDetails.accountNumber" label="Account number" />
+              <TextField control={form.control} name="mobileMoneyDetails.accountName" label="Account name" />
+              <FormField
+                control={form.control}
+                name="mobileMoneyDetails.instructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Instructions for the customer</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value ?? ""} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <p className="text-sm font-medium">Bank transfer details</p>
+              <TextField control={form.control} name="bankTransferDetails.bankName" label="Bank name" />
+              <TextField control={form.control} name="bankTransferDetails.accountName" label="Account name" />
+              <TextField control={form.control} name="bankTransferDetails.accountNumber" label="Account number" />
+              <TextField control={form.control} name="bankTransferDetails.ibanOrSwift" label="IBAN / SWIFT (optional)" />
+              <FormField
+                control={form.control}
+                name="bankTransferDetails.instructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Instructions for the customer</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value ?? ""} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
           </section>
 
           <section className="space-y-4">

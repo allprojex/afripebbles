@@ -22,6 +22,8 @@ const baseProduct = {
   stockStatus: "limited" as const,
   isFeatured: false,
   downloadUrl: null,
+  shippingAmount: 0,
+  digitalDownloadPath: null,
   preorderOpensAt: null,
   preorderClosesAt: null,
   estimatedFulfilment: null,
@@ -82,7 +84,7 @@ describe("AdminProductEdit — status/availability selects", () => {
 
     await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("hddh"));
     expect(screen.getByLabelText("Category")).toHaveValue("");
-    expect(screen.getByLabelText("Download URL (digital products)")).toHaveValue("");
+    expect(screen.getByLabelText("Legacy download URL (unused by order fulfilment)")).toHaveValue("");
   });
 
   it("uses the intended defaults (Available / Draft) on a brand-new product form", async () => {

@@ -12,6 +12,7 @@ import contactRouter from "./contact";
 import homepageRouter from "./homepage";
 import siteSettingsRouter from "./site-settings";
 import homepageContentRouter from "./homepage-content";
+import ordersRouter from "./orders";
 import adminRouter from "./admin";
 
 const router: IRouter = Router();
@@ -29,6 +30,7 @@ router.use(contactRouter);
 router.use(homepageRouter);
 router.use(siteSettingsRouter);
 router.use(homepageContentRouter);
+router.use(ordersRouter);
 router.use("/admin", adminRouter);
 
 export default router;

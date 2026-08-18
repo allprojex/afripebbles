@@ -15,6 +15,8 @@ import {
   Menu,
   Camera,
   Quote,
+  ClipboardList,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -22,7 +24,9 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 
 const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; exact: boolean }[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/orders", label: "Orders", icon: ClipboardList, exact: false },
   { href: "/products", label: "Products", icon: ShoppingBag, exact: false },
+  { href: "/coupons", label: "Coupons", icon: Tag, exact: false },
   { href: "/recommendations", label: "Recommendations", icon: Star, exact: false },
   { href: "/podcast", label: "Podcast", icon: Headphones, exact: false },
   { href: "/articles", label: "Articles", icon: BookOpen, exact: false },

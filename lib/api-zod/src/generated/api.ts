@@ -42,6 +42,7 @@ export const ListProductsResponseItem = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "hasDownload": zod.boolean(),
+  "shippingAmount": zod.number(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -86,6 +87,7 @@ export const GetProductResponse = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "hasDownload": zod.boolean(),
+  "shippingAmount": zod.number(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -429,6 +431,8 @@ export const GetHomepageSummaryResponse = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
+  "shippingAmount": zod.number(),
+  "digitalDownloadPath": zod.string().nullable(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -549,6 +553,24 @@ export const GetSiteSettingsResponse = zod.union([zod.object({
   "shippingNotice": zod.string().nullable(),
   "affiliateDisclosure": zod.string().nullable(),
   "privacyContactInfo": zod.string().nullable(),
+  "commerceWhatsappNumber": zod.string().nullable(),
+  "paypalPaymentLink": zod.string().nullable(),
+  "mobileMoneyDetails": zod.union([zod.object({
+  "provider": zod.string(),
+  "accountNumber": zod.string(),
+  "accountName": zod.string(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "bankTransferDetails": zod.union([zod.object({
+  "bankName": zod.string(),
+  "accountName": zod.string(),
+  "accountNumber": zod.string(),
+  "ibanOrSwift": zod.string().optional(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "supportedCurrencies": zod.array(zod.string()),
+  "orderContactEmail": zod.string().nullable(),
+  "checkoutInstructions": zod.string().nullable(),
   "updatedAt": zod.coerce.date()
 }),zod.null()])
 
@@ -654,6 +676,8 @@ export const AdminListProductsResponseItem = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
+  "shippingAmount": zod.number(),
+  "digitalDownloadPath": zod.string().nullable(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -693,6 +717,8 @@ export const AdminCreateProductBody = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']).optional(),
   "isFeatured": zod.boolean().optional(),
   "downloadUrl": zod.string().nullish(),
+  "shippingAmount": zod.number().optional(),
+  "digitalDownloadPath": zod.string().nullish(),
   "preorderOpensAt": zod.coerce.date().nullish(),
   "preorderClosesAt": zod.coerce.date().nullish(),
   "estimatedFulfilment": zod.string().nullish(),
@@ -726,6 +752,8 @@ export const AdminCreateProductResponse = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
+  "shippingAmount": zod.number(),
+  "digitalDownloadPath": zod.string().nullable(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -769,6 +797,8 @@ export const AdminGetProductResponse = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
+  "shippingAmount": zod.number(),
+  "digitalDownloadPath": zod.string().nullable(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -811,6 +841,8 @@ export const AdminUpdateProductBody = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']).optional(),
   "isFeatured": zod.boolean().optional(),
   "downloadUrl": zod.string().nullish(),
+  "shippingAmount": zod.number().optional(),
+  "digitalDownloadPath": zod.string().nullish(),
   "preorderOpensAt": zod.coerce.date().nullish(),
   "preorderClosesAt": zod.coerce.date().nullish(),
   "estimatedFulfilment": zod.string().nullish(),
@@ -844,6 +876,8 @@ export const AdminUpdateProductResponse = zod.object({
   "stockStatus": zod.enum(['in_stock', 'limited', 'out_of_stock']),
   "isFeatured": zod.boolean(),
   "downloadUrl": zod.string().nullable(),
+  "shippingAmount": zod.number(),
+  "digitalDownloadPath": zod.string().nullable(),
   "preorderOpensAt": zod.coerce.date().nullable(),
   "preorderClosesAt": zod.coerce.date().nullable(),
   "estimatedFulfilment": zod.string().nullable(),
@@ -1776,6 +1810,24 @@ export const AdminGetSiteSettingsResponse = zod.object({
   "shippingNotice": zod.string().nullable(),
   "affiliateDisclosure": zod.string().nullable(),
   "privacyContactInfo": zod.string().nullable(),
+  "commerceWhatsappNumber": zod.string().nullable(),
+  "paypalPaymentLink": zod.string().nullable(),
+  "mobileMoneyDetails": zod.union([zod.object({
+  "provider": zod.string(),
+  "accountNumber": zod.string(),
+  "accountName": zod.string(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "bankTransferDetails": zod.union([zod.object({
+  "bankName": zod.string(),
+  "accountName": zod.string(),
+  "accountNumber": zod.string(),
+  "ibanOrSwift": zod.string().optional(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "supportedCurrencies": zod.array(zod.string()),
+  "orderContactEmail": zod.string().nullable(),
+  "checkoutInstructions": zod.string().nullable(),
   "updatedAt": zod.coerce.date()
 })
 
@@ -1808,7 +1860,25 @@ export const AdminUpdateSiteSettingsBody = zod.object({
   "preorderNotice": zod.string().nullish(),
   "shippingNotice": zod.string().nullish(),
   "affiliateDisclosure": zod.string().nullish(),
-  "privacyContactInfo": zod.string().nullish()
+  "privacyContactInfo": zod.string().nullish(),
+  "commerceWhatsappNumber": zod.string().nullish(),
+  "paypalPaymentLink": zod.string().nullish(),
+  "mobileMoneyDetails": zod.union([zod.object({
+  "provider": zod.string(),
+  "accountNumber": zod.string(),
+  "accountName": zod.string(),
+  "instructions": zod.string()
+}),zod.null()]).optional(),
+  "bankTransferDetails": zod.union([zod.object({
+  "bankName": zod.string(),
+  "accountName": zod.string(),
+  "accountNumber": zod.string(),
+  "ibanOrSwift": zod.string().optional(),
+  "instructions": zod.string()
+}),zod.null()]).optional(),
+  "supportedCurrencies": zod.array(zod.string()).optional(),
+  "orderContactEmail": zod.string().nullish(),
+  "checkoutInstructions": zod.string().nullish()
 })
 
 export const AdminUpdateSiteSettingsResponse = zod.object({
@@ -1838,6 +1908,24 @@ export const AdminUpdateSiteSettingsResponse = zod.object({
   "shippingNotice": zod.string().nullable(),
   "affiliateDisclosure": zod.string().nullable(),
   "privacyContactInfo": zod.string().nullable(),
+  "commerceWhatsappNumber": zod.string().nullable(),
+  "paypalPaymentLink": zod.string().nullable(),
+  "mobileMoneyDetails": zod.union([zod.object({
+  "provider": zod.string(),
+  "accountNumber": zod.string(),
+  "accountName": zod.string(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "bankTransferDetails": zod.union([zod.object({
+  "bankName": zod.string(),
+  "accountName": zod.string(),
+  "accountNumber": zod.string(),
+  "ibanOrSwift": zod.string().optional(),
+  "instructions": zod.string()
+}),zod.null()]),
+  "supportedCurrencies": zod.array(zod.string()),
+  "orderContactEmail": zod.string().nullable(),
+  "checkoutInstructions": zod.string().nullable(),
   "updatedAt": zod.coerce.date()
 })
 
@@ -1980,5 +2068,462 @@ export const AdminUnsubscribeNewsletterSubscriptionResponse = zod.object({
   "unsubscribeToken": zod.string(),
   "createdAt": zod.coerce.date()
 })
+
+
+/**
+ * @summary Server-side authoritative price/availability preview for a cart (no order is created)
+ */
+export const QuoteOrderBody = zod.object({
+  "items": zod.array(zod.object({
+  "productId": zod.number(),
+  "quantity": zod.number(),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]).optional()
+})),
+  "couponCode": zod.string().nullish()
+})
+
+export const QuoteOrderResponse = zod.object({
+  "currency": zod.string(),
+  "subtotal": zod.number(),
+  "shippingTotal": zod.number(),
+  "discountTotal": zod.number(),
+  "grandTotal": zod.number(),
+  "items": zod.array(zod.object({
+  "productId": zod.number(),
+  "productName": zod.string(),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "lineTotal": zod.number(),
+  "shippingAmount": zod.number(),
+  "isDigital": zod.boolean(),
+  "isPreorder": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Create a guest order. Prices/availability are re-validated and computed server-side; client-submitted amounts are never trusted.
+ */
+export const CreateOrderBody = zod.object({
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "customerPhone": zod.string(),
+  "country": zod.string(),
+  "deliveryAddress": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "paymentMethod": zod.enum(['paypal', 'mobile_money', 'bank_transfer']),
+  "couponCode": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "productId": zod.number(),
+  "quantity": zod.number(),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]).optional()
+})),
+  "consent": zod.boolean()
+})
+
+export const CreateOrderResponse = zod.object({
+  "id": zod.number(),
+  "orderReference": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "customerPhone": zod.string(),
+  "country": zod.string(),
+  "deliveryAddress": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "currency": zod.string(),
+  "subtotal": zod.number(),
+  "shippingTotal": zod.number(),
+  "discountTotal": zod.number(),
+  "grandTotal": zod.number(),
+  "paymentMethod": zod.enum(['paypal', 'mobile_money', 'bank_transfer']),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+  "paymentNote": zod.string().nullable(),
+  "paidAt": zod.coerce.date().nullable(),
+  "trackingNumber": zod.string().nullable(),
+  "internalNotes": zod.string().nullable(),
+  "couponCode": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "orderId": zod.number(),
+  "productId": zod.number().nullable(),
+  "productName": zod.string(),
+  "productType": zod.enum(['digital', 'physical']),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "lineTotal": zod.number(),
+  "shippingAmount": zod.number(),
+  "isDigital": zod.boolean(),
+  "isPreorder": zod.boolean(),
+  "preorderFulfilmentText": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * @summary Look up an order by reference + email (never by id alone)
+ */
+export const TrackOrderBody = zod.object({
+  "orderReference": zod.string(),
+  "email": zod.string()
+})
+
+export const TrackOrderResponse = zod.object({
+  "orderReference": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "currency": zod.string(),
+  "grandTotal": zod.number(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+  "trackingNumber": zod.string().nullable(),
+  "items": zod.array(zod.object({
+  "productId": zod.number().nullable(),
+  "productName": zod.string(),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]),
+  "quantity": zod.number(),
+  "lineTotal": zod.number(),
+  "isDigital": zod.boolean(),
+  "isPreorder": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Mint a short-lived signed download URL for a paid digital order item. Requires the matching email; never returns a permanent public URL.
+ */
+export const GetOrderItemDownloadUrlQueryParams = zod.object({
+  "orderReference": zod.coerce.string(),
+  "productId": zod.coerce.number(),
+  "email": zod.coerce.string()
+})
+
+export const GetOrderItemDownloadUrlResponse = zod.object({
+  "downloadUrl": zod.string()
+})
+
+
+/**
+ * @summary List orders with filters, search, and pagination
+ */
+export const AdminListOrdersQueryParams = zod.object({
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']).optional(),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
+  "country": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional(),
+  "search": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().optional(),
+  "offset": zod.coerce.number().optional()
+})
+
+export const AdminListOrdersResponse = zod.object({
+  "orders": zod.array(zod.object({
+  "id": zod.number(),
+  "orderReference": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "customerPhone": zod.string(),
+  "country": zod.string(),
+  "deliveryAddress": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "currency": zod.string(),
+  "subtotal": zod.number(),
+  "shippingTotal": zod.number(),
+  "discountTotal": zod.number(),
+  "grandTotal": zod.number(),
+  "paymentMethod": zod.enum(['paypal', 'mobile_money', 'bank_transfer']),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+  "paymentNote": zod.string().nullable(),
+  "paidAt": zod.coerce.date().nullable(),
+  "trackingNumber": zod.string().nullable(),
+  "internalNotes": zod.string().nullable(),
+  "couponCode": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get an order, its items, and its status-change history
+ */
+export const AdminGetOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetOrderResponse = zod.object({
+  "order": zod.object({
+  "id": zod.number(),
+  "orderReference": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "customerPhone": zod.string(),
+  "country": zod.string(),
+  "deliveryAddress": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "currency": zod.string(),
+  "subtotal": zod.number(),
+  "shippingTotal": zod.number(),
+  "discountTotal": zod.number(),
+  "grandTotal": zod.number(),
+  "paymentMethod": zod.enum(['paypal', 'mobile_money', 'bank_transfer']),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+  "paymentNote": zod.string().nullable(),
+  "paidAt": zod.coerce.date().nullable(),
+  "trackingNumber": zod.string().nullable(),
+  "internalNotes": zod.string().nullable(),
+  "couponCode": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "orderId": zod.number(),
+  "productId": zod.number().nullable(),
+  "productName": zod.string(),
+  "productType": zod.enum(['digital', 'physical']),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "lineTotal": zod.number(),
+  "shippingAmount": zod.number(),
+  "isDigital": zod.boolean(),
+  "isPreorder": zod.boolean(),
+  "preorderFulfilmentText": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})),
+  "history": zod.array(zod.object({
+  "id": zod.number(),
+  "orderId": zod.number(),
+  "changedBy": zod.string(),
+  "field": zod.enum(['payment_status', 'order_status']),
+  "oldValue": zod.string(),
+  "newValue": zod.string(),
+  "note": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update payment/order status, tracking number, or internal notes. Status changes are recorded to the audit trail.
+ */
+export const AdminUpdateOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateOrderBody = zod.object({
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']).optional(),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
+  "trackingNumber": zod.string().nullish(),
+  "internalNotes": zod.string().nullish(),
+  "paymentNote": zod.string().nullish(),
+  "statusChangeNote": zod.string().optional()
+})
+
+export const AdminUpdateOrderResponse = zod.object({
+  "id": zod.number(),
+  "orderReference": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "customerPhone": zod.string(),
+  "country": zod.string(),
+  "deliveryAddress": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "currency": zod.string(),
+  "subtotal": zod.number(),
+  "shippingTotal": zod.number(),
+  "discountTotal": zod.number(),
+  "grandTotal": zod.number(),
+  "paymentMethod": zod.enum(['paypal', 'mobile_money', 'bank_transfer']),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed', 'refunded', 'cancelled']),
+  "orderStatus": zod.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+  "paymentNote": zod.string().nullable(),
+  "paidAt": zod.coerce.date().nullable(),
+  "trackingNumber": zod.string().nullable(),
+  "internalNotes": zod.string().nullable(),
+  "couponCode": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}).and(zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "orderId": zod.number(),
+  "productId": zod.number().nullable(),
+  "productName": zod.string(),
+  "productType": zod.enum(['digital', 'physical']),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]),
+  "quantity": zod.number(),
+  "unitPrice": zod.number(),
+  "lineTotal": zod.number(),
+  "shippingAmount": zod.number(),
+  "isDigital": zod.boolean(),
+  "isPreorder": zod.boolean(),
+  "preorderFulfilmentText": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+}))
+
+
+/**
+ * @summary List all coupons
+ */
+export const AdminListCouponsResponseItem = zod.object({
+  "id": zod.number(),
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullable(),
+  "activeFrom": zod.coerce.date().nullable(),
+  "activeUntil": zod.coerce.date().nullable(),
+  "usageLimit": zod.number().nullable(),
+  "usageCount": zod.number(),
+  "minimumOrderAmount": zod.number().nullable(),
+  "isActive": zod.boolean(),
+  "restrictedProductIds": zod.array(zod.number()).nullable(),
+  "restrictedCategory": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const AdminListCouponsResponse = zod.array(AdminListCouponsResponseItem)
+
+
+/**
+ * @summary Create a coupon
+ */
+export const AdminCreateCouponBody = zod.object({
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullish(),
+  "activeFrom": zod.coerce.date().nullish(),
+  "activeUntil": zod.coerce.date().nullish(),
+  "usageLimit": zod.number().nullish(),
+  "minimumOrderAmount": zod.number().nullish(),
+  "isActive": zod.boolean().optional(),
+  "restrictedProductIds": zod.array(zod.number()).nullish(),
+  "restrictedCategory": zod.string().nullish()
+})
+
+export const AdminCreateCouponResponse = zod.object({
+  "id": zod.number(),
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullable(),
+  "activeFrom": zod.coerce.date().nullable(),
+  "activeUntil": zod.coerce.date().nullable(),
+  "usageLimit": zod.number().nullable(),
+  "usageCount": zod.number(),
+  "minimumOrderAmount": zod.number().nullable(),
+  "isActive": zod.boolean(),
+  "restrictedProductIds": zod.array(zod.number()).nullable(),
+  "restrictedCategory": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a coupon by id
+ */
+export const AdminGetCouponParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminGetCouponResponse = zod.object({
+  "id": zod.number(),
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullable(),
+  "activeFrom": zod.coerce.date().nullable(),
+  "activeUntil": zod.coerce.date().nullable(),
+  "usageLimit": zod.number().nullable(),
+  "usageCount": zod.number(),
+  "minimumOrderAmount": zod.number().nullable(),
+  "isActive": zod.boolean(),
+  "restrictedProductIds": zod.array(zod.number()).nullable(),
+  "restrictedCategory": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a coupon
+ */
+export const AdminUpdateCouponParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminUpdateCouponBody = zod.object({
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullish(),
+  "activeFrom": zod.coerce.date().nullish(),
+  "activeUntil": zod.coerce.date().nullish(),
+  "usageLimit": zod.number().nullish(),
+  "minimumOrderAmount": zod.number().nullish(),
+  "isActive": zod.boolean().optional(),
+  "restrictedProductIds": zod.array(zod.number()).nullish(),
+  "restrictedCategory": zod.string().nullish()
+})
+
+export const AdminUpdateCouponResponse = zod.object({
+  "id": zod.number(),
+  "code": zod.string(),
+  "discountType": zod.enum(['percentage', 'fixed']),
+  "discountValue": zod.number(),
+  "currency": zod.string().nullable(),
+  "activeFrom": zod.coerce.date().nullable(),
+  "activeUntil": zod.coerce.date().nullable(),
+  "usageLimit": zod.number().nullable(),
+  "usageCount": zod.number(),
+  "minimumOrderAmount": zod.number().nullable(),
+  "isActive": zod.boolean(),
+  "restrictedProductIds": zod.array(zod.number()).nullable(),
+  "restrictedCategory": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a coupon
+ */
+export const AdminDeleteCouponParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdminDeleteCouponResponse = zod.void()
 
 

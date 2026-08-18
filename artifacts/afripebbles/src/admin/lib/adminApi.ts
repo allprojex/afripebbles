@@ -30,3 +30,39 @@ export async function uploadImage(bucket: string, file: File): Promise<string> {
   const data = (await res.json()) as { url: string };
   return data.url;
 }
+
+/**
+ * Digital product files (private bucket, e-books/PDFs/zips) — separate
+ * endpoint from uploadImage above: no public URL comes back, only the
+ * storage path, since the bucket is private and access is only ever
+ * granted via a signed URL to a verified paid order.
+ */
+export async function uploadDigitalFile(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/admin/uploads/digital", {
+    method: "POST",
+    headers: await authHeader(),
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error ?? `Upload failed (${res.status})`);
+  }
+
+  const data = (await res.json()) as { path: string };
+  return data.path;
+}
+
+export async function deleteDigitalFile(path: string): Promise<void> {
+  const res = await fetch(`/api/admin/uploads/digital?path=${encodeURIComponent(path)}`, {
+    method: "DELETE",
+    headers: await authHeader(),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error ?? `Delete failed (${res.status})`);
+  }
+}

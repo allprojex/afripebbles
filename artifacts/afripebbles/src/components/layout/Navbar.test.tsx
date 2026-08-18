@@ -4,11 +4,14 @@ import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";
 import Navbar from "./Navbar";
 import { siteConfig } from "@/content/site";
+import { CartProvider } from "@/lib/cart";
 
 function renderNavbar() {
   return render(
     <Router base="">
-      <Navbar />
+      <CartProvider>
+        <Navbar />
+      </CartProvider>
     </Router>
   );
 }

@@ -10,6 +10,17 @@ const STATUS_LABEL: Record<string, string> = {
   resolved: "Resolved",
   active: "Active",
   unsubscribed: "Unsubscribed",
+  // Order payment_status
+  pending: "Pending",
+  paid: "Paid",
+  failed: "Failed",
+  refunded: "Refunded",
+  cancelled: "Cancelled",
+  // Order order_status
+  pending_payment: "Pending Payment",
+  processing: "Processing",
+  shipped: "Shipped",
+  delivered: "Delivered",
 };
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -22,6 +33,15 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
   resolved: "outline",
   active: "default",
   unsubscribed: "destructive",
+  pending: "secondary",
+  paid: "default",
+  failed: "destructive",
+  refunded: "outline",
+  cancelled: "destructive",
+  pending_payment: "secondary",
+  processing: "secondary",
+  shipped: "default",
+  delivered: "default",
 };
 
 export function StatusBadge({ status }: { status: string }) {

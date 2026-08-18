@@ -34,6 +34,13 @@ const DEFAULT_SITE_SETTINGS = {
   shippingNotice: null,
   affiliateDisclosure: null,
   privacyContactInfo: null,
+  commerceWhatsappNumber: null,
+  paypalPaymentLink: null,
+  mobileMoneyDetails: null,
+  bankTransferDetails: null,
+  supportedCurrencies: ["GHS", "EUR"] as string[],
+  orderContactEmail: null,
+  checkoutInstructions: null,
   updatedAt: new Date(0),
 };
 

@@ -32,6 +32,10 @@ tags:
     description: Homepage summary data
   - name: settings
     description: Public site settings and homepage content
+  - name: orders
+    description: Guest checkout, order creation, and public order tracking
+  - name: coupons
+    description: Coupon code preview (validation is authoritative server-side at order creation)
   - name: admin
     description: Admin-only content management (requires an admin bearer token)
 paths:
@@ -1436,6 +1440,344 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ---------------------------------------------------------------------------
+  # Public: orders (guest checkout, quote preview, tracking, digital download)
+  # ---------------------------------------------------------------------------
+  /orders/quote:
+    post:
+      operationId: quoteOrder
+      tags: [orders]
+      summary: Server-side authoritative price/availability preview for a cart (no order is created)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteOrderInput"
+      responses:
+        "200":
+          description: Computed totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuoteResult"
+        "400":
+          description: Invalid cart (unavailable product, bad variant, preorder window closed, invalid coupon, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a guest order. Prices/availability are re-validated and computed server-side; client-submitted amounts are never trusted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderWithItems"
+        "400":
+          description: Invalid cart or missing consent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/track:
+    post:
+      operationId: trackOrder
+      tags: [orders]
+      summary: Look up an order by reference + email (never by id alone)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackOrderInput"
+      responses:
+        "200":
+          description: Limited public order view
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicOrderTracking"
+        "404":
+          description: No matching order for that reference + email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/download:
+    get:
+      operationId: getOrderItemDownloadUrl
+      tags: [orders]
+      summary: Mint a short-lived signed download URL for a paid digital order item. Requires the matching email; never returns a permanent public URL.
+      parameters:
+        - name: orderReference
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A signed, time-limited download URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadUrlResponse"
+        "403":
+          description: Order isn't paid yet, or this product isn't a digital item on the order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No matching order for that reference + email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: orders
+  # ---------------------------------------------------------------------------
+  /admin/orders:
+    get:
+      operationId: adminListOrders
+      tags: [admin]
+      summary: List orders with filters, search, and pagination
+      parameters:
+        - name: paymentStatus
+          in: query
+          schema:
+            $ref: "#/components/schemas/PaymentStatus"
+        - name: orderStatus
+          in: query
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: number
+        - name: offset
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Paginated order list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrdersPage"
+
+  /admin/orders/{id}:
+    get:
+      operationId: adminGetOrder
+      tags: [admin]
+      summary: Get an order, its items, and its status-change history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrderDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: adminUpdateOrder
+      tags: [admin]
+      summary: Update payment/order status, tracking number, or internal notes. Status changes are recorded to the audit trail.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUpdateOrderInput"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderWithItems"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ---------------------------------------------------------------------------
+  # Admin: coupons
+  # ---------------------------------------------------------------------------
+  /admin/coupons:
+    get:
+      operationId: adminListCoupons
+      tags: [admin]
+      summary: List all coupons
+      responses:
+        "200":
+          description: All coupons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coupon"
+    post:
+      operationId: adminCreateCoupon
+      tags: [admin]
+      summary: Create a coupon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CouponInput"
+      responses:
+        "201":
+          description: Coupon created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "409":
+          description: Code already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/coupons/{id}:
+    get:
+      operationId: adminGetCoupon
+      tags: [admin]
+      summary: Get a coupon by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Coupon
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: adminUpdateCoupon
+      tags: [admin]
+      summary: Update a coupon
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CouponInput"
+      responses:
+        "200":
+          description: Coupon updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coupon"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: adminDeleteCoupon
+      tags: [admin]
+      summary: Delete a coupon
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1602,6 +1944,10 @@ components:
           type: boolean
         downloadUrl:
           type: ["string", "null"]
+        shippingAmount:
+          type: number
+        digitalDownloadPath:
+          type: ["string", "null"]
         preorderOpensAt:
           type: ["string", "null"]
           format: date-time
@@ -1656,6 +2002,8 @@ components:
         - stockStatus
         - isFeatured
         - downloadUrl
+        - shippingAmount
+        - digitalDownloadPath
         - preorderOpensAt
         - preorderClosesAt
         - estimatedFulfilment
@@ -1713,6 +2061,8 @@ components:
           type: boolean
         hasDownload:
           type: boolean
+        shippingAmount:
+          type: number
         preorderOpensAt:
           type: ["string", "null"]
           format: date-time
@@ -1767,6 +2117,7 @@ components:
         - stockStatus
         - isFeatured
         - hasDownload
+        - shippingAmount
         - preorderOpensAt
         - preorderClosesAt
         - estimatedFulfilment
@@ -1818,6 +2169,10 @@ components:
         isFeatured:
           type: boolean
         downloadUrl:
+          type: ["string", "null"]
+        shippingAmount:
+          type: number
+        digitalDownloadPath:
           type: ["string", "null"]
         preorderOpensAt:
           type: ["string", "null"]
@@ -2729,6 +3084,26 @@ components:
           type: ["string", "null"]
         privacyContactInfo:
           type: ["string", "null"]
+        commerceWhatsappNumber:
+          type: ["string", "null"]
+        paypalPaymentLink:
+          type: ["string", "null"]
+        mobileMoneyDetails:
+          oneOf:
+            - $ref: "#/components/schemas/MobileMoneyDetails"
+            - type: "null"
+        bankTransferDetails:
+          oneOf:
+            - $ref: "#/components/schemas/BankTransferDetails"
+            - type: "null"
+        supportedCurrencies:
+          type: array
+          items:
+            type: string
+        orderContactEmail:
+          type: ["string", "null"]
+        checkoutInstructions:
+          type: ["string", "null"]
         updatedAt:
           type: string
           format: date-time
@@ -2759,7 +3134,50 @@ components:
         - shippingNotice
         - affiliateDisclosure
         - privacyContactInfo
+        - commerceWhatsappNumber
+        - paypalPaymentLink
+        - mobileMoneyDetails
+        - bankTransferDetails
+        - supportedCurrencies
+        - orderContactEmail
+        - checkoutInstructions
         - updatedAt
+
+    MobileMoneyDetails:
+      type: object
+      properties:
+        provider:
+          type: string
+        accountNumber:
+          type: string
+        accountName:
+          type: string
+        instructions:
+          type: string
+      required:
+        - provider
+        - accountNumber
+        - accountName
+        - instructions
+
+    BankTransferDetails:
+      type: object
+      properties:
+        bankName:
+          type: string
+        accountName:
+          type: string
+        accountNumber:
+          type: string
+        ibanOrSwift:
+          type: string
+        instructions:
+          type: string
+      required:
+        - bankName
+        - accountName
+        - accountNumber
+        - instructions
 
     SiteSettingsInput:
       type: object
@@ -2816,6 +3234,26 @@ components:
           type: ["string", "null"]
         privacyContactInfo:
           type: ["string", "null"]
+        commerceWhatsappNumber:
+          type: ["string", "null"]
+        paypalPaymentLink:
+          type: ["string", "null"]
+        mobileMoneyDetails:
+          oneOf:
+            - $ref: "#/components/schemas/MobileMoneyDetails"
+            - type: "null"
+        bankTransferDetails:
+          oneOf:
+            - $ref: "#/components/schemas/BankTransferDetails"
+            - type: "null"
+        supportedCurrencies:
+          type: array
+          items:
+            type: string
+        orderContactEmail:
+          type: ["string", "null"]
+        checkoutInstructions:
+          type: ["string", "null"]
 
     HomepageSummary:
       type: object
@@ -2847,3 +3285,530 @@ components:
         - featuredCuratedPicks
         - totalEpisodes
         - totalBlogPosts
+
+    # ---------------------------------------------------------------------------
+    # Commerce: orders, order items, coupons (V1 -- manual/external payment only)
+    # ---------------------------------------------------------------------------
+    PaymentMethod:
+      type: string
+      enum: [paypal, mobile_money, bank_transfer]
+
+    PaymentStatus:
+      type: string
+      enum: [pending, paid, failed, refunded, cancelled]
+
+    OrderStatus:
+      type: string
+      enum: [pending_payment, paid, processing, shipped, delivered, cancelled]
+
+    CouponDiscountType:
+      type: string
+      enum: [percentage, fixed]
+
+    OrderItemVariant:
+      type: object
+      properties:
+        label:
+          type: string
+        option:
+          type: string
+      required:
+        - label
+        - option
+
+    CartItemInput:
+      type: object
+      properties:
+        productId:
+          type: number
+        quantity:
+          type: number
+        variant:
+          oneOf:
+            - $ref: "#/components/schemas/OrderItemVariant"
+            - type: "null"
+      required:
+        - productId
+        - quantity
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: number
+        orderId:
+          type: number
+        productId:
+          type: ["number", "null"]
+        productName:
+          type: string
+        productType:
+          type: string
+          enum: [digital, physical]
+        variant:
+          oneOf:
+            - $ref: "#/components/schemas/OrderItemVariant"
+            - type: "null"
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        lineTotal:
+          type: number
+        shippingAmount:
+          type: number
+        isDigital:
+          type: boolean
+        isPreorder:
+          type: boolean
+        preorderFulfilmentText:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - orderId
+        - productId
+        - productName
+        - productType
+        - variant
+        - quantity
+        - unitPrice
+        - lineTotal
+        - shippingAmount
+        - isDigital
+        - isPreorder
+        - preorderFulfilmentText
+        - createdAt
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: number
+        orderReference:
+          type: string
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        country:
+          type: string
+        deliveryAddress:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        currency:
+          type: string
+        subtotal:
+          type: number
+        shippingTotal:
+          type: number
+        discountTotal:
+          type: number
+        grandTotal:
+          type: number
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+        orderStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        paymentNote:
+          type: ["string", "null"]
+        paidAt:
+          type: ["string", "null"]
+          format: date-time
+        trackingNumber:
+          type: ["string", "null"]
+        internalNotes:
+          type: ["string", "null"]
+        couponCode:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - orderReference
+        - customerName
+        - customerEmail
+        - customerPhone
+        - country
+        - deliveryAddress
+        - notes
+        - currency
+        - subtotal
+        - shippingTotal
+        - discountTotal
+        - grandTotal
+        - paymentMethod
+        - paymentStatus
+        - orderStatus
+        - paymentNote
+        - paidAt
+        - trackingNumber
+        - internalNotes
+        - couponCode
+        - createdAt
+        - updatedAt
+
+    OrderWithItems:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderItem"
+          required:
+            - items
+
+    OrderStatusHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: number
+        orderId:
+          type: number
+        changedBy:
+          type: string
+        field:
+          type: string
+          enum: [payment_status, order_status]
+        oldValue:
+          type: string
+        newValue:
+          type: string
+        note:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - orderId
+        - changedBy
+        - field
+        - oldValue
+        - newValue
+        - note
+        - createdAt
+
+    AdminOrderDetail:
+      type: object
+      properties:
+        order:
+          $ref: "#/components/schemas/OrderWithItems"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderStatusHistoryEntry"
+      required:
+        - order
+        - history
+
+    AdminOrdersPage:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        total:
+          type: number
+      required:
+        - orders
+        - total
+
+    AdminUpdateOrderInput:
+      type: object
+      properties:
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+        orderStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        trackingNumber:
+          type: ["string", "null"]
+        internalNotes:
+          type: ["string", "null"]
+        paymentNote:
+          type: ["string", "null"]
+        statusChangeNote:
+          type: string
+
+    PublicOrderTrackingItem:
+      type: object
+      properties:
+        productId:
+          type: ["number", "null"]
+        productName:
+          type: string
+        variant:
+          oneOf:
+            - $ref: "#/components/schemas/OrderItemVariant"
+            - type: "null"
+        quantity:
+          type: number
+        lineTotal:
+          type: number
+        isDigital:
+          type: boolean
+        isPreorder:
+          type: boolean
+      required:
+        - productId
+        - productName
+        - variant
+        - quantity
+        - lineTotal
+        - isDigital
+        - isPreorder
+
+    PublicOrderTracking:
+      type: object
+      properties:
+        orderReference:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        currency:
+          type: string
+        grandTotal:
+          type: number
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+        orderStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        trackingNumber:
+          type: ["string", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOrderTrackingItem"
+      required:
+        - orderReference
+        - createdAt
+        - currency
+        - grandTotal
+        - paymentStatus
+        - orderStatus
+        - trackingNumber
+        - items
+
+    TrackOrderInput:
+      type: object
+      properties:
+        orderReference:
+          type: string
+        email:
+          type: string
+      required:
+        - orderReference
+        - email
+
+    CreateOrderInput:
+      type: object
+      properties:
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        customerPhone:
+          type: string
+        country:
+          type: string
+        deliveryAddress:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+        couponCode:
+          type: ["string", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItemInput"
+        consent:
+          type: boolean
+      required:
+        - customerName
+        - customerEmail
+        - customerPhone
+        - country
+        - paymentMethod
+        - items
+        - consent
+
+    QuoteOrderInput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItemInput"
+        couponCode:
+          type: ["string", "null"]
+      required:
+        - items
+
+    QuoteResultItem:
+      type: object
+      properties:
+        productId:
+          type: number
+        productName:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        lineTotal:
+          type: number
+        shippingAmount:
+          type: number
+        isDigital:
+          type: boolean
+        isPreorder:
+          type: boolean
+      required:
+        - productId
+        - productName
+        - quantity
+        - unitPrice
+        - lineTotal
+        - shippingAmount
+        - isDigital
+        - isPreorder
+
+    QuoteResult:
+      type: object
+      properties:
+        currency:
+          type: string
+        subtotal:
+          type: number
+        shippingTotal:
+          type: number
+        discountTotal:
+          type: number
+        grandTotal:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuoteResultItem"
+      required:
+        - currency
+        - subtotal
+        - shippingTotal
+        - discountTotal
+        - grandTotal
+        - items
+
+    DownloadUrlResponse:
+      type: object
+      properties:
+        downloadUrl:
+          type: string
+      required:
+        - downloadUrl
+
+    Coupon:
+      type: object
+      properties:
+        id:
+          type: number
+        code:
+          type: string
+        discountType:
+          $ref: "#/components/schemas/CouponDiscountType"
+        discountValue:
+          type: number
+        currency:
+          type: ["string", "null"]
+        activeFrom:
+          type: ["string", "null"]
+          format: date-time
+        activeUntil:
+          type: ["string", "null"]
+          format: date-time
+        usageLimit:
+          type: ["number", "null"]
+        usageCount:
+          type: number
+        minimumOrderAmount:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+        restrictedProductIds:
+          type: ["array", "null"]
+          items:
+            type: number
+        restrictedCategory:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - code
+        - discountType
+        - discountValue
+        - currency
+        - activeFrom
+        - activeUntil
+        - usageLimit
+        - usageCount
+        - minimumOrderAmount
+        - isActive
+        - restrictedProductIds
+        - restrictedCategory
+        - createdAt
+        - updatedAt
+
+    CouponInput:
+      type: object
+      properties:
+        code:
+          type: string
+        discountType:
+          $ref: "#/components/schemas/CouponDiscountType"
+        discountValue:
+          type: number
+        currency:
+          type: ["string", "null"]
+        activeFrom:
+          type: ["string", "null"]
+          format: date-time
+        activeUntil:
+          type: ["string", "null"]
+          format: date-time
+        usageLimit:
+          type: ["number", "null"]
+        minimumOrderAmount:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+        restrictedProductIds:
+          type: ["array", "null"]
+          items:
+            type: number
+        restrictedCategory:
+          type: ["string", "null"]
+      required:
+        - code
+        - discountType
+        - discountValue

@@ -32,6 +32,7 @@ export interface PublicProduct {
   stockStatus: PublicProductStockStatus;
   isFeatured: boolean;
   hasDownload: boolean;
+  shippingAmount: number;
   /** @nullable */
   preorderOpensAt: Date | null;
   /** @nullable */
