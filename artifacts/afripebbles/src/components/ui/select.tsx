@@ -5,7 +5,30 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { cn } from '@/lib/utils';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
-const Select = SelectPrimitive.Root;
+/**
+ * Radix's hidden native <select> fallback (used for form-autofill/native
+ * submission) mirrors its <option> list from mounted SelectItems. When a
+ * controlled `value` changes to something whose SelectItem hasn't been
+ * registered yet — e.g. async data applied via react-hook-form's `reset()`
+ * before the dropdown has ever been opened — the native select has no
+ * matching <option>, so the browser silently coerces its value to "" and
+ * Radix's sync effect dispatches that "" back through onValueChange,
+ * clobbering the real controlled value. No SelectItem in this app ever uses
+ * "" as a real value, so treat an empty-string callback as this artifact and
+ * drop it rather than let it corrupt form state.
+ */
+const Select = ({
+  onValueChange,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => (
+  <SelectPrimitive.Root
+    onValueChange={(value) => {
+      if (value === '') return;
+      onValueChange?.(value);
+    }}
+    {...props}
+  />
+);
 
 const SelectGroup = SelectPrimitive.Group;
 

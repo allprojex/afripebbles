@@ -19,6 +19,15 @@ class MockObserver {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).ResizeObserver ??= MockObserver;
 
+// jsdom doesn't implement the Pointer Events capture API or scrollIntoView,
+// which Radix Select/Dropdown need when a real click opens the popup.
+if (typeof Element !== "undefined") {
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
+  Element.prototype.scrollIntoView ??= () => {};
+}
+
 if (typeof window !== "undefined" && !window.matchMedia) {
   window.matchMedia = (query: string) => ({
     matches: false,
