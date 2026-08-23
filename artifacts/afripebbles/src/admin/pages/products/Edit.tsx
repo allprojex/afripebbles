@@ -46,12 +46,17 @@ const optionGroupSchema = z.object({
   values: z.array(optionValueSchema),
 });
 
+// z.union([z.coerce.number(), z.null()]) is a trap here: z.coerce.number() runs Number(null) === 0
+// and "succeeds", so the null branch never gets a chance — every blank override would silently
+// save as an actual €0 override instead of "no override". Preprocess to null explicitly instead.
+const nullableNumber = z.preprocess((v) => (v === null || v === undefined || v === "" ? null : Number(v)), z.number().nullable());
+
 const varietySchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().nullable(),
   sku: z.string().nullable(),
-  priceOverride: z.union([z.coerce.number(), z.null()]),
-  shippingAmountOverride: z.union([z.coerce.number(), z.null()]),
+  priceOverride: nullableNumber,
+  shippingAmountOverride: nullableNumber,
   availabilityOverride: z.string().nullable(),
   isActive: z.boolean(),
   images: z.array(z.string()),

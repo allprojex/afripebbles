@@ -163,6 +163,25 @@ describe("AdminProductEdit — status/availability selects", () => {
     expect(call.data.gallery).toEqual([]);
   });
 
+  it("leaves a variety's price/shipping override as null when the field is left blank, not 0", async () => {
+    const user = userEvent.setup();
+    mockUseAdminGetProduct.mockReturnValue({ data: baseProduct, isLoading: false });
+    renderEdit();
+
+    await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("hddh"));
+
+    await user.click(screen.getByRole("button", { name: /add variety/i }));
+    await user.type(screen.getByPlaceholderText("e.g. Burgundy set"), "White set");
+    // Deliberately never touch the price/shipping override fields — they should stay unset.
+
+    await user.click(screen.getByRole("button", { name: /save product/i }));
+
+    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalled());
+    const [call] = mockUpdateMutate.mock.calls[0];
+    expect(call.data.varieties[0].priceOverride).toBeNull();
+    expect(call.data.varieties[0].shippingAmountOverride).toBeNull();
+  });
+
   it("shows a one-click migration from legacy variants to option groups, only when option groups are still empty", async () => {
     const user = userEvent.setup();
     mockUseAdminGetProduct.mockReturnValue({
