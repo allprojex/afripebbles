@@ -72,13 +72,16 @@ describe("POST /api/admin/uploads (live sharp processing, mocked storage)", () =
     expect(thumbCall[1]).toMatch(/-thumb\.webp$/);
   });
 
-  it("sets a long, immutable cache-control on the uploaded objects", async () => {
+  it("sets a long-lived cache-control (bare max-age seconds, not a literal header string) on the uploaded objects", async () => {
     const buffer = await makePngBuffer(1000, 1000);
     await request(testApp).post("/api/admin/uploads").field("bucket", "product-images").attach("file", buffer, "photo.png");
 
     for (const call of uploadMock.mock.calls) {
       const options = call[3] as { cacheControl?: string } | undefined;
-      expect(options?.cacheControl).toContain("immutable");
+      // The Supabase SDK templates this value into `max-age=<value>` itself — passing anything
+      // other than a bare number here (e.g. a full "public, max-age=..." string) produces a
+      // doubled, malformed Cache-Control response header. Regression test for that exact bug.
+      expect(options?.cacheControl).toBe("31536000");
     }
   });
 

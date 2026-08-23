@@ -19,7 +19,13 @@ export const MAX_IMAGE_DIMENSION = 4000; // px, per side — generous ceiling ag
 // Every uploaded image object is named by a fresh randomUUID and never overwritten (upload always
 // uses upsert: false) — so once written, an object's bytes never change. Safe to cache "forever";
 // a genuinely different image always gets a genuinely different URL. Does not affect API JSON caching.
-export const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+//
+// The Supabase JS storage client's `cacheControl` upload option is a bare max-age value, NOT a
+// literal Cache-Control header — it templates the value into `max-age=<value>` itself (the server
+// then prepends `public, `). Passing a full header string here (as this constant used to) produces
+// a doubled, malformed header: `public, max-age=public, max-age=31536000, immutable`. There is no
+// way to also set `immutable` through this option, so this is deliberately just the seconds count.
+export const IMMUTABLE_CACHE_CONTROL = "31536000";
 
 export function isStorageBucket(value: unknown): value is StorageBucket {
   return typeof value === "string" && (STORAGE_BUCKETS as readonly string[]).includes(value);
