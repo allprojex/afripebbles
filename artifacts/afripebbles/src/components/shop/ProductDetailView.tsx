@@ -64,11 +64,14 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
   const usesNewModel = (product.optionGroups?.length ?? 0) > 0 || (product.varieties?.length ?? 0) > 0;
   const defaultImage = product.previewImageUrl || product.imageUrl;
   const [activeImage, setActiveImage] = useState<string | null>(defaultImage);
-  const rawThumbnails: { url: string; thumbnailUrl: string | null }[] = [
-    product.imageUrl ? { url: product.imageUrl, thumbnailUrl: product.thumbnailUrl ?? null } : null,
-    product.previewImageUrl ? { url: product.previewImageUrl, thumbnailUrl: null } : null,
-    ...(product.gallery ?? []).map((img) => ({ url: img.url, thumbnailUrl: img.thumbnailUrl ?? null })),
-  ].filter((t): t is { url: string; thumbnailUrl: string | null } => t !== null);
+  const galleryCaptionByUrl = new Map((product.gallery ?? []).map((img) => [img.url, img.caption ?? null] as const));
+  const rawThumbnails: { url: string; thumbnailUrl: string | null; caption: string | null }[] = [
+    product.imageUrl
+      ? { url: product.imageUrl, thumbnailUrl: product.thumbnailUrl ?? null, caption: galleryCaptionByUrl.get(product.imageUrl) ?? null }
+      : null,
+    product.previewImageUrl ? { url: product.previewImageUrl, thumbnailUrl: null, caption: null } : null,
+    ...(product.gallery ?? []).map((img) => ({ url: img.url, thumbnailUrl: img.thumbnailUrl ?? null, caption: img.caption ?? null })),
+  ].filter((t): t is { url: string; thumbnailUrl: string | null; caption: string | null } => t !== null);
   const seenUrls = new Set<string>();
   const thumbnails = rawThumbnails.filter((t) => (seenUrls.has(t.url) ? false : (seenUrls.add(t.url), true)));
   const handleVarietyChange = (variety: ProductVariety | null) => {
@@ -139,15 +142,20 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
               </div>
             </div>
             {thumbnails.length > 1 && (
-              <div className="flex gap-2 flex-wrap">
+              <div className="grid grid-cols-3 gap-2">
                 {thumbnails.map((t) => (
                   <button
                     key={t.url}
                     type="button"
                     onClick={() => setActiveImage(t.url)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === t.url ? "border-primary ring-1 ring-primary" : "border-border"}`}
+                    className={`text-left rounded-xl border overflow-hidden transition-colors ${
+                      activeImage === t.url ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/50"
+                    }`}
                   >
-                    <img src={t.thumbnailUrl ?? t.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="w-full h-full object-cover" />
+                    <div className="aspect-square bg-muted">
+                      <img src={t.thumbnailUrl ?? t.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="w-full h-full object-cover" />
+                    </div>
+                    {t.caption && <div className="px-2 py-1.5 text-xs font-medium truncate">{t.caption}</div>}
                   </button>
                 ))}
               </div>
