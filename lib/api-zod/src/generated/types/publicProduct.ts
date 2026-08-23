@@ -28,6 +28,8 @@ export interface PublicProduct {
   category: string | null;
   /** @nullable */
   imageUrl: string | null;
+  /** @nullable */
+  thumbnailUrl: string | null;
   images: string[];
   /** @nullable */
   previewImageUrl: string | null;

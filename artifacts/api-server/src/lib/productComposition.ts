@@ -84,6 +84,7 @@ export async function loadProductChildren(productId: number): Promise<ComposedPr
 
 export interface ProductImageInput {
   url: string;
+  thumbnailUrl?: string | null;
   altText?: string | null;
   caption?: string | null;
   displayOrder?: number;
@@ -167,6 +168,7 @@ export async function replaceProductChildren(tx: DbTx, productId: number, input:
         productId,
         varietyId: insertedVarieties[i].id,
         url: img.url,
+        thumbnailUrl: img.thumbnailUrl ?? null,
         altText: img.altText ?? null,
         caption: img.caption ?? null,
         displayOrder: img.displayOrder ?? j,
@@ -183,6 +185,7 @@ export async function replaceProductChildren(tx: DbTx, productId: number, input:
         productId,
         varietyId: null,
         url: img.url,
+        thumbnailUrl: img.thumbnailUrl ?? null,
         altText: img.altText ?? null,
         caption: img.caption ?? null,
         displayOrder: img.displayOrder ?? i,
@@ -229,7 +232,15 @@ export async function replaceProductChildren(tx: DbTx, productId: number, input:
 export function collectChildImageUrls(children: ComposedProductChildren): string[] {
   const urls: string[] = [];
   for (const g of children.optionGroups) for (const v of g.values) if (v.imageUrl) urls.push(v.imageUrl);
-  for (const img of children.gallery) urls.push(img.url);
-  for (const variety of children.varieties) for (const img of variety.images) urls.push(img.url);
+  for (const img of children.gallery) {
+    urls.push(img.url);
+    if (img.thumbnailUrl) urls.push(img.thumbnailUrl);
+  }
+  for (const variety of children.varieties) {
+    for (const img of variety.images) {
+      urls.push(img.url);
+      if (img.thumbnailUrl) urls.push(img.thumbnailUrl);
+    }
+  }
   return urls;
 }

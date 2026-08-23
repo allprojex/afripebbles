@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/hooks/use-toast";
+import { handleImageError } from "@/lib/product";
 import type { ProductOptionGroup, ProductVariety } from "@workspace/api-client-react";
 
 interface PendingLine {
@@ -161,7 +162,16 @@ export function ProductSelector({
                   }`}
                 >
                   <div className="aspect-square bg-muted">
-                    {image && <img src={image.url} alt={image.altText ?? variety.name} className="w-full h-full object-cover" />}
+                    {image && (
+                      <img
+                        src={image.thumbnailUrl ?? image.url}
+                        alt={image.altText ?? variety.name}
+                        loading="lazy"
+                        decoding="async"
+                        onError={handleImageError}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <div className="px-2 py-1.5 text-xs font-medium truncate">{variety.name}</div>
                 </button>

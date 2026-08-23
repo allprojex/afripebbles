@@ -28,7 +28,7 @@ export function MultiImageUploader({ bucket, value, onChange, label = "Additiona
     try {
       const uploaded: string[] = [];
       for (const file of Array.from(files)) {
-        uploaded.push(await uploadImage(bucket, file));
+        uploaded.push((await uploadImage(bucket, file)).url);
       }
       onChange([...value, ...uploaded]);
     } catch (err) {
@@ -58,6 +58,92 @@ export function MultiImageUploader({ bucket, value, onChange, label = "Additiona
               <button
                 type="button"
                 onClick={() => handleRemove(url)}
+                className="absolute top-1 right-1 bg-background/90 hover:bg-background rounded-full p-0.5"
+                aria-label="Remove image"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        aria-label={label}
+        onChange={(e) => {
+          if (e.target.files) void handleFiles(e.target.files);
+        }}
+      />
+      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+        {uploading ? "Uploading…" : "Add images"}
+      </Button>
+    </div>
+  );
+}
+
+export interface ImageWithThumbnail {
+  url: string;
+  thumbnailUrl?: string | null;
+}
+
+interface MultiImageUploaderWithThumbnailsProps {
+  bucket: StorageBucket;
+  value: ImageWithThumbnail[];
+  onChange: (images: ImageWithThumbnail[]) => void;
+  label?: string;
+}
+
+/**
+ * Same behavior as MultiImageUploader, but for the two product_images-backed
+ * fields (variety images, gallery) that carry a thumbnailUrl companion —
+ * separate component rather than overloading MultiImageUploader's value type,
+ * since every other caller of that one only has a plain string[] to persist.
+ */
+export function MultiImageUploaderWithThumbnails({ bucket, value, onChange, label = "Additional images" }: MultiImageUploaderWithThumbnailsProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  const handleFiles = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const uploaded: ImageWithThumbnail[] = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadImage(bucket, file);
+        uploaded.push({ url: result.url, thumbnailUrl: result.thumbnailUrl });
+      }
+      onChange([...value, ...uploaded]);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleRemove = (url: string) => {
+    onChange(value.filter((img) => img.url !== url));
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">{label}</p>
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {value.map((img) => (
+            <div key={img.url} className="relative w-24 aspect-square rounded-lg overflow-hidden border border-border bg-muted">
+              <img src={img.thumbnailUrl ?? img.url} alt="" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => handleRemove(img.url)}
                 className="absolute top-1 right-1 bg-background/90 hover:bg-background rounded-full p-0.5"
                 aria-label="Remove image"
               >

@@ -38,9 +38,14 @@ export function collectImageUrls(...fields: (string | null | undefined | string[
 export async function getReferencedImageUrls(): Promise<Set<string>> {
   const [products, productImages, optionValues, podcasts, posts, picks, ugcEntries, testimonials, homepage, settings] = await Promise.all([
     db
-      .select({ imageUrl: productsTable.imageUrl, previewImageUrl: productsTable.previewImageUrl, images: productsTable.images })
+      .select({
+        imageUrl: productsTable.imageUrl,
+        thumbnailUrl: productsTable.thumbnailUrl,
+        previewImageUrl: productsTable.previewImageUrl,
+        images: productsTable.images,
+      })
       .from(productsTable),
-    db.select({ url: productImagesTable.url }).from(productImagesTable),
+    db.select({ url: productImagesTable.url, thumbnailUrl: productImagesTable.thumbnailUrl }).from(productImagesTable),
     db.select({ imageUrl: productOptionValuesTable.imageUrl }).from(productOptionValuesTable),
     db.select({ coverImageUrl: podcastEpisodesTable.coverImageUrl }).from(podcastEpisodesTable),
     db.select({ coverImageUrl: blogPostsTable.coverImageUrl }).from(blogPostsTable),
@@ -53,9 +58,12 @@ export async function getReferencedImageUrls(): Promise<Set<string>> {
 
   const urls = new Set<string>();
   for (const row of products) {
-    for (const url of collectImageUrls(row.imageUrl, row.previewImageUrl, row.images)) urls.add(url);
+    for (const url of collectImageUrls(row.imageUrl, row.thumbnailUrl, row.previewImageUrl, row.images)) urls.add(url);
   }
-  for (const row of productImages) urls.add(row.url);
+  for (const row of productImages) {
+    urls.add(row.url);
+    if (row.thumbnailUrl) urls.add(row.thumbnailUrl);
+  }
   for (const row of optionValues) if (row.imageUrl) urls.add(row.imageUrl);
   for (const row of podcasts) if (row.coverImageUrl) urls.add(row.coverImageUrl);
   for (const row of posts) if (row.coverImageUrl) urls.add(row.coverImageUrl);

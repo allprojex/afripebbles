@@ -178,6 +178,60 @@ describe("ShopProduct — real cart, no fake purchase states", () => {
     await screen.findAllByLabelText("Cart (2 items)");
   });
 
+  it("uses each variety's thumbnail derivative for its style card, falling back to the full image when no thumbnail exists", () => {
+    mockUseGetProduct.mockReturnValue({
+      data: {
+        ...baseProduct,
+        availability: "available",
+        type: "physical",
+        optionGroups: [],
+        varieties: [
+          {
+            id: 100,
+            productId: 1,
+            name: "Burgundy",
+            description: null,
+            sku: null,
+            priceOverride: null,
+            shippingAmountOverride: null,
+            availabilityOverride: null,
+            displayOrder: 0,
+            isActive: true,
+            images: [
+              { id: 1, productId: 1, varietyId: 100, url: "https://cdn.test/burgundy.webp", thumbnailUrl: "https://cdn.test/burgundy-thumb.webp", altText: null, caption: null, displayOrder: 0, isFeatured: true },
+            ],
+          },
+          {
+            id: 101,
+            productId: 1,
+            name: "White",
+            description: null,
+            sku: null,
+            priceOverride: null,
+            shippingAmountOverride: null,
+            availabilityOverride: null,
+            displayOrder: 1,
+            isActive: true,
+            images: [
+              { id: 2, productId: 1, varietyId: 101, url: "https://cdn.test/white.png", thumbnailUrl: null, altText: null, caption: null, displayOrder: 0, isFeatured: true },
+            ],
+          },
+        ],
+        gallery: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+
+    const burgundyImg = screen.getByAltText("Burgundy") as HTMLImageElement;
+    expect(burgundyImg.src).toBe("https://cdn.test/burgundy-thumb.webp");
+
+    const whiteImg = screen.getByAltText("White") as HTMLImageElement;
+    expect(whiteImg.src).toBe("https://cdn.test/white.png");
+  });
+
   it("keeps the plain Add to Cart flow for a product with no option groups or varieties (no staging step)", () => {
     mockUseGetProduct.mockReturnValue({
       data: { ...baseProduct, availability: "available", optionGroups: [], varieties: [], gallery: [] },

@@ -13,6 +13,8 @@ export interface ProductImage {
   varietyId: number | null;
   url: string;
   /** @nullable */
+  thumbnailUrl: string | null;
+  /** @nullable */
   altText: string | null;
   /** @nullable */
   caption: string | null;

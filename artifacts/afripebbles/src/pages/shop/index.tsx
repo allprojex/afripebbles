@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { AVAILABILITY_LABEL } from "@/lib/product";
+import { AVAILABILITY_LABEL, handleImageError } from "@/lib/product";
 
 export default function ShopListing() {
   const [filter, setFilter] = useState<"all" | ListProductsType>("all");
@@ -91,9 +91,11 @@ export default function ShopListing() {
                   )}
                   {product.imageUrl && (
                     <img
-                      src={product.imageUrl}
+                      src={product.thumbnailUrl ?? product.imageUrl}
                       alt={product.title}
                       loading="lazy"
+                      decoding="async"
+                      onError={handleImageError}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   )}

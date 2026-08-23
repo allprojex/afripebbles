@@ -142,9 +142,12 @@ router.put("/products/:id", async (req, res): Promise<void> => {
 
   // Only images this product no longer references anywhere (own fields or option/variety images) —
   // a failed update never reaches here, so the currently active image set is never touched.
-  const newUrls = new Set([...collectImageUrls(product.imageUrl, product.previewImageUrl, product.images), ...collectChildImageUrls(newChildren)]);
+  const newUrls = new Set([
+    ...collectImageUrls(product.imageUrl, product.thumbnailUrl, product.previewImageUrl, product.images),
+    ...collectChildImageUrls(newChildren),
+  ]);
   const removedUrls = [
-    ...collectImageUrls(existing.imageUrl, existing.previewImageUrl, existing.images),
+    ...collectImageUrls(existing.imageUrl, existing.thumbnailUrl, existing.previewImageUrl, existing.images),
     ...collectChildImageUrls(existingChildren),
   ].filter((url) => !newUrls.has(url));
 
@@ -195,7 +198,7 @@ router.delete("/products/:id", async (req, res): Promise<void> => {
   // and must never turn a successful delete into an error response.
   try {
     const cleanup = await cleanupOrphanedImages([
-      ...collectImageUrls(existing.imageUrl, existing.previewImageUrl, existing.images),
+      ...collectImageUrls(existing.imageUrl, existing.thumbnailUrl, existing.previewImageUrl, existing.images),
       ...collectChildImageUrls(existingChildren),
     ]);
     if (cleanup.failed.length > 0) {

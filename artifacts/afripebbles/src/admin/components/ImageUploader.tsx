@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { uploadImage } from "../lib/adminApi";
+import { uploadImage, type UploadedImage } from "../lib/adminApi";
 import type { StorageBucket } from "../lib/buckets";
 
 interface ImageUploaderProps {
@@ -10,6 +10,8 @@ interface ImageUploaderProps {
   value: string | null;
   onChange: (url: string | null) => void;
   label?: string;
+  /** Optional — fired alongside onChange with the full upload result, for callers with a place to store thumbnailUrl. */
+  onUploadedMeta?: (meta: UploadedImage) => void;
 }
 
 /**
@@ -18,7 +20,7 @@ interface ImageUploaderProps {
  * after the product/content record is actually saved, so a replaced image
  * is never lost if the admin cancels or the save fails validation.
  */
-export function ImageUploader({ bucket, value, onChange, label = "Image" }: ImageUploaderProps) {
+export function ImageUploader({ bucket, value, onChange, label = "Image", onUploadedMeta }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -26,8 +28,9 @@ export function ImageUploader({ bucket, value, onChange, label = "Image" }: Imag
   const handleFile = async (file: File) => {
     setUploading(true);
     try {
-      const url = await uploadImage(bucket, file);
-      onChange(url);
+      const uploaded = await uploadImage(bucket, file);
+      onChange(uploaded.url);
+      onUploadedMeta?.(uploaded);
     } catch (err) {
       toast({
         variant: "destructive",

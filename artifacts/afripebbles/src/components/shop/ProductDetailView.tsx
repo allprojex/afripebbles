@@ -12,6 +12,7 @@ import type { ProductAvailability, ProductOptionGroup, ProductVariety, ProductIm
 import { siteConfig } from "@/content/site";
 import { format } from "date-fns";
 import { ProductSelector } from "./ProductSelector";
+import { handleImageError } from "@/lib/product";
 
 /**
  * Minimal shape this view actually renders — deliberately not the generated
@@ -29,6 +30,7 @@ export interface ProductDetailViewProduct {
   type: string;
   category: string | null;
   imageUrl: string | null;
+  thumbnailUrl?: string | null;
   previewImageUrl: string | null;
   availability: ProductAvailability;
   preorderOpensAt: string | null;
@@ -62,9 +64,13 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
   const usesNewModel = (product.optionGroups?.length ?? 0) > 0 || (product.varieties?.length ?? 0) > 0;
   const defaultImage = product.previewImageUrl || product.imageUrl;
   const [activeImage, setActiveImage] = useState<string | null>(defaultImage);
-  const thumbnails = Array.from(
-    new Set([product.imageUrl, product.previewImageUrl, ...(product.gallery ?? []).map((img) => img.url)].filter((url): url is string => Boolean(url))),
-  );
+  const rawThumbnails: { url: string; thumbnailUrl: string | null }[] = [
+    product.imageUrl ? { url: product.imageUrl, thumbnailUrl: product.thumbnailUrl ?? null } : null,
+    product.previewImageUrl ? { url: product.previewImageUrl, thumbnailUrl: null } : null,
+    ...(product.gallery ?? []).map((img) => ({ url: img.url, thumbnailUrl: img.thumbnailUrl ?? null })),
+  ].filter((t): t is { url: string; thumbnailUrl: string | null } => t !== null);
+  const seenUrls = new Set<string>();
+  const thumbnails = rawThumbnails.filter((t) => (seenUrls.has(t.url) ? false : (seenUrls.add(t.url), true)));
   const handleVarietyChange = (variety: ProductVariety | null) => {
     if (!variety) {
       setActiveImage(defaultImage);
@@ -116,21 +122,31 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
           className="w-full md:w-1/2"
         >
           <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted shadow-lg sticky top-32 relative">
-            {activeImage && <img src={activeImage} alt={product.title} className="w-full h-full object-cover" />}
+            {activeImage && (
+              <img
+                src={activeImage}
+                alt={product.title}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                onError={handleImageError}
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute top-6 left-6 bg-background/90 backdrop-blur-sm text-sm px-4 py-1.5 rounded-full text-primary z-10 font-medium tracking-wide shadow-sm border border-primary/10">
               {AVAILABILITY_LABEL[product.availability]}
             </div>
           </div>
           {thumbnails.length > 1 && (
             <div className="flex gap-2 mt-4 flex-wrap">
-              {thumbnails.map((url) => (
+              {thumbnails.map((t) => (
                 <button
-                  key={url}
+                  key={t.url}
                   type="button"
-                  onClick={() => setActiveImage(url)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === url ? "border-primary ring-1 ring-primary" : "border-border"}`}
+                  onClick={() => setActiveImage(t.url)}
+                  className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === t.url ? "border-primary ring-1 ring-primary" : "border-border"}`}
                 >
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={t.thumbnailUrl ?? t.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

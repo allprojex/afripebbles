@@ -9,6 +9,8 @@
 export interface ProductImageInput {
   url: string;
   /** @nullable */
+  thumbnailUrl?: string | null;
+  /** @nullable */
   altText?: string | null;
   /** @nullable */
   caption?: string | null;

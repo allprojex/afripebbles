@@ -117,6 +117,8 @@ export interface ProductImage {
   varietyId: number | null;
   url: string;
   /** @nullable */
+  thumbnailUrl: string | null;
+  /** @nullable */
   altText: string | null;
   /** @nullable */
   caption: string | null;
@@ -145,6 +147,8 @@ export interface ProductVariety {
 
 export interface ProductImageInput {
   url: string;
+  /** @nullable */
+  thumbnailUrl?: string | null;
   /** @nullable */
   altText?: string | null;
   /** @nullable */
@@ -236,6 +240,8 @@ export interface Product {
   category: string | null;
   /** @nullable */
   imageUrl: string | null;
+  /** @nullable */
+  thumbnailUrl: string | null;
   images: string[];
   /** @nullable */
   previewImageUrl: string | null;
@@ -313,6 +319,8 @@ export interface PublicProduct {
   category: string | null;
   /** @nullable */
   imageUrl: string | null;
+  /** @nullable */
+  thumbnailUrl: string | null;
   images: string[];
   /** @nullable */
   previewImageUrl: string | null;
@@ -386,6 +394,8 @@ export interface ProductInput {
   category?: string | null;
   /** @nullable */
   imageUrl?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
   images?: string[];
   /** @nullable */
   previewImageUrl?: string | null;

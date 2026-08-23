@@ -24,6 +24,9 @@ export const productsTable = pgTable("products", {
   type: text("type").notNull(), // 'digital' | 'physical'
   category: text("category"),
   imageUrl: text("image_url"),
+  // Small web-optimized derivative (≤~600px wide) of imageUrl, for listing/card contexts — see lib/imagePipeline.ts.
+  // Null for products uploaded before the derivative pipeline existed; callers fall back to imageUrl.
+  thumbnailUrl: text("thumbnail_url"),
   images: jsonb("images").$type<string[]>().notNull().default([]),
   previewImageUrl: text("preview_image_url"),
   availability: text("availability").notNull().default("available"), // see PRODUCT_AVAILABILITY

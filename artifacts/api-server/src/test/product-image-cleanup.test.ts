@@ -251,4 +251,168 @@ describe("product image storage cleanup (live DB, mocked storage)", () => {
     const deleteRes = await request(app).delete("/api/admin/products/1");
     expect(deleteRes.status).toBe(401);
   });
+
+  it("removes both the old featured image and its thumbnail derivative when replaced", async () => {
+    await cleanupBySlugPrefix();
+    const oldUrl = fakeImageUrl("product-images");
+    const oldThumb = fakeImageUrl("product-images", `${pathOf(oldUrl).replace(".jpg", "")}-thumb.webp`);
+    const newUrl = fakeImageUrl("product-images");
+    const [product] = await db.insert(productsTable).values(baseProductBody({ imageUrl: oldUrl, thumbnailUrl: oldThumb })).returning();
+
+    try {
+      const res = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(baseProductBody({ slug: product.slug, imageUrl: newUrl, thumbnailUrl: null }));
+
+      expect(res.status).toBe(200);
+      expect(removeMock).toHaveBeenCalledTimes(1);
+      expect(removeMock).toHaveBeenCalledWith(expect.arrayContaining([pathOf(oldUrl), pathOf(oldThumb)]));
+    } finally {
+      await cleanupBySlugPrefix();
+    }
+  });
+
+  it("does not remove an image that stops being the featured image but becomes a variety image in the same save", async () => {
+    await cleanupBySlugPrefix();
+    const sharedUrl = fakeImageUrl("product-images");
+    const [product] = await db.insert(productsTable).values(baseProductBody({ imageUrl: sharedUrl, type: "physical" })).returning();
+
+    try {
+      // This mirrors the real incident: the same URL moves from being the plain
+      // featured image to being referenced via product_images (a variety image)
+      // in one save. It must never be treated as orphaned mid-transition.
+      const res = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            imageUrl: sharedUrl,
+            varieties: [{ name: "Only style", isActive: true, images: [{ url: sharedUrl }] }],
+          }),
+        );
+
+      expect(res.status).toBe(200);
+      expect(removeMock).not.toHaveBeenCalled();
+    } finally {
+      await cleanupBySlugPrefix();
+    }
+  });
+
+  it("does not remove a variety image that is reused as the product's featured image in a later save", async () => {
+    await cleanupBySlugPrefix();
+    const varietyImageUrl = fakeImageUrl("product-images");
+    const [product] = await db
+      .insert(productsTable)
+      .values(baseProductBody({ imageUrl: null, type: "physical" }))
+      .returning();
+
+    try {
+      // First save: image only exists as a variety image.
+      const first = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            varieties: [{ name: "Only style", isActive: true, images: [{ url: varietyImageUrl }] }],
+          }),
+        );
+      expect(first.status).toBe(200);
+      removeMock.mockClear();
+
+      // Second save: the same URL is now ALSO the featured image, variety keeps it too.
+      // Provably safe — the fresh getReferencedImageUrls() scan sees the variety's
+      // product_images row regardless of what the product-level fields say.
+      const second = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            imageUrl: varietyImageUrl,
+            varieties: [{ name: "Only style", isActive: true, images: [{ url: varietyImageUrl }] }],
+          }),
+        );
+      expect(second.status).toBe(200);
+      expect(removeMock).not.toHaveBeenCalled();
+    } finally {
+      await cleanupBySlugPrefix();
+    }
+  }, 15000);
+
+  it("removing one variety's image while keeping another variety's identical-URL image never deletes it", async () => {
+    await cleanupBySlugPrefix();
+    const sharedUrl = fakeImageUrl("product-images");
+    const [product] = await db
+      .insert(productsTable)
+      .values(baseProductBody({ imageUrl: null, type: "physical" }))
+      .returning();
+
+    try {
+      const first = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            varieties: [
+              { name: "Style A", isActive: true, images: [{ url: sharedUrl }] },
+              { name: "Style B", isActive: true, images: [{ url: sharedUrl }] },
+            ],
+          }),
+        );
+      expect(first.status).toBe(200);
+      removeMock.mockClear();
+
+      // Drop Style B (and its copy of the shared URL) but keep Style A referencing it.
+      const second = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            varieties: [{ name: "Style A", isActive: true, images: [{ url: sharedUrl }] }],
+          }),
+        );
+      expect(second.status).toBe(200);
+      expect(removeMock).not.toHaveBeenCalled();
+    } finally {
+      await cleanupBySlugPrefix();
+    }
+  }, 15000);
+
+  it("deletes a genuinely orphaned variety image (and its thumbnail) once no variety references it any more", async () => {
+    await cleanupBySlugPrefix();
+    const droppedUrl = fakeImageUrl("product-images");
+    const droppedThumb = fakeImageUrl("product-images", `${pathOf(droppedUrl).replace(".jpg", "")}-thumb.webp`);
+    const [product] = await db
+      .insert(productsTable)
+      .values(baseProductBody({ imageUrl: null, type: "physical" }))
+      .returning();
+
+    try {
+      const first = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(
+          baseProductBody({
+            slug: product.slug,
+            type: "physical",
+            varieties: [{ name: "Only style", isActive: true, images: [{ url: droppedUrl, thumbnailUrl: droppedThumb }] }],
+          }),
+        );
+      expect(first.status).toBe(200);
+      removeMock.mockClear();
+
+      const second = await request(testApp)
+        .put(`/api/admin/products/${product.id}`)
+        .send(baseProductBody({ slug: product.slug, type: "physical", varieties: [] }));
+
+      expect(second.status).toBe(200);
+      expect(removeMock).toHaveBeenCalledTimes(1);
+      expect(removeMock).toHaveBeenCalledWith(expect.arrayContaining([pathOf(droppedUrl), pathOf(droppedThumb)]));
+    } finally {
+      await cleanupBySlugPrefix();
+    }
+  }, 15000);
 });

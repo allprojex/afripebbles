@@ -16,6 +16,11 @@ export const ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 export const MAX_IMAGE_DIMENSION = 4000; // px, per side — generous ceiling against accidental huge uploads
 
+// Every uploaded image object is named by a fresh randomUUID and never overwritten (upload always
+// uses upsert: false) — so once written, an object's bytes never change. Safe to cache "forever";
+// a genuinely different image always gets a genuinely different URL. Does not affect API JSON caching.
+export const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
 export function isStorageBucket(value: unknown): value is StorageBucket {
   return typeof value === "string" && (STORAGE_BUCKETS as readonly string[]).includes(value);
 }

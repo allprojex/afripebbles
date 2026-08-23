@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploader } from "../../components/ImageUploader";
-import { MultiImageUploader } from "../../components/MultiImageUploader";
+import { MultiImageUploader, MultiImageUploaderWithThumbnails } from "../../components/MultiImageUploader";
 import { DigitalFileUploader } from "../../components/DigitalFileUploader";
 import { TagsInput } from "../../components/TagsInput";
 import { DateTimeInput } from "../../components/DateTimeInput";
@@ -59,7 +59,7 @@ const varietySchema = z.object({
   shippingAmountOverride: nullableNumber,
   availabilityOverride: z.string().nullable(),
   isActive: z.boolean(),
-  images: z.array(z.string()),
+  images: z.array(z.object({ url: z.string(), thumbnailUrl: z.string().nullable() })),
 });
 
 const schema = z.object({
@@ -75,6 +75,7 @@ const schema = z.object({
   type: z.enum(["digital", "physical"]),
   category: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  thumbnailUrl: z.string().nullable(),
   images: z.array(z.string()),
   previewImageUrl: z.string().nullable(),
   availability: z.enum(["available", "preorder", "coming_soon", "out_of_stock"]),
@@ -90,7 +91,7 @@ const schema = z.object({
   variants: z.array(z.object({ label: z.string().min(1, "Label is required"), options: z.array(z.string()) })),
   optionGroups: z.array(optionGroupSchema),
   varieties: z.array(varietySchema),
-  gallery: z.array(z.string()),
+  gallery: z.array(z.object({ url: z.string(), thumbnailUrl: z.string().nullable() })),
   externalPurchaseUrl: z.string().nullable(),
   tags: z.array(z.string()),
   status: z.enum(["draft", "scheduled", "published", "archived"]),
@@ -111,6 +112,7 @@ const DEFAULT_VALUES: FormValues = {
   type: "digital",
   category: null,
   imageUrl: null,
+  thumbnailUrl: null,
   images: [],
   previewImageUrl: null,
   availability: "available",
@@ -164,19 +166,15 @@ function toFormValues(product: Product): FormValues {
       shippingAmountOverride: v.shippingAmountOverride,
       availabilityOverride: v.availabilityOverride,
       isActive: v.isActive,
-      images: v.images.map((img) => img.url),
+      images: v.images.map((img) => ({ url: img.url, thumbnailUrl: img.thumbnailUrl })),
     })),
-    gallery: product.gallery.map((img) => img.url),
+    gallery: product.gallery.map((img) => ({ url: img.url, thumbnailUrl: img.thumbnailUrl })),
   };
 }
 
 /** Inverse of toFormValues — reconstructs the nested object shape (ProductOptionGroupInput/ProductVarietyInput/ProductImageInput) the admin API expects. */
 function toSubmitPayload(values: FormValues) {
-  return {
-    ...values,
-    varieties: values.varieties.map((v) => ({ ...v, images: v.images.map((url) => ({ url })) })),
-    gallery: values.gallery.map((url) => ({ url })),
-  };
+  return values;
 }
 
 const AVAILABILITY_OVERRIDE_INHERIT = "__inherit__";
@@ -483,7 +481,7 @@ function VarietyEditor({ control, form, varietyIndex, onRemove, onMoveUp, onMove
             name={`varieties.${varietyIndex}.images`}
             render={({ field }) => (
               <div className="col-span-2">
-                <MultiImageUploader bucket="product-images" value={field.value} onChange={field.onChange} />
+                <MultiImageUploaderWithThumbnails bucket="product-images" value={field.value} onChange={field.onChange} />
               </div>
             )}
           />
@@ -799,7 +797,18 @@ export default function AdminProductEdit() {
             <FormField
               control={form.control}
               name="imageUrl"
-              render={({ field }) => <ImageUploader bucket="product-images" label="Featured image" value={field.value} onChange={field.onChange} />}
+              render={({ field }) => (
+                <ImageUploader
+                  bucket="product-images"
+                  label="Featured image"
+                  value={field.value}
+                  onChange={(url) => {
+                    field.onChange(url);
+                    if (!url) form.setValue("thumbnailUrl", null);
+                  }}
+                  onUploadedMeta={(meta) => form.setValue("thumbnailUrl", meta.thumbnailUrl)}
+                />
+              )}
             />
             <FormField
               control={form.control}
@@ -820,7 +829,7 @@ export default function AdminProductEdit() {
                 <FormItem>
                   <FormLabel>Gallery</FormLabel>
                   <FormDescription>A general product gallery, separate from the legacy images above — shown on the product page image strip.</FormDescription>
-                  <MultiImageUploader bucket="product-images" value={field.value} onChange={field.onChange} />
+                  <MultiImageUploaderWithThumbnails bucket="product-images" value={field.value} onChange={field.onChange} />
                 </FormItem>
               )}
             />

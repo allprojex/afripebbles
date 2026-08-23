@@ -19,6 +19,9 @@ export const productImagesTable = pgTable(
       .references(() => productsTable.id, { onDelete: "cascade" }),
     varietyId: integer("variety_id").references(() => productVarietiesTable.id, { onDelete: "set null" }),
     url: text("url").notNull(),
+    // Small web-optimized derivative (≤~600px wide) for listing/card contexts — see lib/imagePipeline.ts.
+    // Null for images uploaded before the derivative pipeline existed; callers fall back to `url`.
+    thumbnailUrl: text("thumbnail_url"),
     altText: text("alt_text"),
     caption: text("caption"),
     displayOrder: integer("display_order").notNull().default(0),

@@ -6,12 +6,23 @@ async function authHeader(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+export interface UploadedImage {
+  url: string;
+  /** Small web-optimized derivative for card/thumbnail contexts. Null only if derivative generation failed server-side. */
+  thumbnailUrl: string | null;
+}
+
 /**
  * Uploads go through a hand-written fetch call rather than the generated API
  * client — multipart/form-data doesn't fit the OpenAPI-driven JSON hooks used
  * everywhere else, and this endpoint is simple enough not to need codegen.
+ *
+ * The server always resizes/re-encodes to WebP and returns both a "display"
+ * derivative (the `url`) and a smaller "thumbnail" derivative — every upload
+ * gets both regardless of which bucket/content-type it's for, even if a given
+ * caller only has a field to persist `url`.
  */
-export async function uploadImage(bucket: string, file: File): Promise<string> {
+export async function uploadImage(bucket: string, file: File): Promise<UploadedImage> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("bucket", bucket);
@@ -27,8 +38,7 @@ export async function uploadImage(bucket: string, file: File): Promise<string> {
     throw new Error(data?.error ?? `Upload failed (${res.status})`);
   }
 
-  const data = (await res.json()) as { url: string };
-  return data.url;
+  return (await res.json()) as UploadedImage;
 }
 
 /**

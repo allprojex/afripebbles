@@ -1986,6 +1986,8 @@ components:
           type: ["number", "null"]
         url:
           type: string
+        thumbnailUrl:
+          type: ["string", "null"]
         altText:
           type: ["string", "null"]
         caption:
@@ -1999,6 +2001,7 @@ components:
         - productId
         - varietyId
         - url
+        - thumbnailUrl
         - altText
         - caption
         - displayOrder
@@ -2049,6 +2052,8 @@ components:
       properties:
         url:
           type: string
+        thumbnailUrl:
+          type: ["string", "null"]
         altText:
           type: ["string", "null"]
         caption:
@@ -2157,6 +2162,8 @@ components:
           type: ["string", "null"]
         imageUrl:
           type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
         images:
           type: array
           items:
@@ -2237,6 +2244,7 @@ components:
         - type
         - category
         - imageUrl
+        - thumbnailUrl
         - images
         - previewImageUrl
         - availability
@@ -2288,6 +2296,8 @@ components:
         category:
           type: ["string", "null"]
         imageUrl:
+          type: ["string", "null"]
+        thumbnailUrl:
           type: ["string", "null"]
         images:
           type: array
@@ -2367,6 +2377,7 @@ components:
         - type
         - category
         - imageUrl
+        - thumbnailUrl
         - images
         - previewImageUrl
         - availability
@@ -2412,6 +2423,8 @@ components:
         category:
           type: ["string", "null"]
         imageUrl:
+          type: ["string", "null"]
+        thumbnailUrl:
           type: ["string", "null"]
         images:
           type: array
