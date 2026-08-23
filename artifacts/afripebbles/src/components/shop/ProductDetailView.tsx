@@ -116,8 +116,8 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
 
       <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
           className="w-full md:w-1/2"
         >
