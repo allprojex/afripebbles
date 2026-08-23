@@ -8,9 +8,10 @@ import { AVAILABILITY_LABEL, isOrderable } from "@/lib/product";
 import { formatCurrency } from "@/lib/currency";
 import { useCart, type CartItemVariant } from "@/lib/cart";
 import { useToast } from "@/hooks/use-toast";
-import type { ProductAvailability } from "@workspace/api-client-react";
+import type { ProductAvailability, ProductOptionGroup, ProductVariety, ProductImage } from "@workspace/api-client-react";
 import { siteConfig } from "@/content/site";
 import { format } from "date-fns";
+import { ProductSelector } from "./ProductSelector";
 
 /**
  * Minimal shape this view actually renders — deliberately not the generated
@@ -35,6 +36,9 @@ export interface ProductDetailViewProduct {
   estimatedFulfilment: string | null;
   regions: string[];
   variants: { label: string; options: string[] }[];
+  optionGroups?: ProductOptionGroup[];
+  varieties?: ProductVariety[];
+  gallery?: ProductImage[];
   externalPurchaseUrl: string | null;
   tags: string[];
 }
@@ -54,6 +58,21 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
 
   const [selectedVariant, setSelectedVariant] = useState<CartItemVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+
+  const usesNewModel = (product.optionGroups?.length ?? 0) > 0 || (product.varieties?.length ?? 0) > 0;
+  const defaultImage = product.previewImageUrl || product.imageUrl;
+  const [activeImage, setActiveImage] = useState<string | null>(defaultImage);
+  const thumbnails = Array.from(
+    new Set([product.imageUrl, product.previewImageUrl, ...(product.gallery ?? []).map((img) => img.url)].filter((url): url is string => Boolean(url))),
+  );
+  const handleVarietyChange = (variety: ProductVariety | null) => {
+    if (!variety) {
+      setActiveImage(defaultImage);
+      return;
+    }
+    const varietyImage = variety.images.find((img) => img.isFeatured) ?? variety.images[0];
+    setActiveImage(varietyImage?.url ?? defaultImage);
+  };
 
   const requiresVariant = product.variants.length > 0;
   const variantSelected = !requiresVariant || selectedVariant !== null;
@@ -97,17 +116,25 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
           className="w-full md:w-1/2"
         >
           <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted shadow-lg sticky top-32 relative">
-            {(product.previewImageUrl || product.imageUrl) && (
-              <img
-                src={product.previewImageUrl || product.imageUrl || undefined}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-            )}
+            {activeImage && <img src={activeImage} alt={product.title} className="w-full h-full object-cover" />}
             <div className="absolute top-6 left-6 bg-background/90 backdrop-blur-sm text-sm px-4 py-1.5 rounded-full text-primary z-10 font-medium tracking-wide shadow-sm border border-primary/10">
               {AVAILABILITY_LABEL[product.availability]}
             </div>
           </div>
+          {thumbnails.length > 1 && (
+            <div className="flex gap-2 mt-4 flex-wrap">
+              {thumbnails.map((url) => (
+                <button
+                  key={url}
+                  type="button"
+                  onClick={() => setActiveImage(url)}
+                  className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === url ? "border-primary ring-1 ring-primary" : "border-border"}`}
+                >
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         <motion.div
@@ -136,7 +163,7 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
             <p className="whitespace-pre-wrap">{product.description}</p>
           </div>
 
-          {product.variants.length > 0 && (
+          {!usesNewModel && product.variants.length > 0 && (
             <div className="mb-8 space-y-4">
               {product.variants.map((variant) => (
                 <div key={variant.label}>
@@ -223,6 +250,18 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
                   <ShoppingBag size={20} /> Purchase
                 </Button>
               </a>
+            ) : orderable && usesNewModel ? (
+              <ProductSelector
+                productId={product.id}
+                productTitle={product.title}
+                basePrice={product.price}
+                currency={product.currency}
+                productType={product.type}
+                fallbackImageUrl={product.imageUrl}
+                optionGroups={product.optionGroups ?? []}
+                varieties={product.varieties ?? []}
+                onVarietyChange={handleVarietyChange}
+              />
             ) : orderable ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">

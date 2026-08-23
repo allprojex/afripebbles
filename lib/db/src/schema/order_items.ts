@@ -9,10 +9,25 @@ export interface OrderItemVariant {
   option: string;
 }
 
+/** One resolved option-group selection, snapshotted at order time. */
+export interface OrderItemSelection {
+  groupLabel: string;
+  valueLabel: string;
+  priceAdjustment: number;
+  sku: string | null;
+}
+
 /**
  * Immutable purchase-time snapshot. product_id is kept for traceability but
  * every field an admin/customer needs to see is duplicated here so a later
  * product edit or deletion never changes what a historical order shows.
+ *
+ * `variant` is the legacy single-option-group snapshot (still populated for
+ * products with no option groups/varieties provisioned); `varietyId`/
+ * `varietyName`/`varietyDescription`/`sku`/`selections` are the new
+ * multi-selection snapshot, populated when the product uses the new model.
+ * Order items never live-join back to product_varieties/product_option_*
+ * for display — they always render from these denormalized columns.
  */
 export const orderItemsTable = pgTable("order_items", {
   id: serial("id").primaryKey(),
@@ -23,6 +38,12 @@ export const orderItemsTable = pgTable("order_items", {
   productName: text("product_name").notNull(),
   productType: text("product_type").notNull(), // 'digital' | 'physical', snapshot of products.type
   variant: jsonb("variant").$type<OrderItemVariant | null>(),
+  // No FK — must survive the referenced variety being edited/deleted; this is a snapshot, not a live reference.
+  varietyId: integer("variety_id"),
+  varietyName: text("variety_name"),
+  varietyDescription: text("variety_description"),
+  sku: text("sku"),
+  selections: jsonb("selections").$type<OrderItemSelection[] | null>(),
   quantity: integer("quantity").notNull(),
   unitPrice: real("unit_price").notNull(),
   lineTotal: real("line_total").notNull(),

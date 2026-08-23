@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ContentStatus } from './contentStatus';
+import type { ProductImage } from './productImage';
+import type { ProductOptionGroup } from './productOptionGroup';
 import type { ProductVariant } from './productVariant';
+import type { ProductVariety } from './productVariety';
 import type { PublicProductAvailability } from './publicProductAvailability';
 import type { PublicProductStockStatus } from './publicProductStockStatus';
 import type { PublicProductType } from './publicProductType';
@@ -41,6 +44,9 @@ export interface PublicProduct {
   estimatedFulfilment: string | null;
   regions: string[];
   variants: ProductVariant[];
+  optionGroups: ProductOptionGroup[];
+  varieties: ProductVariety[];
+  gallery: ProductImage[];
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];

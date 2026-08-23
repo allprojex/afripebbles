@@ -5,10 +5,16 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItemSelection } from './orderItemSelection';
+import type { OrderItemVariant } from './orderItemVariant';
 
 export interface QuoteResultItem {
   productId: number;
   productName: string;
+  variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyName: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

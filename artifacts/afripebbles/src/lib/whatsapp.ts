@@ -1,5 +1,6 @@
 import type { OrderWithItems } from "@workspace/api-client-react";
 import { formatCurrency } from "./currency";
+import { describeOrderItem } from "./orderItemDisplay";
 
 const PAYMENT_METHOD_LABEL: Record<string, string> = {
   paypal: "PayPal",
@@ -52,13 +53,15 @@ export function formatWhatsAppOrderMessage(order: OrderWithItems): string {
   if (order.deliveryAddress) lines.push(`Delivery Address: ${order.deliveryAddress}`);
   lines.push("");
   lines.push("Items:");
-  for (const item of order.items) {
-    const variantText = item.variant ? ` (${item.variant.label}: ${item.variant.option})` : "";
+  order.items.forEach((item, index) => {
+    const detailLines = describeOrderItem(item);
     const preorderText = item.isPreorder ? ` [PRE-ORDER${item.preorderFulfilmentText ? ` — ${item.preorderFulfilmentText}` : ""}]` : "";
-    lines.push(
-      `- ${item.productName}${variantText} x${item.quantity} @ ${formatCurrency(item.unitPrice, order.currency)} = ${formatCurrency(item.lineTotal, order.currency)}${preorderText}`,
-    );
-  }
+    lines.push(`${index + 1}. ${item.productName}${preorderText}`);
+    for (const detail of detailLines) lines.push(`   ${detail}`);
+    lines.push(`   Qty: ${item.quantity}`);
+    lines.push(`   Unit price: ${formatCurrency(item.unitPrice, order.currency)}`);
+    lines.push(`   Line total: ${formatCurrency(item.lineTotal, order.currency)}`);
+  });
   lines.push("");
   lines.push(`Subtotal: ${formatCurrency(order.subtotal, order.currency)}`);
   lines.push(`Shipping: ${formatCurrency(order.shippingTotal, order.currency)}`);

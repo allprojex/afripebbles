@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ContentStatus } from './contentStatus';
+import type { ProductImageInput } from './productImageInput';
 import type { ProductInputAvailability } from './productInputAvailability';
 import type { ProductInputStockStatus } from './productInputStockStatus';
 import type { ProductInputType } from './productInputType';
+import type { ProductOptionGroupInput } from './productOptionGroupInput';
 import type { ProductVariant } from './productVariant';
+import type { ProductVarietyInput } from './productVarietyInput';
 
 export interface ProductInput {
   slug: string;
@@ -43,6 +46,9 @@ export interface ProductInput {
   estimatedFulfilment?: string | null;
   regions?: string[];
   variants?: ProductVariant[];
+  optionGroups?: ProductOptionGroupInput[];
+  varieties?: ProductVarietyInput[];
+  gallery?: ProductImageInput[];
   /** @nullable */
   externalPurchaseUrl?: string | null;
   tags?: string[];

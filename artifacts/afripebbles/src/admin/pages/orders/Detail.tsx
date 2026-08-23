@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { StatusBadge } from "../../components/StatusBadge";
 import { formatCurrency } from "@/lib/currency";
 import { buildWhatsAppOrderLink, resolveCommerceWhatsappNumber } from "@/lib/whatsapp";
+import { describeOrderItem } from "@/lib/orderItemDisplay";
 
 export default function AdminOrderDetail() {
   const params = useParams<{ id: string }>();
@@ -124,9 +125,14 @@ export default function AdminOrderDetail() {
           <div key={idx} className="flex justify-between text-sm border-b border-border/50 pb-2 last:border-0">
             <div>
               <div>
-                {item.productName}
-                {item.variant ? ` (${item.variant.label}: ${item.variant.option})` : ""} × {item.quantity}
+                {item.productName} × {item.quantity}
               </div>
+              {describeOrderItem(item).map((line) => (
+                <div key={line} className="text-xs text-foreground/60">
+                  {line}
+                </div>
+              ))}
+              {item.sku && <div className="text-xs text-foreground/40">SKU: {item.sku}</div>}
               {item.isPreorder && <div className="text-xs text-primary">Pre-order{item.preorderFulfilmentText ? ` — ${item.preorderFulfilmentText}` : ""}</div>}
             </div>
             <div>{formatCurrency(item.lineTotal, order.currency)}</div>

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { OrderItemProductType } from './orderItemProductType';
+import type { OrderItemSelection } from './orderItemSelection';
 import type { OrderItemVariant } from './orderItemVariant';
 
 export interface OrderItem {
@@ -16,6 +17,15 @@ export interface OrderItem {
   productName: string;
   productType: OrderItemProductType;
   variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyId: number | null;
+  /** @nullable */
+  varietyName: string | null;
+  /** @nullable */
+  varietyDescription: string | null;
+  /** @nullable */
+  sku: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

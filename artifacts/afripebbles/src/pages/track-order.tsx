@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
 import { useTrackOrder, useGetOrderItemDownloadUrl, ApiError } from "@workspace/api-client-react";
+import { describeOrderItem } from "@/lib/orderItemDisplay";
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
   pending_payment: "Pending Payment",
@@ -111,7 +112,7 @@ export default function TrackOrder() {
                   <div>
                     <div>
                       {item.productName}
-                      {item.variant ? ` (${item.variant.option})` : ""} × {item.quantity}
+                      {describeOrderItem(item).length > 0 && ` (${describeOrderItem(item).join(", ")})`} × {item.quantity}
                     </div>
                     <div className="text-foreground/60">{formatCurrency(item.lineTotal, order.currency)}</div>
                   </div>

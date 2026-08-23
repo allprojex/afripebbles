@@ -8,7 +8,8 @@ import {
   GetProductResponse,
 } from "@workspace/api-zod";
 import { isPubliclyVisible } from "../lib/visibility";
-import { toPublicProduct } from "../lib/publicProduct";
+import { toPublicProduct, toPublicProductChildren } from "../lib/publicProduct";
+import { loadProductChildren, EMPTY_PRODUCT_CHILDREN } from "../lib/productComposition";
 
 const router: IRouter = Router();
 
@@ -36,7 +37,8 @@ router.get("/products", async (req, res): Promise<void> => {
     .where(and(...conditions))
     .orderBy(productsTable.createdAt);
 
-  res.json(ListProductsResponse.parse(products.map(toPublicProduct)));
+  // List cards don't render option/variety/gallery detail today — skip the per-row join here (see GetProduct below for the detail route).
+  res.json(ListProductsResponse.parse(products.map((p) => ({ ...toPublicProduct(p), ...EMPTY_PRODUCT_CHILDREN }))));
 });
 
 router.get("/products/:id", async (req, res): Promise<void> => {
@@ -57,7 +59,8 @@ router.get("/products/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(GetProductResponse.parse(toPublicProduct(product)));
+  const children = toPublicProductChildren(await loadProductChildren(product.id));
+  res.json(GetProductResponse.parse({ ...toPublicProduct(product), ...children }));
 });
 
 export default router;

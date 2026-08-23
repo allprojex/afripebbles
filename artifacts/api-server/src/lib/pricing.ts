@@ -1,12 +1,39 @@
 import { inArray } from "drizzle-orm";
-import { db, productsTable, couponsTable, type Product, type Coupon } from "@workspace/db";
+import {
+  db,
+  productsTable,
+  couponsTable,
+  productOptionGroupsTable,
+  productOptionValuesTable,
+  productVarietiesTable,
+  type Product,
+  type Coupon,
+  type ProductOptionGroup,
+  type ProductOptionValue,
+  type ProductVariety,
+} from "@workspace/db";
 
 export class OrderValidationError extends Error {}
+
+export interface CartSelectionInput {
+  groupId: number;
+  valueId: number;
+}
 
 export interface CartItemInput {
   productId: number;
   quantity: number;
+  /** Legacy single-option-group path — only valid for products with zero option groups/varieties. */
   variant?: { label: string; option: string } | null;
+  varietyId?: number | null;
+  selections?: CartSelectionInput[];
+}
+
+export interface PricedSelection {
+  groupLabel: string;
+  valueLabel: string;
+  priceAdjustment: number;
+  sku: string | null;
 }
 
 export interface PricedItem {
@@ -14,6 +41,11 @@ export interface PricedItem {
   productName: string;
   productType: "digital" | "physical";
   variant: { label: string; option: string } | null;
+  varietyId: number | null;
+  varietyName: string | null;
+  varietyDescription: string | null;
+  sku: string | null;
+  selections: PricedSelection[] | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
@@ -33,14 +65,24 @@ export interface PricingResult {
   coupon: Coupon | null;
 }
 
+interface ProductOptions {
+  groups: (ProductOptionGroup & { values: ProductOptionValue[] })[];
+  varieties: ProductVariety[];
+}
+
 function isPubliclyVisibleNow(product: Product, now: Date): boolean {
   if (product.status === "published") return true;
   if (product.status === "scheduled" && product.scheduledAt) return product.scheduledAt <= now;
   return false;
 }
 
-function assertPreorderWindowOpen(product: Product, now: Date): void {
-  if (product.availability !== "preorder") return;
+/**
+ * Preorder windows are product-level only in V1 — a variety may override
+ * availability to/from "preorder" but never the open/close dates, which
+ * always come from the product row. Documented simplification.
+ */
+function assertPreorderWindowOpen(product: Product, effectiveAvailability: string, now: Date): void {
+  if (effectiveAvailability !== "preorder") return;
   if (product.preorderOpensAt && now < product.preorderOpensAt) {
     throw new OrderValidationError(`"${product.title}" isn't open for pre-order yet.`);
   }
@@ -49,7 +91,8 @@ function assertPreorderWindowOpen(product: Product, now: Date): void {
   }
 }
 
-function resolveVariant(product: Product, requested: CartItemInput["variant"]): { label: string; option: string } | null {
+/** Unchanged legacy single-option-group resolution — only reached for products with zero rows in the new option/variety tables. */
+function resolveLegacyVariant(product: Product, requested: CartItemInput["variant"]): { label: string; option: string } | null {
   if (product.variants.length === 0) {
     if (requested) throw new OrderValidationError(`"${product.title}" doesn't have variant options.`);
     return null;
@@ -62,32 +105,111 @@ function resolveVariant(product: Product, requested: CartItemInput["variant"]): 
   return { label: requested.label, option: requested.option };
 }
 
-function priceItem(product: Product, item: CartItemInput, now: Date): PricedItem {
+/**
+ * Validates a multi-option-group/variety selection against the product's
+ * currently-active groups/values/varieties. Rejects fabricated ids, values
+ * belonging to a different product/group, inactive rows, and missing
+ * required groups. Never trusts anything the client sends beyond the ids.
+ */
+function resolveNewSelections(
+  product: Product,
+  options: ProductOptions,
+  item: CartItemInput,
+): { variety: ProductVariety | null; selections: PricedSelection[] } {
+  const activeVarieties = options.varieties.filter((v) => v.isActive);
+  let variety: ProductVariety | null = null;
+  if (activeVarieties.length > 0) {
+    if (item.varietyId == null) throw new OrderValidationError(`Please choose an option for "${product.title}".`);
+    const found = activeVarieties.find((v) => v.id === item.varietyId);
+    if (!found) throw new OrderValidationError(`That option isn't available for "${product.title}".`);
+    variety = found;
+  } else if (item.varietyId != null) {
+    throw new OrderValidationError(`"${product.title}" doesn't have that option.`);
+  }
+
+  const activeGroups = options.groups.filter((g) => g.isActive);
+  const activeGroupIds = new Set(activeGroups.map((g) => g.id));
+  const providedSelections = item.selections ?? [];
+
+  const byGroup = new Map<number, CartSelectionInput>();
+  for (const sel of providedSelections) {
+    if (!activeGroupIds.has(sel.groupId)) throw new OrderValidationError(`Invalid option selected for "${product.title}".`);
+    if (byGroup.has(sel.groupId)) throw new OrderValidationError(`Only one choice is allowed per option for "${product.title}".`);
+    byGroup.set(sel.groupId, sel);
+  }
+
+  for (const group of activeGroups) {
+    if (group.required && !byGroup.has(group.id)) {
+      throw new OrderValidationError(`Please choose ${group.label} for "${product.title}".`);
+    }
+  }
+
+  const selections: PricedSelection[] = [];
+  for (const group of activeGroups) {
+    const sel = byGroup.get(group.id);
+    if (!sel) continue; // optional group left unselected
+    const value = group.values.find((v) => v.id === sel.valueId && v.isActive);
+    if (!value) throw new OrderValidationError(`Invalid option selected for "${product.title}".`);
+    selections.push({ groupLabel: group.label, valueLabel: value.label, priceAdjustment: value.priceAdjustment, sku: value.sku });
+  }
+
+  return { variety, selections };
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function priceItem(product: Product, options: ProductOptions, item: CartItemInput, now: Date): PricedItem {
   if (!Number.isInteger(item.quantity) || item.quantity < 1) {
     throw new OrderValidationError(`Invalid quantity for "${product.title}".`);
   }
   if (!isPubliclyVisibleNow(product, now)) {
     throw new OrderValidationError(`"${product.title}" is no longer available.`);
   }
-  if (product.availability !== "available" && product.availability !== "preorder") {
+
+  const usesNewModel = options.groups.length > 0 || options.varieties.length > 0;
+
+  let variant: { label: string; option: string } | null = null;
+  let variety: ProductVariety | null = null;
+  let selections: PricedSelection[] = [];
+
+  if (usesNewModel) {
+    if (item.variant) throw new OrderValidationError(`"${product.title}" doesn't have variant options.`);
+    const resolved = resolveNewSelections(product, options, item);
+    variety = resolved.variety;
+    selections = resolved.selections;
+  } else {
+    if (item.varietyId != null || (item.selections && item.selections.length > 0)) {
+      throw new OrderValidationError(`"${product.title}" doesn't have that option.`);
+    }
+    variant = resolveLegacyVariant(product, item.variant ?? null);
+  }
+
+  const effectiveAvailability = variety?.availabilityOverride ?? product.availability;
+  if (effectiveAvailability !== "available" && effectiveAvailability !== "preorder") {
     throw new OrderValidationError(`"${product.title}" isn't currently orderable.`);
   }
-  assertPreorderWindowOpen(product, now);
-  const variant = resolveVariant(product, item.variant);
+  assertPreorderWindowOpen(product, effectiveAvailability, now);
 
   const isDigital = product.type === "digital";
-  const isPreorder = product.availability === "preorder";
-  const unitPrice = product.price;
-  const lineTotal = Math.round(unitPrice * item.quantity * 100) / 100;
-  // Shipping is charged once per line item, not multiplied by quantity — a
-  // fixed shipping amount configured on the product, not a per-unit rate.
-  const shippingAmount = isDigital ? 0 : product.shippingAmount;
+  const isPreorder = effectiveAvailability === "preorder";
+  const priceAdjustmentTotal = selections.reduce((sum, s) => sum + s.priceAdjustment, 0);
+  const unitPrice = round2((variety?.priceOverride ?? product.price) + priceAdjustmentTotal);
+  // Shipping is charged once per line item, not multiplied by quantity — unchanged from before.
+  const shippingAmount = isDigital ? 0 : (variety?.shippingAmountOverride ?? product.shippingAmount);
+  const lineTotal = round2(unitPrice * item.quantity);
 
   return {
     productId: product.id,
     productName: product.title,
     productType: product.type as "digital" | "physical",
     variant,
+    varietyId: variety?.id ?? null,
+    varietyName: variety?.name ?? null,
+    varietyDescription: variety?.description ?? null,
+    sku: variety?.sku ?? null,
+    selections: usesNewModel ? selections : null,
     quantity: item.quantity,
     unitPrice,
     lineTotal,
@@ -96,10 +218,6 @@ function priceItem(product: Product, item: CartItemInput, now: Date): PricedItem
     isPreorder,
     preorderFulfilmentText: isPreorder ? product.estimatedFulfilment : null,
   };
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
 }
 
 async function resolveCoupon(code: string, currency: string, subtotal: number, cartProductIds: number[], now: Date): Promise<{ coupon: Coupon; discount: number }> {
@@ -130,11 +248,12 @@ async function resolveCoupon(code: string, currency: string, subtotal: number, c
 
 /**
  * The single source of truth for order pricing. Re-fetches every product
- * fresh from the database and re-validates availability/preorder-window/
- * variant on every call — a client-submitted price, name, or currency is
- * never trusted. Used both by the quote-preview endpoint and (with the same
- * inputs) by order creation, so a customer never sees a total at checkout
- * that could differ from what actually gets charged.
+ * (and its option groups/values/varieties) fresh from the database and
+ * re-validates availability/preorder-window/selection on every call — a
+ * client-submitted price, name, currency, or option label is never trusted.
+ * Used both by the quote-preview endpoint and (with the same inputs) by
+ * order creation, so a customer never sees a total at checkout that could
+ * differ from what actually gets charged.
  */
 export async function calculateOrderTotals(cartItems: CartItemInput[], couponCode?: string | null, now: Date = new Date()): Promise<PricingResult> {
   if (cartItems.length === 0) throw new OrderValidationError("Your cart is empty.");
@@ -143,6 +262,32 @@ export async function calculateOrderTotals(cartItems: CartItemInput[], couponCod
   const products = await db.select().from(productsTable).where(inArray(productsTable.id, productIds));
   const byId = new Map(products.map((p) => [p.id, p]));
 
+  const groups = productIds.length ? await db.select().from(productOptionGroupsTable).where(inArray(productOptionGroupsTable.productId, productIds)) : [];
+  const groupIds = groups.map((g) => g.id);
+  const values = groupIds.length
+    ? await db.select().from(productOptionValuesTable).where(inArray(productOptionValuesTable.groupId, groupIds))
+    : [];
+  const varieties = productIds.length ? await db.select().from(productVarietiesTable).where(inArray(productVarietiesTable.productId, productIds)) : [];
+
+  const valuesByGroup = new Map<number, ProductOptionValue[]>();
+  for (const v of values) {
+    const arr = valuesByGroup.get(v.groupId) ?? [];
+    arr.push(v);
+    valuesByGroup.set(v.groupId, arr);
+  }
+  const groupsByProduct = new Map<number, (ProductOptionGroup & { values: ProductOptionValue[] })[]>();
+  for (const g of groups) {
+    const arr = groupsByProduct.get(g.productId) ?? [];
+    arr.push({ ...g, values: valuesByGroup.get(g.id) ?? [] });
+    groupsByProduct.set(g.productId, arr);
+  }
+  const varietiesByProduct = new Map<number, ProductVariety[]>();
+  for (const v of varieties) {
+    const arr = varietiesByProduct.get(v.productId) ?? [];
+    arr.push(v);
+    varietiesByProduct.set(v.productId, arr);
+  }
+
   const items: PricedItem[] = [];
   let currency: string | null = null;
   for (const cartItem of cartItems) {
@@ -150,7 +295,11 @@ export async function calculateOrderTotals(cartItems: CartItemInput[], couponCod
     if (!product) throw new OrderValidationError("One of the items in your cart is no longer available.");
     if (currency === null) currency = product.currency;
     else if (currency !== product.currency) throw new OrderValidationError("All items in an order must use the same currency.");
-    items.push(priceItem(product, cartItem, now));
+    const options: ProductOptions = {
+      groups: groupsByProduct.get(product.id) ?? [],
+      varieties: varietiesByProduct.get(product.id) ?? [],
+    };
+    items.push(priceItem(product, options, cartItem, now));
   }
   if (!currency) throw new OrderValidationError("Your cart is empty.");
 

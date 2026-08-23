@@ -5,10 +5,22 @@ export interface CartItemVariant {
   option: string;
 }
 
+export interface CartItemSelection {
+  groupId: number;
+  valueId: number;
+  groupLabel: string;
+  valueLabel: string;
+}
+
 export interface CartItem {
   productId: number;
   quantity: number;
+  /** Legacy single-option-group path — only used by products with no option groups/varieties. */
   variant: CartItemVariant | null;
+  /** New multi-option-group/variety path. Both stay optional/undefined for legacy and simple products. */
+  varietyId?: number | null;
+  varietyName?: string | null;
+  selections?: CartItemSelection[];
   // Cached only for display before the cart page re-fetches current data —
   // never trusted for pricing. Final totals always come from the server.
   snapshot: {
@@ -22,8 +34,19 @@ export interface CartItem {
 
 const STORAGE_KEY = "afripebbles_cart_v1";
 
-function lineKey(productId: number, variant: CartItemVariant | null): string {
-  return `${productId}::${variant?.label ?? ""}::${variant?.option ?? ""}`;
+/**
+ * Combination identity for merging: same product + same variety + same set
+ * of option-value selections (order-independent) merges quantity; anything
+ * different becomes its own line. Falls back to the legacy variant pair for
+ * products still using the single-option-group model.
+ */
+function lineKey(item: Pick<CartItem, "productId" | "variant" | "varietyId" | "selections">): string {
+  const selectionsKey = (item.selections ?? [])
+    .map((s) => `${s.groupId}:${s.valueId}`)
+    .sort()
+    .join(",");
+  const legacyKey = item.variant ? `${item.variant.label}:${item.variant.option}` : "";
+  return `${item.productId}::${item.varietyId ?? ""}::${selectionsKey}::${legacyKey}`;
 }
 
 function readStoredCart(): CartItem[] {
@@ -38,12 +61,14 @@ function readStoredCart(): CartItem[] {
   }
 }
 
+export type CartLineIdentity = Pick<CartItem, "productId" | "variant" | "varietyId" | "selections">;
+
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
   addItem: (item: CartItem) => void;
-  removeItem: (productId: number, variant: CartItemVariant | null) => void;
-  updateQuantity: (productId: number, variant: CartItemVariant | null, quantity: number) => void;
+  removeItem: (line: CartLineIdentity) => void;
+  updateQuantity: (line: CartLineIdentity, quantity: number) => void;
   clear: () => void;
 }
 
@@ -58,27 +83,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = (item: CartItem) => {
     setItems((prev) => {
-      const key = lineKey(item.productId, item.variant);
-      const existing = prev.find((i) => lineKey(i.productId, i.variant) === key);
+      const key = lineKey(item);
+      const existing = prev.find((i) => lineKey(i) === key);
       if (existing) {
-        return prev.map((i) => (lineKey(i.productId, i.variant) === key ? { ...i, quantity: i.quantity + item.quantity } : i));
+        return prev.map((i) => (lineKey(i) === key ? { ...i, quantity: i.quantity + item.quantity } : i));
       }
       return [...prev, item];
     });
   };
 
-  const removeItem = (productId: number, variant: CartItemVariant | null) => {
-    const key = lineKey(productId, variant);
-    setItems((prev) => prev.filter((i) => lineKey(i.productId, i.variant) !== key));
+  const removeItem = (line: CartLineIdentity) => {
+    const key = lineKey(line);
+    setItems((prev) => prev.filter((i) => lineKey(i) !== key));
   };
 
-  const updateQuantity = (productId: number, variant: CartItemVariant | null, quantity: number) => {
-    const key = lineKey(productId, variant);
-    setItems((prev) =>
-      quantity < 1
-        ? prev.filter((i) => lineKey(i.productId, i.variant) !== key)
-        : prev.map((i) => (lineKey(i.productId, i.variant) === key ? { ...i, quantity } : i)),
-    );
+  const updateQuantity = (line: CartLineIdentity, quantity: number) => {
+    const key = lineKey(line);
+    setItems((prev) => (quantity < 1 ? prev.filter((i) => lineKey(i) !== key) : prev.map((i) => (lineKey(i) === key ? { ...i, quantity } : i))));
   };
 
   const clear = () => setItems([]);

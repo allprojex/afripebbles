@@ -7,9 +7,12 @@
  */
 import type { ContentStatus } from './contentStatus';
 import type { ProductAvailability } from './productAvailability';
+import type { ProductImage } from './productImage';
+import type { ProductOptionGroup } from './productOptionGroup';
 import type { ProductStockStatus } from './productStockStatus';
 import type { ProductType } from './productType';
 import type { ProductVariant } from './productVariant';
+import type { ProductVariety } from './productVariety';
 
 export interface Product {
   id: number;
@@ -44,6 +47,9 @@ export interface Product {
   estimatedFulfilment: string | null;
   regions: string[];
   variants: ProductVariant[];
+  optionGroups: ProductOptionGroup[];
+  varieties: ProductVariety[];
+  gallery: ProductImage[];
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];

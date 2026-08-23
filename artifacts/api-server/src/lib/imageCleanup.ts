@@ -1,6 +1,8 @@
 import {
   db,
   productsTable,
+  productImagesTable,
+  productOptionValuesTable,
   podcastEpisodesTable,
   blogPostsTable,
   curatedPicksTable,
@@ -34,10 +36,12 @@ export function collectImageUrls(...fields: (string | null | undefined | string[
  * uses, and a deleted row can no longer "protect" its old images.
  */
 export async function getReferencedImageUrls(): Promise<Set<string>> {
-  const [products, podcasts, posts, picks, ugcEntries, testimonials, homepage, settings] = await Promise.all([
+  const [products, productImages, optionValues, podcasts, posts, picks, ugcEntries, testimonials, homepage, settings] = await Promise.all([
     db
       .select({ imageUrl: productsTable.imageUrl, previewImageUrl: productsTable.previewImageUrl, images: productsTable.images })
       .from(productsTable),
+    db.select({ url: productImagesTable.url }).from(productImagesTable),
+    db.select({ imageUrl: productOptionValuesTable.imageUrl }).from(productOptionValuesTable),
     db.select({ coverImageUrl: podcastEpisodesTable.coverImageUrl }).from(podcastEpisodesTable),
     db.select({ coverImageUrl: blogPostsTable.coverImageUrl }).from(blogPostsTable),
     db.select({ imageUrl: curatedPicksTable.imageUrl }).from(curatedPicksTable),
@@ -51,6 +55,8 @@ export async function getReferencedImageUrls(): Promise<Set<string>> {
   for (const row of products) {
     for (const url of collectImageUrls(row.imageUrl, row.previewImageUrl, row.images)) urls.add(url);
   }
+  for (const row of productImages) urls.add(row.url);
+  for (const row of optionValues) if (row.imageUrl) urls.add(row.imageUrl);
   for (const row of podcasts) if (row.coverImageUrl) urls.add(row.coverImageUrl);
   for (const row of posts) if (row.coverImageUrl) urls.add(row.coverImageUrl);
   for (const row of picks) if (row.imageUrl) urls.add(row.imageUrl);

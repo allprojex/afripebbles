@@ -3,6 +3,7 @@ import { and, eq, desc, count } from "drizzle-orm";
 import { db, productsTable, podcastEpisodesTable, blogPostsTable, curatedPicksTable } from "@workspace/db";
 import { GetHomepageSummaryResponse } from "@workspace/api-zod";
 import { isPubliclyVisible } from "../lib/visibility";
+import { EMPTY_PRODUCT_CHILDREN } from "../lib/productComposition";
 
 const router: IRouter = Router();
 
@@ -47,7 +48,8 @@ router.get("/homepage-summary", async (_req, res): Promise<void> => {
   ]);
 
   const summary = {
-    featuredProducts,
+    // Homepage cards don't render option/variety/gallery detail — skip the per-row join.
+    featuredProducts: featuredProducts.map((p) => ({ ...p, ...EMPTY_PRODUCT_CHILDREN })),
     latestEpisode: latestEpisodeArr[0] ?? null,
     featuredBlogPosts,
     featuredCuratedPicks,

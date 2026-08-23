@@ -1904,6 +1904,235 @@ components:
         - label
         - options
 
+    # --- Multi-variety / multi-option commerce model (additive, alongside legacy ProductVariant above) ---
+
+    ProductOptionValue:
+      type: object
+      properties:
+        id:
+          type: number
+        groupId:
+          type: number
+        label:
+          type: string
+        value:
+          type: string
+        displayOrder:
+          type: number
+        priceAdjustment:
+          type: number
+        sku:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+      required:
+        - id
+        - groupId
+        - label
+        - value
+        - displayOrder
+        - priceAdjustment
+        - sku
+        - imageUrl
+        - description
+        - isActive
+
+    ProductOptionGroup:
+      type: object
+      properties:
+        id:
+          type: number
+        productId:
+          type: number
+        key:
+          type: string
+        label:
+          type: string
+        displayOrder:
+          type: number
+        required:
+          type: boolean
+        helpText:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOptionValue"
+      required:
+        - id
+        - productId
+        - key
+        - label
+        - displayOrder
+        - required
+        - helpText
+        - isActive
+        - values
+
+    ProductImage:
+      type: object
+      properties:
+        id:
+          type: number
+        productId:
+          type: number
+        varietyId:
+          type: ["number", "null"]
+        url:
+          type: string
+        altText:
+          type: ["string", "null"]
+        caption:
+          type: ["string", "null"]
+        displayOrder:
+          type: number
+        isFeatured:
+          type: boolean
+      required:
+        - id
+        - productId
+        - varietyId
+        - url
+        - altText
+        - caption
+        - displayOrder
+        - isFeatured
+
+    ProductVariety:
+      type: object
+      properties:
+        id:
+          type: number
+        productId:
+          type: number
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        sku:
+          type: ["string", "null"]
+        priceOverride:
+          type: ["number", "null"]
+        shippingAmountOverride:
+          type: ["number", "null"]
+        availabilityOverride:
+          type: ["string", "null"]
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImage"
+      required:
+        - id
+        - productId
+        - name
+        - description
+        - sku
+        - priceOverride
+        - shippingAmountOverride
+        - availabilityOverride
+        - displayOrder
+        - isActive
+        - images
+
+    ProductImageInput:
+      type: object
+      properties:
+        url:
+          type: string
+        altText:
+          type: ["string", "null"]
+        caption:
+          type: ["string", "null"]
+        displayOrder:
+          type: number
+        isFeatured:
+          type: boolean
+      required:
+        - url
+
+    ProductOptionValueInput:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+        displayOrder:
+          type: number
+        priceAdjustment:
+          type: number
+        sku:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+      required:
+        - label
+        - value
+
+    ProductOptionGroupInput:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        displayOrder:
+          type: number
+        required:
+          type: boolean
+        helpText:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOptionValueInput"
+      required:
+        - key
+        - label
+        - values
+
+    ProductVarietyInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        sku:
+          type: ["string", "null"]
+        priceOverride:
+          type: ["number", "null"]
+        shippingAmountOverride:
+          type: ["number", "null"]
+        availabilityOverride:
+          type: ["string", "null"]
+        displayOrder:
+          type: number
+        isActive:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImageInput"
+      required:
+        - name
+
     Product:
       type: object
       properties:
@@ -1964,6 +2193,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProductVariant"
+        optionGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOptionGroup"
+        varieties:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariety"
+        gallery:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImage"
         externalPurchaseUrl:
           type: ["string", "null"]
         tags:
@@ -2009,6 +2250,9 @@ components:
         - estimatedFulfilment
         - regions
         - variants
+        - optionGroups
+        - varieties
+        - gallery
         - externalPurchaseUrl
         - tags
         - status
@@ -2079,6 +2323,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProductVariant"
+        optionGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOptionGroup"
+        varieties:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVariety"
+        gallery:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImage"
         externalPurchaseUrl:
           type: ["string", "null"]
         tags:
@@ -2123,6 +2379,9 @@ components:
         - estimatedFulfilment
         - regions
         - variants
+        - optionGroups
+        - varieties
+        - gallery
         - externalPurchaseUrl
         - tags
         - status
@@ -2190,6 +2449,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProductVariant"
+        optionGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOptionGroupInput"
+        varieties:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductVarietyInput"
+        gallery:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImageInput"
         externalPurchaseUrl:
           type: ["string", "null"]
         tags:
@@ -3316,6 +3587,37 @@ components:
         - label
         - option
 
+    # Selection made against a multi-option-group/variety product. Alongside legacy
+    # OrderItemVariant above — new order items may carry both variant=null and a
+    # populated varietyId/selections, or (legacy products) the reverse.
+    CartSelectionInput:
+      type: object
+      properties:
+        groupId:
+          type: number
+        valueId:
+          type: number
+      required:
+        - groupId
+        - valueId
+
+    OrderItemSelection:
+      type: object
+      properties:
+        groupLabel:
+          type: string
+        valueLabel:
+          type: string
+        priceAdjustment:
+          type: number
+        sku:
+          type: ["string", "null"]
+      required:
+        - groupLabel
+        - valueLabel
+        - priceAdjustment
+        - sku
+
     CartItemInput:
       type: object
       properties:
@@ -3327,6 +3629,12 @@ components:
           oneOf:
             - $ref: "#/components/schemas/OrderItemVariant"
             - type: "null"
+        varietyId:
+          type: ["number", "null"]
+        selections:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartSelectionInput"
       required:
         - productId
         - quantity
@@ -3348,6 +3656,20 @@ components:
         variant:
           oneOf:
             - $ref: "#/components/schemas/OrderItemVariant"
+            - type: "null"
+        varietyId:
+          type: ["number", "null"]
+        varietyName:
+          type: ["string", "null"]
+        varietyDescription:
+          type: ["string", "null"]
+        sku:
+          type: ["string", "null"]
+        selections:
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/OrderItemSelection"
             - type: "null"
         quantity:
           type: number
@@ -3373,6 +3695,11 @@ components:
         - productName
         - productType
         - variant
+        - varietyId
+        - varietyName
+        - varietyDescription
+        - sku
+        - selections
         - quantity
         - unitPrice
         - lineTotal
@@ -3555,6 +3882,14 @@ components:
           oneOf:
             - $ref: "#/components/schemas/OrderItemVariant"
             - type: "null"
+        varietyName:
+          type: ["string", "null"]
+        selections:
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/OrderItemSelection"
+            - type: "null"
         quantity:
           type: number
         lineTotal:
@@ -3567,6 +3902,8 @@ components:
         - productId
         - productName
         - variant
+        - varietyName
+        - selections
         - quantity
         - lineTotal
         - isDigital
@@ -3668,6 +4005,18 @@ components:
           type: number
         productName:
           type: string
+        variant:
+          oneOf:
+            - $ref: "#/components/schemas/OrderItemVariant"
+            - type: "null"
+        varietyName:
+          type: ["string", "null"]
+        selections:
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/OrderItemSelection"
+            - type: "null"
         quantity:
           type: number
         unitPrice:
@@ -3683,6 +4032,9 @@ components:
       required:
         - productId
         - productName
+        - variant
+        - varietyName
+        - selections
         - quantity
         - unitPrice
         - lineTotal

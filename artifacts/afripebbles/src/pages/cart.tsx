@@ -3,8 +3,17 @@ import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/lib/cart";
+import { useCart, type CartItem } from "@/lib/cart";
 import { formatCurrency } from "@/lib/currency";
+import { describeOrderItem } from "@/lib/orderItemDisplay";
+
+function cartLineReactKey(item: CartItem): string {
+  const selectionsKey = (item.selections ?? [])
+    .map((s) => `${s.groupId}:${s.valueId}`)
+    .sort()
+    .join(",");
+  return `${item.productId}-${item.varietyId ?? ""}-${selectionsKey}-${item.variant?.label ?? ""}-${item.variant?.option ?? ""}`;
+}
 
 export default function Cart() {
   const { items, updateQuantity, removeItem } = useCart();
@@ -38,24 +47,24 @@ export default function Cart() {
           <>
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={`${item.productId}-${item.variant?.label ?? ""}-${item.variant?.option ?? ""}`} className="flex gap-4 border border-border rounded-xl p-4">
+                <div key={cartLineReactKey(item)} className="flex gap-4 border border-border rounded-xl p-4">
                   <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden shrink-0">
                     {item.snapshot.imageUrl && <img src={item.snapshot.imageUrl} alt={item.snapshot.title} className="w-full h-full object-cover" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{item.snapshot.title}</div>
-                    {item.variant && (
-                      <div className="text-sm text-foreground/60">
-                        {item.variant.label}: {item.variant.option}
+                    {describeOrderItem(item).map((line) => (
+                      <div key={line} className="text-sm text-foreground/60">
+                        {line}
                       </div>
-                    )}
+                    ))}
                     <div className="text-sm text-foreground/60">{formatCurrency(item.snapshot.price, item.snapshot.currency)} each</div>
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center gap-2 border border-border rounded-full px-1">
                         <button
                           type="button"
                           aria-label="Decrease quantity"
-                          onClick={() => updateQuantity(item.productId, item.variant, item.quantity - 1)}
+                          onClick={() => updateQuantity(item, item.quantity - 1)}
                           className="p-1.5 text-foreground/60 hover:text-primary"
                         >
                           <Minus size={12} />
@@ -64,7 +73,7 @@ export default function Cart() {
                         <button
                           type="button"
                           aria-label="Increase quantity"
-                          onClick={() => updateQuantity(item.productId, item.variant, item.quantity + 1)}
+                          onClick={() => updateQuantity(item, item.quantity + 1)}
                           className="p-1.5 text-foreground/60 hover:text-primary"
                         >
                           <Plus size={12} />
@@ -72,7 +81,7 @@ export default function Cart() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeItem(item.productId, item.variant)}
+                        onClick={() => removeItem(item)}
                         className="text-xs text-destructive/80 hover:text-destructive inline-flex items-center gap-1"
                       >
                         <Trash2 size={12} /> Remove

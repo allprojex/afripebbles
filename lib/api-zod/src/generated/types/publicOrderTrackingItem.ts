@@ -5,6 +5,7 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderItemSelection } from './orderItemSelection';
 import type { OrderItemVariant } from './orderItemVariant';
 
 export interface PublicOrderTrackingItem {
@@ -12,6 +13,9 @@ export interface PublicOrderTrackingItem {
   productId: number | null;
   productName: string;
   variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyName: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   lineTotal: number;
   isDigital: boolean;

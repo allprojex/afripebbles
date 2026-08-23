@@ -5,10 +5,14 @@
  * AfriPebbles API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CartSelectionInput } from './cartSelectionInput';
 import type { OrderItemVariant } from './orderItemVariant';
 
 export interface CartItemInput {
   productId: number;
   quantity: number;
   variant?: OrderItemVariant | null;
+  /** @nullable */
+  varietyId?: number | null;
+  selections?: CartSelectionInput[];
 }

@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCart } from "@/lib/cart";
+import { useCart, type CartItem } from "@/lib/cart";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 import { useQuoteOrder, useCreateOrder, ApiError, type PaymentMethod } from "@workspace/api-client-react";
+import { describeOrderItem } from "@/lib/orderItemDisplay";
+
+function cartLineReactKey(item: CartItem): string {
+  const selectionsKey = (item.selections ?? [])
+    .map((s) => `${s.groupId}:${s.valueId}`)
+    .sort()
+    .join(",");
+  return `${item.productId}-${item.varietyId ?? ""}-${selectionsKey}-${item.variant?.label ?? ""}-${item.variant?.option ?? ""}`;
+}
 
 const ORDER_STORAGE_KEY = "afripebbles_last_order";
 
@@ -33,7 +42,13 @@ export default function Checkout() {
   const quoteMutation = useQuoteOrder();
   const createOrderMutation = useCreateOrder();
 
-  const cartPayloadItems = items.map((i) => ({ productId: i.productId, quantity: i.quantity, variant: i.variant }));
+  const cartPayloadItems = items.map((i) => ({
+    productId: i.productId,
+    quantity: i.quantity,
+    variant: i.variant,
+    varietyId: i.varietyId ?? null,
+    selections: (i.selections ?? []).map((s) => ({ groupId: s.groupId, valueId: s.valueId })),
+  }));
   const hasPhysicalItem = items.some((i) => i.snapshot.type === "physical");
 
   useEffect(() => {
@@ -224,9 +239,10 @@ export default function Checkout() {
               <h2 className="font-serif text-xl mb-4">Order Summary</h2>
               <div className="space-y-3 mb-4">
                 {items.map((item) => (
-                  <div key={`${item.productId}-${item.variant?.option ?? ""}`} className="flex justify-between text-sm">
+                  <div key={cartLineReactKey(item)} className="flex justify-between text-sm">
                     <span className="text-foreground/70">
-                      {item.snapshot.title} × {item.quantity}
+                      {item.snapshot.title}
+                      {describeOrderItem(item).length > 0 && ` (${describeOrderItem(item).join(", ")})`} × {item.quantity}
                     </span>
                     <span>{formatCurrency(item.snapshot.price * item.quantity, item.snapshot.currency)}</span>
                   </div>

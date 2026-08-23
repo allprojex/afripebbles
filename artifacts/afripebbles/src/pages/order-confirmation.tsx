@@ -6,6 +6,7 @@ import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { buildWhatsAppOrderLink, resolveCommerceWhatsappNumber } from "@/lib/whatsapp";
+import { describeOrderItem } from "@/lib/orderItemDisplay";
 import { useGetSiteSettings, type OrderWithItems } from "@workspace/api-client-react";
 
 const ORDER_STORAGE_KEY = "afripebbles_last_order";
@@ -64,7 +65,7 @@ export default function OrderConfirmation() {
               <div key={idx} className="flex justify-between text-sm">
                 <span className="text-foreground/70">
                   {item.productName}
-                  {item.variant ? ` (${item.variant.option})` : ""} × {item.quantity}
+                  {describeOrderItem(item).length > 0 && ` (${describeOrderItem(item).join(", ")})`} × {item.quantity}
                 </span>
                 <span>{formatCurrency(item.lineTotal, order.currency)}</span>
               </div>

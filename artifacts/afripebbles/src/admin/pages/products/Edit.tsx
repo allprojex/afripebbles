@@ -1,15 +1,16 @@
 import { useEffect } from "react";
 import { useParams, useLocation, Link } from "wouter";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type Control, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, ArrowLeft, Eye } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Eye } from "lucide-react";
 import {
   useAdminGetProduct,
   useAdminCreateProduct,
   useAdminUpdateProduct,
   useAdminDeleteProduct,
   ApiError,
+  type Product,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,36 @@ import { TagsInput } from "../../components/TagsInput";
 import { DateTimeInput } from "../../components/DateTimeInput";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { slugify } from "../../lib/slugify";
+
+const optionValueSchema = z.object({
+  label: z.string().min(1, "Label is required"),
+  value: z.string().min(1, "Internal value is required"),
+  priceAdjustment: z.coerce.number(),
+  sku: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  description: z.string().nullable(),
+  isActive: z.boolean(),
+});
+
+const optionGroupSchema = z.object({
+  key: z.string().min(1, "Internal key is required"),
+  label: z.string().min(1, "Label is required"),
+  required: z.boolean(),
+  helpText: z.string().nullable(),
+  isActive: z.boolean(),
+  values: z.array(optionValueSchema),
+});
+
+const varietySchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().nullable(),
+  sku: z.string().nullable(),
+  priceOverride: z.union([z.coerce.number(), z.null()]),
+  shippingAmountOverride: z.union([z.coerce.number(), z.null()]),
+  availabilityOverride: z.string().nullable(),
+  isActive: z.boolean(),
+  images: z.array(z.string()),
+});
 
 const schema = z.object({
   slug: z
@@ -52,6 +83,9 @@ const schema = z.object({
   estimatedFulfilment: z.string().nullable(),
   regions: z.array(z.string()),
   variants: z.array(z.object({ label: z.string().min(1, "Label is required"), options: z.array(z.string()) })),
+  optionGroups: z.array(optionGroupSchema),
+  varieties: z.array(varietySchema),
+  gallery: z.array(z.string()),
   externalPurchaseUrl: z.string().nullable(),
   tags: z.array(z.string()),
   status: z.enum(["draft", "scheduled", "published", "archived"]),
@@ -85,6 +119,9 @@ const DEFAULT_VALUES: FormValues = {
   estimatedFulfilment: null,
   regions: [],
   variants: [],
+  optionGroups: [],
+  varieties: [],
+  gallery: [],
   externalPurchaseUrl: null,
   tags: [],
   status: "draft",
@@ -92,6 +129,378 @@ const DEFAULT_VALUES: FormValues = {
   seoTitle: null,
   seoDescription: null,
 };
+
+/** The loaded product carries ids/displayOrder (server read shape) — the form only needs the editable fields; array order stands in for displayOrder. */
+function toFormValues(product: Product): FormValues {
+  return {
+    ...DEFAULT_VALUES,
+    ...product,
+    optionGroups: product.optionGroups.map((g) => ({
+      key: g.key,
+      label: g.label,
+      required: g.required,
+      helpText: g.helpText,
+      isActive: g.isActive,
+      values: g.values.map((v) => ({
+        label: v.label,
+        value: v.value,
+        priceAdjustment: v.priceAdjustment,
+        sku: v.sku,
+        imageUrl: v.imageUrl,
+        description: v.description,
+        isActive: v.isActive,
+      })),
+    })),
+    varieties: product.varieties.map((v) => ({
+      name: v.name,
+      description: v.description,
+      sku: v.sku,
+      priceOverride: v.priceOverride,
+      shippingAmountOverride: v.shippingAmountOverride,
+      availabilityOverride: v.availabilityOverride,
+      isActive: v.isActive,
+      images: v.images.map((img) => img.url),
+    })),
+    gallery: product.gallery.map((img) => img.url),
+  };
+}
+
+/** Inverse of toFormValues — reconstructs the nested object shape (ProductOptionGroupInput/ProductVarietyInput/ProductImageInput) the admin API expects. */
+function toSubmitPayload(values: FormValues) {
+  return {
+    ...values,
+    varieties: values.varieties.map((v) => ({ ...v, images: v.images.map((url) => ({ url })) })),
+    gallery: values.gallery.map((url) => ({ url })),
+  };
+}
+
+const AVAILABILITY_OVERRIDE_INHERIT = "__inherit__";
+
+function OptionGroupEditor({ form, groupIndex, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: {
+  form: UseFormReturn<FormValues>;
+  groupIndex: number;
+  onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
+  const valuesArray = useFieldArray({ control: form.control, name: `optionGroups.${groupIndex}.values` });
+
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 space-y-3">
+          <FormField
+            control={form.control}
+            name={`optionGroups.${groupIndex}.label`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Option group label</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="e.g. Size, Color, Dimensions"
+                    {...field}
+                    onBlur={() => {
+                      if (!form.getValues(`optionGroups.${groupIndex}.key`)) {
+                        form.setValue(`optionGroups.${groupIndex}.key`, slugify(field.value));
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name={`optionGroups.${groupIndex}.helpText`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Help text (optional)</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name={`optionGroups.${groupIndex}.required`}
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="!mt-0">Required — a customer must choose a value</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveUp} disabled={isFirst} aria-label="Move option group up">
+            <ArrowUp size={14} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveDown} disabled={isLast} aria-label="Move option group down">
+            <ArrowDown size={14} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove option group">
+            <Trash2 size={16} />
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-3 pl-4 border-l border-border">
+        <div className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Values</div>
+        {valuesArray.fields.map((valueField, valueIndex) => (
+          <div key={valueField.id} className="flex items-start gap-3 border border-border/60 rounded-lg p-3">
+            <div className="flex-1 grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.label`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Label</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Large"
+                        {...field}
+                        onBlur={() => {
+                          if (!form.getValues(`optionGroups.${groupIndex}.values.${valueIndex}.value`)) {
+                            form.setValue(`optionGroups.${groupIndex}.values.${valueIndex}.value`, slugify(field.value));
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.priceAdjustment`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price adjustment</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} />
+                    </FormControl>
+                    <FormDescription>Added to (or, if negative, subtracted from) the base price.</FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.sku`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SKU (optional)</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.isActive`}
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-2 pt-6">
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <FormLabel className="!mt-0">Active</FormLabel>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.imageUrl`}
+                render={({ field }) => <ImageUploader bucket="product-images" label="Swatch image (optional)" value={field.value} onChange={field.onChange} />}
+              />
+              <FormField
+                control={form.control}
+                name={`optionGroups.${groupIndex}.values.${valueIndex}.description`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (optional)</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button type="button" variant="ghost" size="icon" onClick={() => valuesArray.remove(valueIndex)} aria-label="Remove value">
+              <Trash2 size={14} />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() =>
+            valuesArray.append({ label: "", value: "", priceAdjustment: 0, sku: null, imageUrl: null, description: null, isActive: true })
+          }
+        >
+          <Plus size={14} /> Add value
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function VarietyEditor({ control, form, varietyIndex, onRemove, onMoveUp, onMoveDown, isFirst, isLast }: {
+  control: Control<FormValues>;
+  form: UseFormReturn<FormValues>;
+  varietyIndex: number;
+  onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
+  return (
+    <div className="border border-border rounded-lg p-4 space-y-3">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 grid grid-cols-2 gap-3">
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.name`}
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Variety name</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Burgundy set" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.description`}
+            render={({ field }) => (
+              <FormItem className="col-span-2">
+                <FormLabel>Description (optional)</FormLabel>
+                <FormControl>
+                  <Textarea {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.priceOverride`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price override (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormDescription>Replaces the base price entirely when set.</FormDescription>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.shippingAmountOverride`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Shipping override (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.sku`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>SKU (optional)</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value || null)} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.availabilityOverride`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Availability override</FormLabel>
+                <Select value={field.value ?? AVAILABILITY_OVERRIDE_INHERIT} onValueChange={(v) => field.onChange(v === AVAILABILITY_OVERRIDE_INHERIT ? null : v)}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={AVAILABILITY_OVERRIDE_INHERIT}>Inherit from product</SelectItem>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="preorder">Pre-order</SelectItem>
+                    <SelectItem value="coming_soon">Coming soon</SelectItem>
+                    <SelectItem value="out_of_stock">Out of stock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.isActive`}
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="!mt-0">Active</FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`varieties.${varietyIndex}.images`}
+            render={({ field }) => (
+              <div className="col-span-2">
+                <MultiImageUploader bucket="product-images" value={field.value} onChange={field.onChange} />
+              </div>
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveUp} disabled={isFirst} aria-label="Move variety up">
+            <ArrowUp size={14} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveDown} disabled={isLast} aria-label="Move variety down">
+            <ArrowDown size={14} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove variety">
+            <Trash2 size={16} />
+          </Button>
+        </div>
+      </div>
+      {form.formState.errors.varieties?.[varietyIndex]?.name && (
+        <p className="text-sm text-destructive">{form.formState.errors.varieties[varietyIndex]?.name?.message}</p>
+      )}
+    </div>
+  );
+}
 
 export default function AdminProductEdit() {
   const params = useParams<{ id: string }>();
@@ -108,14 +517,40 @@ export default function AdminProductEdit() {
 
   const form = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: DEFAULT_VALUES });
   const variantsArray = useFieldArray({ control: form.control, name: "variants" });
+  const optionGroupsArray = useFieldArray({ control: form.control, name: "optionGroups" });
+  const varietiesArray = useFieldArray({ control: form.control, name: "varieties" });
 
   useEffect(() => {
-    if (product) form.reset(product);
+    if (product) form.reset(toFormValues(product));
   }, [product, form]);
 
   const saving = createMutation.isPending || updateMutation.isPending;
+  const hasLegacyVariantsOnly = form.watch("variants").length > 0 && optionGroupsArray.fields.length === 0;
+
+  const convertLegacyVariants = () => {
+    const legacy = form.getValues("variants");
+    for (const group of legacy) {
+      optionGroupsArray.append({
+        key: slugify(group.label),
+        label: group.label,
+        required: true,
+        helpText: null,
+        isActive: true,
+        values: group.options.map((option) => ({
+          label: option,
+          value: slugify(option),
+          priceAdjustment: 0,
+          sku: null,
+          imageUrl: null,
+          description: null,
+          isActive: true,
+        })),
+      });
+    }
+  };
 
   const onSubmit = (values: FormValues) => {
+    const payload = toSubmitPayload(values);
     const onError = (err: unknown) => {
       if (err instanceof ApiError && err.status === 409) {
         form.setError("slug", { message: err.data && typeof err.data === "object" && "error" in err.data ? String((err.data as { error: string }).error) : "That slug is already in use." });
@@ -126,7 +561,7 @@ export default function AdminProductEdit() {
 
     if (isNew) {
       createMutation.mutate(
-        { data: values },
+        { data: payload },
         {
           onSuccess: (created) => {
             toast({ title: "Product created" });
@@ -137,7 +572,7 @@ export default function AdminProductEdit() {
       );
     } else if (id !== undefined) {
       updateMutation.mutate(
-        { id, data: values },
+        { id, data: payload },
         {
           onSuccess: () => toast({ title: "Product saved" }),
           onError,
@@ -373,6 +808,17 @@ export default function AdminProductEdit() {
               name="images"
               render={({ field }) => <MultiImageUploader bucket="product-images" value={field.value} onChange={field.onChange} />}
             />
+            <FormField
+              control={form.control}
+              name="gallery"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gallery</FormLabel>
+                  <FormDescription>A general product gallery, separate from the legacy images above — shown on the product page image strip.</FormDescription>
+                  <MultiImageUploader bucket="product-images" value={field.value} onChange={field.onChange} />
+                </FormItem>
+              )}
+            />
           </section>
 
           <section className="space-y-4">
@@ -494,7 +940,10 @@ export default function AdminProductEdit() {
           )}
 
           <section className="space-y-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">Variants</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">Legacy variants</h2>
+            <p className="text-xs text-foreground/50">
+              The older single-option-group model. Still supported for existing products — new products should use Option Groups below instead.
+            </p>
             {variantsArray.fields.map((variantField, index) => (
               <div key={variantField.id} className="flex items-start gap-3 border border-border rounded-lg p-4">
                 <div className="flex-1 space-y-3">
@@ -528,7 +977,82 @@ export default function AdminProductEdit() {
               </div>
             ))}
             <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => variantsArray.append({ label: "", options: [] })}>
-              <Plus size={14} /> Add variant
+              <Plus size={14} /> Add legacy variant
+            </Button>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">Option groups</h2>
+                <p className="text-xs text-foreground/50 mt-1">Size, Color, Dimensions, Material — customers can combine several of these in one order.</p>
+              </div>
+              {hasLegacyVariantsOnly && (
+                <Button type="button" variant="outline" size="sm" onClick={convertLegacyVariants}>
+                  Convert legacy variants
+                </Button>
+              )}
+            </div>
+            {optionGroupsArray.fields.map((groupField, groupIndex) => (
+              <OptionGroupEditor
+                key={groupField.id}
+                form={form}
+                groupIndex={groupIndex}
+                onRemove={() => optionGroupsArray.remove(groupIndex)}
+                onMoveUp={() => optionGroupsArray.move(groupIndex, groupIndex - 1)}
+                onMoveDown={() => optionGroupsArray.move(groupIndex, groupIndex + 1)}
+                isFirst={groupIndex === 0}
+                isLast={groupIndex === optionGroupsArray.fields.length - 1}
+              />
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => optionGroupsArray.append({ key: "", label: "", required: true, helpText: null, isActive: true, values: [] })}
+            >
+              <Plus size={14} /> Add option group
+            </Button>
+          </section>
+
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/50">Varieties</h2>
+              <p className="text-xs text-foreground/50 mt-1">Pictured, named sub-choices — e.g. Burgundy set / White set / Brown set, each with its own image and description.</p>
+            </div>
+            {varietiesArray.fields.map((varietyField, varietyIndex) => (
+              <VarietyEditor
+                key={varietyField.id}
+                control={form.control}
+                form={form}
+                varietyIndex={varietyIndex}
+                onRemove={() => varietiesArray.remove(varietyIndex)}
+                onMoveUp={() => varietiesArray.move(varietyIndex, varietyIndex - 1)}
+                onMoveDown={() => varietiesArray.move(varietyIndex, varietyIndex + 1)}
+                isFirst={varietyIndex === 0}
+                isLast={varietyIndex === varietiesArray.fields.length - 1}
+              />
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() =>
+                varietiesArray.append({
+                  name: "",
+                  description: null,
+                  sku: null,
+                  priceOverride: null,
+                  shippingAmountOverride: null,
+                  availabilityOverride: null,
+                  isActive: true,
+                  images: [],
+                })
+              }
+            >
+              <Plus size={14} /> Add variety
             </Button>
           </section>
 

@@ -29,6 +29,9 @@ const baseProduct = {
   estimatedFulfilment: null,
   regions: [],
   variants: [],
+  optionGroups: [],
+  varieties: [],
+  gallery: [],
   externalPurchaseUrl: null,
   tags: [],
   status: "published" as const,
@@ -114,5 +117,71 @@ describe("AdminProductEdit — status/availability selects", () => {
     expect(call.data.status).toBe("archived");
     // Unrelated field should be preserved, not clobbered by the save.
     expect(call.data.availability).toBe("preorder");
+  });
+
+  it("adding an option group with a value saves optionGroups in the payload, auto-slugifying the internal keys", async () => {
+    const user = userEvent.setup();
+    mockUseAdminGetProduct.mockReturnValue({ data: baseProduct, isLoading: false });
+    renderEdit();
+
+    await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("hddh"));
+
+    await user.click(screen.getByRole("button", { name: /add option group/i }));
+    await user.type(screen.getByPlaceholderText("e.g. Size, Color, Dimensions"), "Size");
+    await user.click(screen.getByRole("button", { name: /^add value$/i }));
+    await user.type(screen.getByPlaceholderText("e.g. Large"), "Large");
+
+    await user.click(screen.getByRole("button", { name: /save product/i }));
+
+    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalled());
+    const [call] = mockUpdateMutate.mock.calls[0];
+    expect(call.data.optionGroups).toHaveLength(1);
+    expect(call.data.optionGroups[0].label).toBe("Size");
+    expect(call.data.optionGroups[0].key).toBe("size");
+    expect(call.data.optionGroups[0].values).toHaveLength(1);
+    expect(call.data.optionGroups[0].values[0].label).toBe("Large");
+    expect(call.data.optionGroups[0].values[0].value).toBe("large");
+  });
+
+  it("adding a variety saves varieties in the payload with its images mapped to {url}", async () => {
+    const user = userEvent.setup();
+    mockUseAdminGetProduct.mockReturnValue({ data: baseProduct, isLoading: false });
+    renderEdit();
+
+    await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("hddh"));
+
+    await user.click(screen.getByRole("button", { name: /add variety/i }));
+    await user.type(screen.getByPlaceholderText("e.g. Burgundy set"), "Burgundy set");
+
+    await user.click(screen.getByRole("button", { name: /save product/i }));
+
+    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalled());
+    const [call] = mockUpdateMutate.mock.calls[0];
+    expect(call.data.varieties).toHaveLength(1);
+    expect(call.data.varieties[0].name).toBe("Burgundy set");
+    expect(call.data.varieties[0].images).toEqual([]);
+    expect(call.data.gallery).toEqual([]);
+  });
+
+  it("shows a one-click migration from legacy variants to option groups, only when option groups are still empty", async () => {
+    const user = userEvent.setup();
+    mockUseAdminGetProduct.mockReturnValue({
+      data: { ...baseProduct, variants: [{ label: "Size", options: ["S", "M", "L"] }] },
+      isLoading: false,
+    });
+    renderEdit();
+
+    await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("hddh"));
+    const convertButton = screen.getByRole("button", { name: /convert legacy variants/i });
+    await user.click(convertButton);
+
+    await user.click(screen.getByRole("button", { name: /save product/i }));
+    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalled());
+    const [call] = mockUpdateMutate.mock.calls[0];
+    expect(call.data.optionGroups).toHaveLength(1);
+    expect(call.data.optionGroups[0].label).toBe("Size");
+    expect(call.data.optionGroups[0].values.map((v: { label: string }) => v.label)).toEqual(["S", "M", "L"]);
+    // The legacy variants field itself is untouched by the conversion — it's additive, not destructive.
+    expect(call.data.variants).toEqual([{ label: "Size", options: ["S", "M", "L"] }]);
   });
 });

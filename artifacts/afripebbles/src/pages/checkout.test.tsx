@@ -107,7 +107,7 @@ describe("Checkout", () => {
 
     await waitFor(() => expect(mockCreateMutate).toHaveBeenCalledTimes(1));
     const [payload] = mockCreateMutate.mock.calls[0];
-    expect(payload.data.items).toEqual([{ productId: 1, quantity: 1, variant: null }]);
+    expect(payload.data.items).toEqual([{ productId: 1, quantity: 1, variant: null, varietyId: null, selections: [] }]);
     expect(payload.data.consent).toBe(true);
     // No client-computed price/total is ever part of the request body.
     expect(payload.data).not.toHaveProperty("subtotal");
@@ -118,6 +118,8 @@ describe("Checkout", () => {
   it("requests a fresh quote from the server whenever the cart changes", () => {
     seedCart([digitalItem]);
     renderCheckout();
-    expect(mockQuoteMutate).toHaveBeenCalledWith({ data: { items: [{ productId: 1, quantity: 1, variant: null }], couponCode: null } });
+    expect(mockQuoteMutate).toHaveBeenCalledWith({
+      data: { items: [{ productId: 1, quantity: 1, variant: null, varietyId: null, selections: [] }], couponCode: null },
+    });
   });
 });

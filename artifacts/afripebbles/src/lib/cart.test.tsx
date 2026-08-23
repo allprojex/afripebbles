@@ -5,6 +5,8 @@ import { CartProvider, useCart, type CartItem } from "./cart";
 
 const snapshot = { title: "Sample Product", price: 20, currency: "EUR", imageUrl: null, type: "physical" as const };
 
+const plainLine = { productId: 1, variant: null, varietyId: undefined, selections: undefined };
+
 function TestHarness() {
   const { items, itemCount, addItem, removeItem, updateQuantity, clear } = useCart();
   return (
@@ -14,9 +16,69 @@ function TestHarness() {
       <button onClick={() => addItem({ productId: 1, quantity: 1, variant: null, snapshot })}>Add plain</button>
       <button onClick={() => addItem({ productId: 1, quantity: 1, variant: { label: "Size", option: "M" }, snapshot })}>Add variant M</button>
       <button onClick={() => addItem({ productId: 1, quantity: 1, variant: { label: "Size", option: "L" }, snapshot })}>Add variant L</button>
-      <button onClick={() => updateQuantity(1, null, 5)}>Set plain qty 5</button>
-      <button onClick={() => updateQuantity(1, null, 0)}>Zero plain qty</button>
-      <button onClick={() => removeItem(1, null)}>Remove plain</button>
+      <button
+        onClick={() =>
+          addItem({
+            productId: 2,
+            quantity: 1,
+            variant: null,
+            varietyId: 10,
+            varietyName: "Burgundy",
+            selections: [{ groupId: 1, valueId: 100, groupLabel: "Size", valueLabel: "Large" }],
+            snapshot,
+          })
+        }
+      >
+        Add Burgundy/Large
+      </button>
+      <button
+        onClick={() =>
+          addItem({
+            productId: 2,
+            quantity: 2,
+            variant: null,
+            varietyId: 10,
+            varietyName: "Burgundy",
+            selections: [{ groupId: 1, valueId: 100, groupLabel: "Size", valueLabel: "Large" }],
+            snapshot,
+          })
+        }
+      >
+        Add Burgundy/Large again
+      </button>
+      <button
+        onClick={() =>
+          addItem({
+            productId: 2,
+            quantity: 1,
+            variant: null,
+            varietyId: 10,
+            varietyName: "Burgundy",
+            selections: [{ groupId: 1, valueId: 101, groupLabel: "Size", valueLabel: "Medium" }],
+            snapshot,
+          })
+        }
+      >
+        Add Burgundy/Medium
+      </button>
+      <button
+        onClick={() =>
+          addItem({
+            productId: 2,
+            quantity: 1,
+            variant: null,
+            varietyId: 11,
+            varietyName: "White",
+            selections: [{ groupId: 1, valueId: 100, groupLabel: "Size", valueLabel: "Large" }],
+            snapshot,
+          })
+        }
+      >
+        Add White/Large
+      </button>
+      <button onClick={() => updateQuantity(plainLine, 5)}>Set plain qty 5</button>
+      <button onClick={() => updateQuantity(plainLine, 0)}>Zero plain qty</button>
+      <button onClick={() => removeItem(plainLine)}>Remove plain</button>
       <button onClick={() => clear()}>Clear</button>
     </div>
   );
@@ -98,6 +160,33 @@ describe("cart", () => {
 
     renderHarness();
     expect(screen.getByTestId("count")).toHaveTextContent("1");
+  });
+
+  it("merges quantity for an identical variety + option-value combination", async () => {
+    const user = userEvent.setup();
+    renderHarness();
+    await user.click(screen.getByText("Add Burgundy/Large"));
+    await user.click(screen.getByText("Add Burgundy/Large again"));
+    expect(screen.getByTestId("lines")).toHaveTextContent("1");
+    expect(screen.getByTestId("count")).toHaveTextContent("3"); // 1 + 2
+  });
+
+  it("keeps a different option value on the same variety as a separate line", async () => {
+    const user = userEvent.setup();
+    renderHarness();
+    await user.click(screen.getByText("Add Burgundy/Large"));
+    await user.click(screen.getByText("Add Burgundy/Medium"));
+    expect(screen.getByTestId("lines")).toHaveTextContent("2");
+    expect(screen.getByTestId("count")).toHaveTextContent("2");
+  });
+
+  it("keeps a different variety with the same option value as a separate line", async () => {
+    const user = userEvent.setup();
+    renderHarness();
+    await user.click(screen.getByText("Add Burgundy/Large"));
+    await user.click(screen.getByText("Add White/Large"));
+    expect(screen.getByTestId("lines")).toHaveTextContent("2");
+    expect(screen.getByTestId("count")).toHaveTextContent("2");
   });
 
   it("throws a clear error if useCart is used outside a CartProvider", () => {

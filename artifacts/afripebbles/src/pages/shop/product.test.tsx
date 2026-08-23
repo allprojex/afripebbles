@@ -126,6 +126,70 @@ describe("ShopProduct — real cart, no fake purchase states", () => {
     expect(screen.queryByRole("button", { name: /add to cart/i })).not.toBeInTheDocument();
   });
 
+  it("stages multiple variety+option combinations and adds them all as distinct cart lines in one action", async () => {
+    const user = userEvent.setup();
+    mockUseGetProduct.mockReturnValue({
+      data: {
+        ...baseProduct,
+        availability: "available",
+        type: "physical",
+        optionGroups: [
+          {
+            id: 1,
+            productId: 1,
+            key: "size",
+            label: "Size",
+            displayOrder: 0,
+            required: true,
+            helpText: null,
+            isActive: true,
+            values: [
+              { id: 10, groupId: 1, label: "Large", value: "l", displayOrder: 0, priceAdjustment: 5, sku: null, imageUrl: null, description: null, isActive: true },
+              { id: 11, groupId: 1, label: "Medium", value: "m", displayOrder: 1, priceAdjustment: 0, sku: null, imageUrl: null, description: null, isActive: true },
+            ],
+          },
+        ],
+        varieties: [
+          { id: 100, productId: 1, name: "Burgundy", description: null, sku: null, priceOverride: 25, shippingAmountOverride: null, availabilityOverride: null, displayOrder: 0, isActive: true, images: [] },
+          { id: 101, productId: 1, name: "White", description: null, sku: null, priceOverride: 22, shippingAmountOverride: null, availabilityOverride: null, displayOrder: 1, isActive: true, images: [] },
+        ],
+        gallery: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+
+    // First combination: Burgundy / Large.
+    await user.click(screen.getByRole("button", { name: /burgundy/i }));
+    await user.click(screen.getByRole("button", { name: /^large/i }));
+    await user.click(screen.getByRole("button", { name: /add selection/i }));
+
+    // Second combination: White / Medium.
+    await user.click(screen.getByRole("button", { name: /white/i }));
+    await user.click(screen.getByRole("button", { name: /^medium/i }));
+    await user.click(screen.getByRole("button", { name: /add selection/i }));
+
+    expect(screen.getAllByText("Burgundy").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("White").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /add all to cart/i }));
+    await screen.findAllByLabelText("Cart (2 items)");
+  });
+
+  it("keeps the plain Add to Cart flow for a product with no option groups or varieties (no staging step)", () => {
+    mockUseGetProduct.mockReturnValue({
+      data: { ...baseProduct, availability: "available", optionGroups: [], varieties: [], gallery: [] },
+      isLoading: false,
+      error: null,
+    });
+
+    renderProductPage();
+    expect(screen.getByRole("button", { name: /^add to cart$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /add selection/i })).not.toBeInTheDocument();
+  });
+
   it("respects an external purchase URL instead of adding to the internal cart", () => {
     mockUseGetProduct.mockReturnValue({
       data: { ...baseProduct, availability: "available", externalPurchaseUrl: "https://example.com/buy" },

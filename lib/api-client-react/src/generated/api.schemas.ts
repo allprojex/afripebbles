@@ -81,6 +81,120 @@ export interface ProductVariant {
   options: string[];
 }
 
+export interface ProductOptionValue {
+  id: number;
+  groupId: number;
+  label: string;
+  value: string;
+  displayOrder: number;
+  priceAdjustment: number;
+  /** @nullable */
+  sku: string | null;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  description: string | null;
+  isActive: boolean;
+}
+
+export interface ProductOptionGroup {
+  id: number;
+  productId: number;
+  key: string;
+  label: string;
+  displayOrder: number;
+  required: boolean;
+  /** @nullable */
+  helpText: string | null;
+  isActive: boolean;
+  values: ProductOptionValue[];
+}
+
+export interface ProductImage {
+  id: number;
+  productId: number;
+  /** @nullable */
+  varietyId: number | null;
+  url: string;
+  /** @nullable */
+  altText: string | null;
+  /** @nullable */
+  caption: string | null;
+  displayOrder: number;
+  isFeatured: boolean;
+}
+
+export interface ProductVariety {
+  id: number;
+  productId: number;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  sku: string | null;
+  /** @nullable */
+  priceOverride: number | null;
+  /** @nullable */
+  shippingAmountOverride: number | null;
+  /** @nullable */
+  availabilityOverride: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  images: ProductImage[];
+}
+
+export interface ProductImageInput {
+  url: string;
+  /** @nullable */
+  altText?: string | null;
+  /** @nullable */
+  caption?: string | null;
+  displayOrder?: number;
+  isFeatured?: boolean;
+}
+
+export interface ProductOptionValueInput {
+  label: string;
+  value: string;
+  displayOrder?: number;
+  priceAdjustment?: number;
+  /** @nullable */
+  sku?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface ProductOptionGroupInput {
+  key: string;
+  label: string;
+  displayOrder?: number;
+  required?: boolean;
+  /** @nullable */
+  helpText?: string | null;
+  isActive?: boolean;
+  values: ProductOptionValueInput[];
+}
+
+export interface ProductVarietyInput {
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  sku?: string | null;
+  /** @nullable */
+  priceOverride?: number | null;
+  /** @nullable */
+  shippingAmountOverride?: number | null;
+  /** @nullable */
+  availabilityOverride?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
+  images?: ProductImageInput[];
+}
+
 export type ProductType = typeof ProductType[keyof typeof ProductType];
 
 
@@ -141,6 +255,9 @@ export interface Product {
   estimatedFulfilment: string | null;
   regions: string[];
   variants: ProductVariant[];
+  optionGroups: ProductOptionGroup[];
+  varieties: ProductVariety[];
+  gallery: ProductImage[];
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];
@@ -212,6 +329,9 @@ export interface PublicProduct {
   estimatedFulfilment: string | null;
   regions: string[];
   variants: ProductVariant[];
+  optionGroups: ProductOptionGroup[];
+  varieties: ProductVariety[];
+  gallery: ProductImage[];
   /** @nullable */
   externalPurchaseUrl: string | null;
   tags: string[];
@@ -285,6 +405,9 @@ export interface ProductInput {
   estimatedFulfilment?: string | null;
   regions?: string[];
   variants?: ProductVariant[];
+  optionGroups?: ProductOptionGroupInput[];
+  varieties?: ProductVarietyInput[];
+  gallery?: ProductImageInput[];
   /** @nullable */
   externalPurchaseUrl?: string | null;
   tags?: string[];
@@ -964,10 +1087,26 @@ export interface OrderItemVariant {
   option: string;
 }
 
+export interface CartSelectionInput {
+  groupId: number;
+  valueId: number;
+}
+
+export interface OrderItemSelection {
+  groupLabel: string;
+  valueLabel: string;
+  priceAdjustment: number;
+  /** @nullable */
+  sku: string | null;
+}
+
 export interface CartItemInput {
   productId: number;
   quantity: number;
   variant?: OrderItemVariant | null;
+  /** @nullable */
+  varietyId?: number | null;
+  selections?: CartSelectionInput[];
 }
 
 export type OrderItemProductType = typeof OrderItemProductType[keyof typeof OrderItemProductType];
@@ -986,6 +1125,15 @@ export interface OrderItem {
   productName: string;
   productType: OrderItemProductType;
   variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyId: number | null;
+  /** @nullable */
+  varietyName: string | null;
+  /** @nullable */
+  varietyDescription: string | null;
+  /** @nullable */
+  sku: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
@@ -1081,6 +1229,9 @@ export interface PublicOrderTrackingItem {
   productId: number | null;
   productName: string;
   variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyName: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   lineTotal: number;
   isDigital: boolean;
@@ -1129,6 +1280,10 @@ export interface QuoteOrderInput {
 export interface QuoteResultItem {
   productId: number;
   productName: string;
+  variant: OrderItemVariant | null;
+  /** @nullable */
+  varietyName: string | null;
+  selections: OrderItemSelection[] | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

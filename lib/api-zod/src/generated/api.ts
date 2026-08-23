@@ -51,6 +51,60 @@ export const ListProductsResponseItem = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+})),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
@@ -95,6 +149,60 @@ export const GetProductResponse = zod.object({
   "variants": zod.array(zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
+})),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
@@ -441,6 +549,60 @@ export const GetHomepageSummaryResponse = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+})),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
@@ -686,6 +848,60 @@ export const AdminListProductsResponseItem = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+})),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
@@ -727,6 +943,48 @@ export const AdminCreateProductBody = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })).optional(),
+  "optionGroups": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number().optional(),
+  "required": zod.boolean().optional(),
+  "helpText": zod.string().nullish(),
+  "isActive": zod.boolean().optional(),
+  "values": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number().optional(),
+  "priceAdjustment": zod.number().optional(),
+  "sku": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean().optional()
+}))
+})).optional(),
+  "varieties": zod.array(zod.object({
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "sku": zod.string().nullish(),
+  "priceOverride": zod.number().nullish(),
+  "shippingAmountOverride": zod.number().nullish(),
+  "availabilityOverride": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isActive": zod.boolean().optional(),
+  "images": zod.array(zod.object({
+  "url": zod.string(),
+  "altText": zod.string().nullish(),
+  "caption": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isFeatured": zod.boolean().optional()
+})).optional()
+})).optional(),
+  "gallery": zod.array(zod.object({
+  "url": zod.string(),
+  "altText": zod.string().nullish(),
+  "caption": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isFeatured": zod.boolean().optional()
+})).optional(),
   "externalPurchaseUrl": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
@@ -761,6 +1019,60 @@ export const AdminCreateProductResponse = zod.object({
   "variants": zod.array(zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
+})),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
@@ -807,6 +1119,60 @@ export const AdminGetProductResponse = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+})),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']),
@@ -851,6 +1217,48 @@ export const AdminUpdateProductBody = zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
 })).optional(),
+  "optionGroups": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number().optional(),
+  "required": zod.boolean().optional(),
+  "helpText": zod.string().nullish(),
+  "isActive": zod.boolean().optional(),
+  "values": zod.array(zod.object({
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number().optional(),
+  "priceAdjustment": zod.number().optional(),
+  "sku": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "isActive": zod.boolean().optional()
+}))
+})).optional(),
+  "varieties": zod.array(zod.object({
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "sku": zod.string().nullish(),
+  "priceOverride": zod.number().nullish(),
+  "shippingAmountOverride": zod.number().nullish(),
+  "availabilityOverride": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isActive": zod.boolean().optional(),
+  "images": zod.array(zod.object({
+  "url": zod.string(),
+  "altText": zod.string().nullish(),
+  "caption": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isFeatured": zod.boolean().optional()
+})).optional()
+})).optional(),
+  "gallery": zod.array(zod.object({
+  "url": zod.string(),
+  "altText": zod.string().nullish(),
+  "caption": zod.string().nullish(),
+  "displayOrder": zod.number().optional(),
+  "isFeatured": zod.boolean().optional()
+})).optional(),
   "externalPurchaseUrl": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "status": zod.enum(['draft', 'scheduled', 'published', 'archived']).optional(),
@@ -885,6 +1293,60 @@ export const AdminUpdateProductResponse = zod.object({
   "variants": zod.array(zod.object({
   "label": zod.string(),
   "options": zod.array(zod.string())
+})),
+  "optionGroups": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "key": zod.string(),
+  "label": zod.string(),
+  "displayOrder": zod.number(),
+  "required": zod.boolean(),
+  "helpText": zod.string().nullable(),
+  "isActive": zod.boolean(),
+  "values": zod.array(zod.object({
+  "id": zod.number(),
+  "groupId": zod.number(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "displayOrder": zod.number(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable(),
+  "imageUrl": zod.string().nullable(),
+  "description": zod.string().nullable(),
+  "isActive": zod.boolean()
+}))
+})),
+  "varieties": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "priceOverride": zod.number().nullable(),
+  "shippingAmountOverride": zod.number().nullable(),
+  "availabilityOverride": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isActive": zod.boolean(),
+  "images": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
+}))
+})),
+  "gallery": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.number(),
+  "varietyId": zod.number().nullable(),
+  "url": zod.string(),
+  "altText": zod.string().nullable(),
+  "caption": zod.string().nullable(),
+  "displayOrder": zod.number(),
+  "isFeatured": zod.boolean()
 })),
   "externalPurchaseUrl": zod.string().nullable(),
   "tags": zod.array(zod.string()),
@@ -2080,7 +2542,12 @@ export const QuoteOrderBody = zod.object({
   "variant": zod.union([zod.object({
   "label": zod.string(),
   "option": zod.string()
-}),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "varietyId": zod.number().nullish(),
+  "selections": zod.array(zod.object({
+  "groupId": zod.number(),
+  "valueId": zod.number()
+})).optional()
 })),
   "couponCode": zod.string().nullish()
 })
@@ -2094,6 +2561,17 @@ export const QuoteOrderResponse = zod.object({
   "items": zod.array(zod.object({
   "productId": zod.number(),
   "productName": zod.string(),
+  "variant": zod.union([zod.object({
+  "label": zod.string(),
+  "option": zod.string()
+}),zod.null()]),
+  "varietyName": zod.string().nullable(),
+  "selections": zod.union([zod.array(zod.object({
+  "groupLabel": zod.string(),
+  "valueLabel": zod.string(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable()
+})),zod.null()]),
   "quantity": zod.number(),
   "unitPrice": zod.number(),
   "lineTotal": zod.number(),
@@ -2122,7 +2600,12 @@ export const CreateOrderBody = zod.object({
   "variant": zod.union([zod.object({
   "label": zod.string(),
   "option": zod.string()
-}),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "varietyId": zod.number().nullish(),
+  "selections": zod.array(zod.object({
+  "groupId": zod.number(),
+  "valueId": zod.number()
+})).optional()
 })),
   "consent": zod.boolean()
 })
@@ -2162,6 +2645,16 @@ export const CreateOrderResponse = zod.object({
   "label": zod.string(),
   "option": zod.string()
 }),zod.null()]),
+  "varietyId": zod.number().nullable(),
+  "varietyName": zod.string().nullable(),
+  "varietyDescription": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "selections": zod.union([zod.array(zod.object({
+  "groupLabel": zod.string(),
+  "valueLabel": zod.string(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable()
+})),zod.null()]),
   "quantity": zod.number(),
   "unitPrice": zod.number(),
   "lineTotal": zod.number(),
@@ -2197,6 +2690,13 @@ export const TrackOrderResponse = zod.object({
   "label": zod.string(),
   "option": zod.string()
 }),zod.null()]),
+  "varietyName": zod.string().nullable(),
+  "selections": zod.union([zod.array(zod.object({
+  "groupLabel": zod.string(),
+  "valueLabel": zod.string(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable()
+})),zod.null()]),
   "quantity": zod.number(),
   "lineTotal": zod.number(),
   "isDigital": zod.boolean(),
@@ -2306,6 +2806,16 @@ export const AdminGetOrderResponse = zod.object({
   "label": zod.string(),
   "option": zod.string()
 }),zod.null()]),
+  "varietyId": zod.number().nullable(),
+  "varietyName": zod.string().nullable(),
+  "varietyDescription": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "selections": zod.union([zod.array(zod.object({
+  "groupLabel": zod.string(),
+  "valueLabel": zod.string(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable()
+})),zod.null()]),
   "quantity": zod.number(),
   "unitPrice": zod.number(),
   "lineTotal": zod.number(),
@@ -2380,6 +2890,16 @@ export const AdminUpdateOrderResponse = zod.object({
   "label": zod.string(),
   "option": zod.string()
 }),zod.null()]),
+  "varietyId": zod.number().nullable(),
+  "varietyName": zod.string().nullable(),
+  "varietyDescription": zod.string().nullable(),
+  "sku": zod.string().nullable(),
+  "selections": zod.union([zod.array(zod.object({
+  "groupLabel": zod.string(),
+  "valueLabel": zod.string(),
+  "priceAdjustment": zod.number(),
+  "sku": zod.string().nullable()
+})),zod.null()]),
   "quantity": zod.number(),
   "unitPrice": zod.number(),
   "lineTotal": zod.number(),

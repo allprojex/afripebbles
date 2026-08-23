@@ -35,6 +35,11 @@ function baseOrder(overrides: Partial<OrderWithItems> = {}): OrderWithItems {
         productName: "Faith Journal",
         productType: "physical",
         variant: null,
+        varietyId: null,
+        varietyName: null,
+        varietyDescription: null,
+        sku: null,
+        selections: null,
         quantity: 2,
         unitPrice: 50,
         lineTotal: 100,
@@ -85,7 +90,7 @@ describe("formatWhatsAppOrderMessage — content and privacy", () => {
     expect(message).toContain("ama@example.com");
     expect(message).toContain("Ghana");
     expect(message).toContain("Faith Journal");
-    expect(message).toContain("x2");
+    expect(message).toContain("Qty: 2");
     expect(message).toContain("Subtotal");
     expect(message).toContain("Shipping");
     expect(message).toContain("Grand Total");
@@ -96,20 +101,53 @@ describe("formatWhatsAppOrderMessage — content and privacy", () => {
   it("lists every item for a multi-item cart with variants and preorders", () => {
     const order = baseOrder({
       items: [
-        { id: 1, orderId: 999, productId: 1, productName: "Tote Bag", productType: "physical", variant: { label: "Color", option: "Sand" }, quantity: 1, unitPrice: 30, lineTotal: 30, shippingAmount: 5, isDigital: false, isPreorder: false, preorderFulfilmentText: null, createdAt: "2026-01-01T10:00:00.000Z" },
-        { id: 2, orderId: 999, productId: 2, productName: "Christmas Ornament Set", productType: "physical", variant: null, quantity: 3, unitPrice: 20, lineTotal: 60, shippingAmount: 8, isDigital: false, isPreorder: true, preorderFulfilmentText: "2-3 months", createdAt: "2026-01-01T10:00:00.000Z" },
-        { id: 3, orderId: 999, productId: 3, productName: "Gratitude Planner (PDF)", productType: "digital", variant: null, quantity: 1, unitPrice: 15, lineTotal: 15, shippingAmount: 0, isDigital: true, isPreorder: false, preorderFulfilmentText: null, createdAt: "2026-01-01T10:00:00.000Z" },
+        { id: 1, orderId: 999, productId: 1, productName: "Tote Bag", productType: "physical", variant: { label: "Color", option: "Sand" }, varietyId: null, varietyName: null, varietyDescription: null, sku: null, selections: null, quantity: 1, unitPrice: 30, lineTotal: 30, shippingAmount: 5, isDigital: false, isPreorder: false, preorderFulfilmentText: null, createdAt: "2026-01-01T10:00:00.000Z" },
+        { id: 2, orderId: 999, productId: 2, productName: "Christmas Ornament Set", productType: "physical", variant: null, varietyId: null, varietyName: null, varietyDescription: null, sku: null, selections: null, quantity: 3, unitPrice: 20, lineTotal: 60, shippingAmount: 8, isDigital: false, isPreorder: true, preorderFulfilmentText: "2-3 months", createdAt: "2026-01-01T10:00:00.000Z" },
+        { id: 3, orderId: 999, productId: 3, productName: "Gratitude Planner (PDF)", productType: "digital", variant: null, varietyId: null, varietyName: null, varietyDescription: null, sku: null, selections: null, quantity: 1, unitPrice: 15, lineTotal: 15, shippingAmount: 0, isDigital: true, isPreorder: false, preorderFulfilmentText: null, createdAt: "2026-01-01T10:00:00.000Z" },
       ],
       subtotal: 105,
       shippingTotal: 13,
       grandTotal: 118,
     });
     const message = formatWhatsAppOrderMessage(order);
-    expect(message).toContain("Tote Bag (Color: Sand)");
+    expect(message).toContain("1. Tote Bag");
+    expect(message).toContain("Color: Sand");
     expect(message).toContain("Christmas Ornament Set");
     expect(message).toContain("PRE-ORDER");
     expect(message).toContain("2-3 months");
     expect(message).toContain("Gratitude Planner (PDF)");
+  });
+
+  it("renders every distinct combination on a multi-variety/multi-option order as its own numbered item, never collapsed", () => {
+    const order = baseOrder({
+      items: [
+        {
+          id: 1, orderId: 999, productId: 10, productName: "Velvet Christmas Baubles", productType: "physical",
+          variant: null, varietyId: 1, varietyName: "Burgundy set", varietyDescription: null, sku: "BAUBLE-BURG-L",
+          selections: [{ groupLabel: "Size", valueLabel: "Large", priceAdjustment: 5, sku: null }],
+          quantity: 2, unitPrice: 25, lineTotal: 50, shippingAmount: 4, isDigital: false, isPreorder: false, preorderFulfilmentText: null,
+          createdAt: "2026-01-01T10:00:00.000Z",
+        },
+        {
+          id: 2, orderId: 999, productId: 10, productName: "Velvet Christmas Baubles", productType: "physical",
+          variant: null, varietyId: 2, varietyName: "White set", varietyDescription: null, sku: null,
+          selections: [{ groupLabel: "Size", valueLabel: "Medium", priceAdjustment: 0, sku: null }],
+          quantity: 1, unitPrice: 20, lineTotal: 20, shippingAmount: 4, isDigital: false, isPreorder: false, preorderFulfilmentText: null,
+          createdAt: "2026-01-01T10:00:00.000Z",
+        },
+      ],
+      subtotal: 70,
+      shippingTotal: 8,
+      grandTotal: 78,
+    });
+    const message = formatWhatsAppOrderMessage(order);
+    expect(message).toContain("1. Velvet Christmas Baubles");
+    expect(message).toContain("2. Velvet Christmas Baubles");
+    expect(message).toContain("Burgundy set");
+    expect(message).toContain("White set");
+    // Both combinations' Size lines must appear — never collapsed into one "Size: Large, Medium" line.
+    const sizeLines = message.split("\n").filter((line) => line.trim().startsWith("Size:"));
+    expect(sizeLines).toEqual(["   Size: Large", "   Size: Medium"]);
   });
 
   it("shows the discount line only when a discount was applied", () => {
