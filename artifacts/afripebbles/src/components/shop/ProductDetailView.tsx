@@ -116,41 +116,43 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
 
       <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full md:w-1/2"
+          className="w-full md:w-1/2 self-start"
         >
-          <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted shadow-lg sticky top-32 relative">
-            {activeImage && (
-              <img
-                src={activeImage}
-                alt={product.title}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                onError={handleImageError}
-                className="w-full h-full object-cover"
-              />
+          <div className="sticky top-32 space-y-4">
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted shadow-lg relative">
+              {activeImage && (
+                <img
+                  src={activeImage}
+                  alt={product.title}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  onError={handleImageError}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute top-6 left-6 bg-background/90 backdrop-blur-sm text-sm px-4 py-1.5 rounded-full text-primary z-10 font-medium tracking-wide shadow-sm border border-primary/10">
+                {AVAILABILITY_LABEL[product.availability]}
+              </div>
+            </div>
+            {thumbnails.length > 1 && (
+              <div className="flex gap-2 flex-wrap">
+                {thumbnails.map((t) => (
+                  <button
+                    key={t.url}
+                    type="button"
+                    onClick={() => setActiveImage(t.url)}
+                    className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === t.url ? "border-primary ring-1 ring-primary" : "border-border"}`}
+                  >
+                    <img src={t.thumbnailUrl ?? t.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
-            <div className="absolute top-6 left-6 bg-background/90 backdrop-blur-sm text-sm px-4 py-1.5 rounded-full text-primary z-10 font-medium tracking-wide shadow-sm border border-primary/10">
-              {AVAILABILITY_LABEL[product.availability]}
-            </div>
           </div>
-          {thumbnails.length > 1 && (
-            <div className="flex gap-2 mt-4 flex-wrap">
-              {thumbnails.map((t) => (
-                <button
-                  key={t.url}
-                  type="button"
-                  onClick={() => setActiveImage(t.url)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border ${activeImage === t.url ? "border-primary ring-1 ring-primary" : "border-border"}`}
-                >
-                  <img src={t.thumbnailUrl ?? t.url} alt="" loading="lazy" decoding="async" onError={handleImageError} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
         </motion.div>
 
         <motion.div
