@@ -257,3 +257,147 @@ describe("ShopProduct — real cart, no fake purchase states", () => {
     expect(screen.queryByRole("button", { name: /add to cart/i })).not.toBeInTheDocument();
   });
 });
+
+describe("ShopProduct — cart line image follows the selected variety", () => {
+  const image = (over: Partial<{ id: number; url: string; thumbnailUrl: string | null }>) => ({
+    id: 1,
+    productId: 1,
+    varietyId: 100,
+    url: "https://cdn.test/x.webp",
+    thumbnailUrl: null,
+    altText: null,
+    caption: null,
+    displayOrder: 0,
+    isFeatured: true,
+    ...over,
+  });
+
+  const variety = (id: number, name: string, images: ReturnType<typeof image>[]) => ({
+    id,
+    productId: 1,
+    name,
+    description: null,
+    sku: null,
+    priceOverride: null,
+    shippingAmountOverride: null,
+    availabilityOverride: null,
+    displayOrder: id,
+    isActive: true,
+    images,
+  });
+
+  const sizeGroup = {
+    id: 9,
+    productId: 1,
+    key: "size",
+    label: "Size",
+    displayOrder: 0,
+    required: true,
+    helpText: null,
+    isActive: true,
+    values: [{ id: 90, groupId: 9, label: "40 x 40", value: "40x40", displayOrder: 0, priceAdjustment: 0, sku: null, imageUrl: null, description: null, isActive: true }],
+  };
+
+  function mockVarietyProduct(varieties: ReturnType<typeof variety>[]) {
+    mockUseGetProduct.mockReturnValue({
+      data: {
+        ...baseProduct,
+        availability: "available",
+        type: "physical",
+        imageUrl: "https://cdn.test/product.webp",
+        thumbnailUrl: "https://cdn.test/product-thumb.webp",
+        optionGroups: [sizeGroup],
+        varieties,
+        gallery: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+  }
+
+  async function addToCart(user: ReturnType<typeof userEvent.setup>, varietyName: string) {
+    await user.click(screen.getByRole("button", { name: new RegExp(varietyName, "i") }));
+    await user.click(screen.getByRole("button", { name: "40 x 40" }));
+    await user.click(screen.getByRole("button", { name: /add selection/i }));
+    await user.click(screen.getByRole("button", { name: /add all to cart/i }));
+  }
+
+  function storedCart() {
+    return JSON.parse(localStorage.getItem("afripebbles_cart_v1") ?? "[]");
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("stores the selected variety's image on the cart line instead of the product image", async () => {
+    const user = userEvent.setup();
+    mockVarietyProduct([
+      variety(100, "Red Collection", [image({ id: 1, url: "https://cdn.test/red.webp", thumbnailUrl: "https://cdn.test/red-thumb.webp" })]),
+      variety(101, "Green Collection", [image({ id: 2, url: "https://cdn.test/green.webp", thumbnailUrl: "https://cdn.test/green-thumb.webp" })]),
+    ]);
+    renderProductPage();
+
+    await addToCart(user, "Green Collection");
+
+    const cart = storedCart();
+    expect(cart).toHaveLength(1);
+    expect(cart[0].varietyName).toBe("Green Collection");
+    expect(cart[0].snapshot.imageUrl).toBe("https://cdn.test/green-thumb.webp");
+    expect(cart[0].snapshot.imageUrl).not.toBe("https://cdn.test/product.webp");
+  });
+
+  it("gives two different varieties two different cart line images", async () => {
+    const user = userEvent.setup();
+    mockVarietyProduct([
+      variety(100, "Red Collection", [image({ id: 1, url: "https://cdn.test/red.webp", thumbnailUrl: "https://cdn.test/red-thumb.webp" })]),
+      variety(101, "Green Collection", [image({ id: 2, url: "https://cdn.test/green.webp", thumbnailUrl: "https://cdn.test/green-thumb.webp" })]),
+    ]);
+    renderProductPage();
+
+    await addToCart(user, "Red Collection");
+    await addToCart(user, "Green Collection");
+
+    const cart = storedCart();
+    expect(cart).toHaveLength(2);
+    expect(cart.map((l: { snapshot: { imageUrl: string } }) => l.snapshot.imageUrl)).toEqual([
+      "https://cdn.test/red-thumb.webp",
+      "https://cdn.test/green-thumb.webp",
+    ]);
+  });
+
+  it("falls back to the variety's display image when that variety has no thumbnail derivative", async () => {
+    const user = userEvent.setup();
+    mockVarietyProduct([variety(100, "Legacy Collection", [image({ id: 1, url: "https://cdn.test/legacy.png", thumbnailUrl: null })])]);
+    renderProductPage();
+
+    await addToCart(user, "Legacy Collection");
+
+    expect(storedCart()[0].snapshot.imageUrl).toBe("https://cdn.test/legacy.png");
+  });
+
+  it("falls back to the product image when the selected variety has no image at all", async () => {
+    const user = userEvent.setup();
+    mockVarietyProduct([variety(100, "Unpictured Collection", [])]);
+    renderProductPage();
+
+    await addToCart(user, "Unpictured Collection");
+
+    expect(storedCart()[0].snapshot.imageUrl).toBe("https://cdn.test/product.webp");
+  });
+
+  it("leaves an option-group product with no varieties on the product image", async () => {
+    const user = userEvent.setup();
+    mockVarietyProduct([]);
+    renderProductPage();
+
+    await user.click(screen.getByRole("button", { name: "40 x 40" }));
+    await user.click(screen.getByRole("button", { name: /add selection/i }));
+    await user.click(screen.getByRole("button", { name: /add all to cart/i }));
+
+    const cart = storedCart();
+    expect(cart).toHaveLength(1);
+    expect(cart[0].varietyId).toBeNull();
+    expect(cart[0].snapshot.imageUrl).toBe("https://cdn.test/product.webp");
+  });
+});

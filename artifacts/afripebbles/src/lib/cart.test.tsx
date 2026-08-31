@@ -201,3 +201,43 @@ describe("cart", () => {
 // Exercise the exported type so a future refactor that breaks the shape fails to compile.
 const _typeCheck: CartItem = { productId: 1, quantity: 1, variant: null, snapshot };
 void _typeCheck;
+
+describe("CartProvider — legacy stored carts", () => {
+  it("hydrates a cart saved before varieties existed, preserving its snapshot image", () => {
+    // Shape written by the pre-variety build: no varietyId/varietyName/selections keys at all.
+    localStorage.setItem(
+      "afripebbles_cart_v1",
+      JSON.stringify([
+        {
+          productId: 7,
+          quantity: 2,
+          variant: { label: "Size", option: "M" },
+          snapshot: { title: "Legacy Product", price: 15, currency: "EUR", imageUrl: "https://cdn.test/legacy-product.webp", type: "physical" },
+        },
+      ]),
+    );
+
+    function Probe() {
+      const { items, itemCount } = useCart();
+      return (
+        <div>
+          <div data-testid="count">{itemCount}</div>
+          <div data-testid="lines">{items.length}</div>
+          <div data-testid="image">{items[0]?.snapshot.imageUrl ?? "none"}</div>
+          <div data-testid="variety">{String(items[0]?.varietyId ?? "undefined")}</div>
+        </div>
+      );
+    }
+
+    render(
+      <CartProvider>
+        <Probe />
+      </CartProvider>,
+    );
+
+    expect(screen.getByTestId("lines")).toHaveTextContent("1");
+    expect(screen.getByTestId("count")).toHaveTextContent("2");
+    expect(screen.getByTestId("image")).toHaveTextContent("https://cdn.test/legacy-product.webp");
+    expect(screen.getByTestId("variety")).toHaveTextContent("undefined");
+  });
+});

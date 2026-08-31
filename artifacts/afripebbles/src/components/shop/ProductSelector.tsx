@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/hooks/use-toast";
-import { handleImageError } from "@/lib/product";
+import { cartLineImageUrl, handleImageError, primaryVarietyImage } from "@/lib/product";
 import type { ProductOptionGroup, ProductVariety } from "@workspace/api-client-react";
 
 interface PendingLine {
@@ -14,6 +14,8 @@ interface PendingLine {
   selections: { groupId: number; valueId: number; groupLabel: string; valueLabel: string; priceAdjustment: number }[];
   quantity: number;
   unitPrice: number;
+  /** Resolved when the line is staged, so the cart row shows the variety the customer actually picked. */
+  imageUrl: string | null;
 }
 
 interface ProductSelectorProps {
@@ -110,6 +112,7 @@ export function ProductSelector({
           selections: details,
           quantity,
           unitPrice: currentUnitPrice,
+          imageUrl: cartLineImageUrl(selectedVariety, fallbackImageUrl),
         },
       ];
     });
@@ -134,7 +137,7 @@ export function ProductSelector({
           title: productTitle,
           price: line.unitPrice,
           currency,
-          imageUrl: fallbackImageUrl,
+          imageUrl: line.imageUrl,
           type: productType === "digital" ? "digital" : "physical",
         },
       });
@@ -150,7 +153,7 @@ export function ProductSelector({
           <div className="text-xs font-semibold uppercase tracking-wider text-foreground/50 mb-2">Style</div>
           <div className="grid grid-cols-3 gap-2">
             {activeVarieties.map((variety) => {
-              const image = variety.images.find((img) => img.isFeatured) ?? variety.images[0];
+              const image = primaryVarietyImage(variety);
               const isSelected = selectedVarietyId === variety.id;
               return (
                 <button

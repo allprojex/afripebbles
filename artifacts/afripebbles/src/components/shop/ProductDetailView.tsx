@@ -12,7 +12,7 @@ import type { ProductAvailability, ProductOptionGroup, ProductVariety, ProductIm
 import { siteConfig } from "@/content/site";
 import { format } from "date-fns";
 import { ProductSelector } from "./ProductSelector";
-import { handleImageError } from "@/lib/product";
+import { handleImageError, primaryVarietyImage } from "@/lib/product";
 
 /**
  * Minimal shape this view actually renders — deliberately not the generated
@@ -79,7 +79,7 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
       setActiveImage(defaultImage);
       return;
     }
-    const varietyImage = variety.images.find((img) => img.isFeatured) ?? variety.images[0];
+    const varietyImage = primaryVarietyImage(variety);
     setActiveImage(varietyImage?.url ?? defaultImage);
   };
 
