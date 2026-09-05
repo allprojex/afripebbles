@@ -112,7 +112,10 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="px-4 pt-4 pb-2 border-t border-border mt-2">
-            <Link href="/community" className="w-full">
+            {/* block, so w-full actually applies: as an inline anchor this collapsed to a
+                19px box and left the button a 38px tap target, against 44px for every
+                other item in this menu. */}
+            <Link href="/community" className="block w-full">
               <Button className="w-full rounded-full">Join the Community</Button>
             </Link>
           </div>
