@@ -13,8 +13,8 @@ export default function NotFound() {
           transition={{ duration: 0.6 }}
           className="max-w-md space-y-6"
         >
-          <h1 className="text-8xl font-serif text-primary/20">404</h1>
-          <h2 className="text-3xl font-serif">A little detour</h2>
+          <h1 className="text-6xl sm:text-8xl font-serif text-primary/20">404</h1>
+          <h2 className="text-2xl sm:text-3xl font-serif">A little detour</h2>
           <p className="text-foreground/70">
             We couldn't find the page you're looking for. It might have been moved or doesn't exist yet.
           </p>

@@ -151,7 +151,9 @@ export function ProductSelector({
       {activeVarieties.length > 0 && (
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-foreground/50 mb-2">Style</div>
-          <div className="grid grid-cols-3 gap-2">
+          {/* Two across on the narrowest phones so variety names stay readable rather than
+              truncating to a few characters in an ~85px card. */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {activeVarieties.map((variety) => {
               const image = primaryVarietyImage(variety);
               const isSelected = selectedVarietyId === variety.id;
@@ -221,18 +223,18 @@ export function ProductSelector({
       ))}
 
       <div className="space-y-3">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Quantity</span>
-          <div className="flex items-center gap-3 border border-border rounded-full px-2">
-            <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="p-2 text-foreground/60 hover:text-primary">
+          <div className="flex items-center border border-border rounded-full">
+            <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary">
               <Minus size={14} />
             </button>
             <span className="w-6 text-center text-sm font-medium">{quantity}</span>
-            <button type="button" aria-label="Increase quantity" onClick={() => setQuantity((q) => q + 1)} className="p-2 text-foreground/60 hover:text-primary">
+            <button type="button" aria-label="Increase quantity" onClick={() => setQuantity((q) => q + 1)} className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary">
               <Plus size={14} />
             </button>
           </div>
-          <span className="text-sm text-foreground/60">{formatCurrency(currentUnitPrice, currency)} each</span>
+          <span className="text-sm text-foreground/60 whitespace-nowrap">{formatCurrency(currentUnitPrice, currency)} each</span>
         </div>
         <Button type="button" variant="outline" className="w-full rounded-full" disabled={!canStage} onClick={handleAddSelection}>
           Add selection
@@ -249,7 +251,7 @@ export function ProductSelector({
           <div className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Your selections</div>
           {pending.map((line) => (
             <div key={line.key} className="flex items-start justify-between gap-2 text-sm">
-              <div>
+              <div className="min-w-0">
                 {line.varietyName && <div className="font-medium">{line.varietyName}</div>}
                 {line.selections.map((s) => (
                   <div key={s.groupId} className="text-foreground/60">
@@ -258,9 +260,14 @@ export function ProductSelector({
                 ))}
                 <div className="text-foreground/60">Qty: {line.quantity}</div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{formatCurrency(line.unitPrice * line.quantity, currency)}</span>
-                <button type="button" aria-label="Remove selection" onClick={() => removePending(line.key)} className="text-foreground/40 hover:text-destructive">
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="font-medium whitespace-nowrap">{formatCurrency(line.unitPrice * line.quantity, currency)}</span>
+                <button
+                  type="button"
+                  aria-label="Remove selection"
+                  onClick={() => removePending(line.key)}
+                  className="inline-flex size-9 items-center justify-center text-foreground/40 hover:text-destructive"
+                >
                   <X size={16} />
                 </button>
               </div>

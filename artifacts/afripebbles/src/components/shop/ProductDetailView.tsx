@@ -117,14 +117,16 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
         <ArrowLeft size={16} /> Back to Shop
       </Link>
 
-      <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-24">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
           className="w-full md:w-1/2 self-start"
         >
-          <div className="sticky top-32 space-y-4">
+          {/* Only sticky once the layout is actually two-column — while stacked on phones a
+              sticky gallery pins itself over the details the customer is scrolling to read. */}
+          <div className="md:sticky md:top-32 space-y-4">
             <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-muted shadow-lg relative">
               {activeImage && (
                 <img
@@ -290,14 +292,14 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
               />
             ) : orderable ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <span className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Quantity</span>
-                  <div className="flex items-center gap-3 border border-border rounded-full px-2">
+                  <div className="flex items-center border border-border rounded-full">
                     <button
                       type="button"
                       aria-label="Decrease quantity"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="p-2 text-foreground/60 hover:text-primary"
+                      className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary"
                     >
                       <Minus size={14} />
                     </button>
@@ -306,7 +308,7 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
                       type="button"
                       aria-label="Increase quantity"
                       onClick={() => setQuantity((q) => q + 1)}
-                      className="p-2 text-foreground/60 hover:text-primary"
+                      className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary"
                     >
                       <Plus size={14} />
                     </button>

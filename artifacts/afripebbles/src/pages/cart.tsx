@@ -47,48 +47,52 @@ export default function Cart() {
           <>
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={cartLineReactKey(item)} className="flex gap-4 border border-border rounded-xl p-4">
+                <div key={cartLineReactKey(item)} className="flex flex-wrap gap-4 border border-border rounded-xl p-4">
                   <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden shrink-0">
                     {item.snapshot.imageUrl && <img src={item.snapshot.imageUrl} alt={item.snapshot.title} className="w-full h-full object-cover" />}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{item.snapshot.title}</div>
+                  {/* min-w-[8rem] keeps the details readable on narrow phones; the line total below
+                      wraps onto its own row rather than squeezing this column down to a few characters. */}
+                  <div className="flex-1 min-w-[8rem]">
+                    <div className="font-medium line-clamp-2">{item.snapshot.title}</div>
                     {describeOrderItem(item).map((line) => (
                       <div key={line} className="text-sm text-foreground/60">
                         {line}
                       </div>
                     ))}
                     <div className="text-sm text-foreground/60">{formatCurrency(item.snapshot.price, item.snapshot.currency)} each</div>
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="flex items-center gap-2 border border-border rounded-full px-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2">
+                      <div className="flex items-center border border-border rounded-full">
                         <button
                           type="button"
                           aria-label="Decrease quantity"
                           onClick={() => updateQuantity(item, item.quantity - 1)}
-                          className="p-1.5 text-foreground/60 hover:text-primary"
+                          className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary"
                         >
-                          <Minus size={12} />
+                          <Minus size={14} />
                         </button>
                         <span className="w-5 text-center text-sm">{item.quantity}</span>
                         <button
                           type="button"
                           aria-label="Increase quantity"
                           onClick={() => updateQuantity(item, item.quantity + 1)}
-                          className="p-1.5 text-foreground/60 hover:text-primary"
+                          className="inline-flex size-10 items-center justify-center text-foreground/60 hover:text-primary"
                         >
-                          <Plus size={12} />
+                          <Plus size={14} />
                         </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeItem(item)}
-                        className="text-xs text-destructive/80 hover:text-destructive inline-flex items-center gap-1"
+                        className="text-xs text-destructive/80 hover:text-destructive inline-flex items-center gap-1 py-2 pr-2"
                       >
                         <Trash2 size={12} /> Remove
                       </button>
                     </div>
                   </div>
-                  <div className="text-right font-medium">{formatCurrency(item.snapshot.price * item.quantity, item.snapshot.currency)}</div>
+                  <div className="w-full text-right font-medium shrink-0 whitespace-nowrap sm:w-auto sm:ml-auto">
+                    {formatCurrency(item.snapshot.price * item.quantity, item.snapshot.currency)}
+                  </div>
                 </div>
               ))}
             </div>
