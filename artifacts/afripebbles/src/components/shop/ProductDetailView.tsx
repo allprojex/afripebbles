@@ -181,7 +181,7 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
             )}
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-serif leading-tight mb-4">{product.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-serif leading-tight mb-4 break-words">{product.title}</h1>
 
           <div className="text-2xl font-medium mb-8">{formatCurrency(product.price, product.currency)}</div>
 

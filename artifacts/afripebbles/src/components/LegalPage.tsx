@@ -17,7 +17,7 @@ export function LegalPage({ content, path }: { content: LegalPageContent; path: 
       <div className="container mx-auto px-4 py-20 max-w-3xl">
         <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="space-y-10">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-serif">{content.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-serif break-words">{content.title}</h1>
             <p className="text-foreground/70 leading-relaxed">{content.intro}</p>
           </div>
 

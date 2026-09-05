@@ -41,7 +41,9 @@ export default function CuratedPicks() {
             <div className="w-16 h-16 mx-auto bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
               <Star size={28} />
             </div>
-            <h1 className="text-4xl md:text-6xl font-serif">Recommendations</h1>
+            {/* One 15-character word: at text-4xl it measures 302px inside the 274px
+                content column of a 320px phone, so it needs a step down there. */}
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif">Recommendations</h1>
             <p className="text-lg text-foreground/70 leading-relaxed">
               A thoughtful collection of things we trust — across beauty, wellness, faith, books, and home —
               chosen to support a more intentional life.

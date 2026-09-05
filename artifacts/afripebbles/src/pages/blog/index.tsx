@@ -108,7 +108,7 @@ export default function BlogListing() {
                       <span>{post.readTimeMinutes} min read</span>
                     </div>
                     <Link href={`/journal/${post.slug}`}>
-                      <h2 className={`${isFeatured ? 'text-3xl md:text-5xl' : 'text-2xl'} font-serif mb-4 group-hover:text-primary transition-colors leading-tight`}>
+                      <h2 className={`${isFeatured ? 'text-3xl md:text-5xl' : 'text-2xl'} font-serif mb-4 group-hover:text-primary transition-colors leading-tight break-words`}>
                         {post.title}
                       </h2>
                     </Link>

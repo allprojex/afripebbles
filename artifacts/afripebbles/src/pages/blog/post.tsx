@@ -80,7 +80,7 @@ export default function BlogPost() {
               <span>{post.category}</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-serif leading-tight mb-8">
+            <h1 className="text-4xl md:text-6xl font-serif leading-tight mb-8 break-words">
               {post.title}
             </h1>
             

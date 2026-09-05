@@ -90,7 +90,7 @@ export default function PodcastEpisode() {
               {episode.season && <span>Season {episode.season}</span>}
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-serif leading-tight">{episode.title}</h1>
+            <h1 className="text-3xl md:text-5xl font-serif leading-tight break-words">{episode.title}</h1>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/60">
               <span className="flex items-center gap-1.5"><Calendar size={16}/> {format(new Date(episode.publishedAt), 'MMMM d, yyyy')}</span>
