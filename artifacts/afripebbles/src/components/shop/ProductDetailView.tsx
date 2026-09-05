@@ -118,11 +118,15 @@ export function ProductDetailView({ product, backHref = "/shop" }: { product: Pr
       </Link>
 
       <div className="flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-24">
+        {/* No self-start on this column: it shrink-wrapped the column to the gallery's own
+            height, which left the sticky child below zero room to travel, so md:sticky never
+            engaged. Stretching to the (much taller) details column is what gives it that room.
+            Width is pinned by w-full/md:w-1/2, so the resting layout is unchanged. */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full md:w-1/2 self-start"
+          className="w-full md:w-1/2"
         >
           {/* Only sticky once the layout is actually two-column — while stacked on phones a
               sticky gallery pins itself over the details the customer is scrolling to read. */}
